@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commissioner cinccity · Lottery Draft</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Teko:wght@300;400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange:#E8621A; --orange2:#F08030; --sunset:#F5A623;
+    --red:#C0181A; --teal:#00A89C; --teal2:#00C8BC; --teal-dark:#005f5a;
+    --navy:#0d1a2b; --navy2:#0a1520; --chrome:#d0d8e0; --chrome2:#f0f4f8;
+    --text:#f0ede8; --muted:#7a9ab0;
+    --border-teal:rgba(0,168,156,0.35); --border-orange:rgba(232,98,26,0.5);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--navy2);color:var(--text);font-family:'Teko',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+  /* BG */
+  .bg-layer{position:fixed;inset:0;z-index:0;overflow:hidden;}
+  .bg-sunset{position:absolute;inset:0;background:linear-gradient(180deg,#0d1a2b 0%,#0d2040 20%,#1a3a5c 45%,#2a4a2a 60%,#3a2a0a 75%,#1a0a08 100%);}
+  .wave-layer{position:absolute;bottom:0;left:0;width:200%;height:45%;}
+  .wave1{animation:waveMove1 8s linear infinite;opacity:0.6;}
+  .wave2{animation:waveMove2 12s linear infinite;opacity:0.4;bottom:2%;}
+  .wave3{animation:waveMove3 6s linear infinite;opacity:0.3;bottom:-2%;}
+  @keyframes waveMove1{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @keyframes waveMove2{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+  @keyframes waveMove3{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .glow-orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;}
+  .orb-orange{width:500px;height:300px;background:rgba(232,98,26,0.12);top:30%;left:50%;transform:translateX(-50%);}
+  .orb-teal{width:400px;height:400px;background:rgba(0,168,156,0.08);bottom:-100px;left:-100px;}
+  .orb-teal2{width:300px;height:300px;background:rgba(0,168,156,0.06);bottom:-50px;right:-50px;}
+  .frame-line-top,.frame-line-bottom{position:fixed;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--red),var(--orange),var(--sunset),var(--orange),var(--red));z-index:100;}
+  .frame-line-top{top:0;} .frame-line-bottom{bottom:0;}
+
+  .container{position:relative;z-index:2;max-width:860px;margin:0 auto;padding:20px 16px 70px;}
+
+  /* HEADER */
+  header{text-align:center;padding:28px 0 22px;margin-bottom:24px;position:relative;}
+  .header-border{position:absolute;bottom:0;left:10%;right:10%;height:2px;background:linear-gradient(90deg,transparent,var(--red),var(--orange),var(--teal),var(--red),transparent);}
+  .commissioner-line{font-size:12px;letter-spacing:5px;color:var(--teal2);text-transform:uppercase;font-weight:400;margin-bottom:4px;}
+  header h1{font-family:'Anton',sans-serif;font-size:clamp(42px,12vw,88px);letter-spacing:2px;line-height:0.88;background:linear-gradient(160deg,var(--chrome2) 0%,var(--chrome) 30%,#a0aab4 50%,var(--chrome) 70%,var(--chrome2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.5));}
+  .header-sub{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px;}
+  .header-sub-line{flex:1;max-width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--orange));}
+  .header-sub-line.right{background:linear-gradient(90deg,var(--orange),transparent);}
+  .header-sub span{font-size:13px;letter-spacing:4px;color:var(--orange2);text-transform:uppercase;font-weight:600;}
+
+  /* ── LEAGUE SELECT SCREEN ── */
+  #league-select{animation:fadeIn 0.5s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+  .league-select-title{text-align:center;font-family:'Anton',sans-serif;font-size:18px;letter-spacing:5px;color:var(--muted);margin-bottom:20px;text-transform:uppercase;}
+
+  .league-cards{display:flex;flex-direction:column;gap:14px;}
+
+  .league-card{
+    background:rgba(10,21,32,0.85);
+    border:1px solid var(--border-orange);
+    border-left:4px solid var(--orange);
+    border-radius:4px;
+    padding:20px 20px;
+    cursor:pointer;
+    transition:all 0.25s;
+    backdrop-filter:blur(10px);
+    position:relative;
+    overflow:hidden;
+  }
+  .league-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(232,98,26,0.06),transparent);opacity:0;transition:opacity 0.25s;}
+  .league-card:hover{border-color:var(--orange2);transform:translateX(4px);}
+  .league-card:hover::before{opacity:1;}
+  .league-card.has-progress{border-left-color:var(--teal);}
+  .league-card.has-progress::before{background:linear-gradient(135deg,rgba(0,168,156,0.06),transparent);}
+  .league-card.has-progress:hover{border-color:var(--teal2);}
+
+  .league-card-name{font-family:'Anton',sans-serif;font-size:30px;letter-spacing:3px;color:var(--chrome2);line-height:1;}
+  .league-card-sub{font-size:13px;color:var(--muted);letter-spacing:2px;margin-top:4px;font-family:'Barlow',sans-serif;font-weight:300;}
+  .league-card-status{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border-radius:2px;}
+  .status-new{background:rgba(232,98,26,0.15);color:var(--orange2);border:1px solid rgba(232,98,26,0.3);}
+  .status-progress{background:rgba(0,168,156,0.15);color:var(--teal2);border:1px solid rgba(0,168,156,0.3);}
+  .status-done{background:rgba(100,100,100,0.15);color:#888;border:1px solid rgba(100,100,100,0.3);}
+  .status-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+  .league-card-arrow{position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:22px;color:var(--orange2);opacity:0.5;transition:opacity 0.2s,transform 0.2s;}
+  .league-card:hover .league-card-arrow{opacity:1;transform:translateY(-50%) translateX(4px);}
+
+  /* Active league bar */
+  .active-league-bar{
+    display:none;
+    align-items:center;
+    justify-content:space-between;
+    background:rgba(10,21,32,0.8);
+    border:1px solid var(--border-teal);
+    border-radius:3px;
+    padding:10px 14px;
+    margin-bottom:18px;
+    backdrop-filter:blur(8px);
+  }
+  .alb-left{display:flex;align-items:center;gap:10px;}
+  .alb-league-name{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:2px;color:var(--teal2);}
+  .alb-label{font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
+  .btn-switch-league{font-family:'Teko',sans-serif;font-size:13px;letter-spacing:2px;color:var(--orange2);background:transparent;border:1px solid var(--border-orange);border-radius:2px;padding:5px 12px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;}
+  .btn-switch-league:hover{background:rgba(232,98,26,0.1);border-color:var(--orange);}
+
+  /* SETUP */
+  #setup-panel{background:rgba(10,21,32,0.85);border:1px solid var(--border-orange);border-top:3px solid var(--red);border-radius:3px;padding:26px;backdrop-filter:blur(10px);display:none;}
+  #setup-panel h2{font-family:'Anton',sans-serif;font-size:26px;letter-spacing:3px;color:var(--sunset);margin-bottom:6px;}
+  #setup-panel p{font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.5;font-family:'Barlow',sans-serif;font-weight:300;}
+  #setup-panel p strong{color:var(--teal2);}
+  .teams-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:22px;}
+  .team-input-row{display:flex;align-items:center;gap:8px;}
+  .seed-badge{width:30px;height:30px;background:linear-gradient(135deg,var(--red),#8a1010);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+  .seed-badge.lottery{background:linear-gradient(135deg,var(--teal),var(--teal-dark));}
+  .team-input{flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:3px;padding:7px 10px;color:var(--text);font-family:'Teko',sans-serif;font-size:16px;outline:none;transition:border-color 0.2s,background 0.2s;}
+  .team-input:focus{border-color:var(--teal2);background:rgba(0,168,156,0.06);}
+  .team-input::placeholder{color:rgba(255,255,255,0.2);font-weight:300;}
+  .btn-start{width:100%;padding:16px;background:linear-gradient(135deg,var(--red),var(--orange),var(--orange2));border:none;border-radius:3px;color:#fff;font-family:'Anton',sans-serif;font-size:22px;letter-spacing:5px;cursor:pointer;transition:filter 0.2s,transform 0.1s;position:relative;overflow:hidden;}
+  .btn-start::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,0.15) 50%,transparent 60%);transform:translateX(-100%);transition:transform 0.5s;}
+  .btn-start:hover::after{transform:translateX(100%);} .btn-start:hover{filter:brightness(1.1);} .btn-start:active{transform:scale(0.99);}
+
+  /* LOTTERY */
+  #lottery-panel{display:none;}
+  .pick-header{text-align:center;padding:16px 0 20px;}
+  .pick-label-top{font-size:11px;letter-spacing:6px;color:var(--teal2);text-transform:uppercase;margin-bottom:2px;}
+  .pick-number-big{font-family:'Anton',sans-serif;font-size:clamp(72px,20vw,130px);line-height:0.85;background:linear-gradient(160deg,var(--chrome2),var(--chrome),#8a9aaa,var(--chrome));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 4px 16px rgba(0,0,0,0.6));}
+  .pick-suffix{font-family:'Anton',sans-serif;font-size:clamp(22px,5vw,36px);color:var(--orange2);letter-spacing:3px;}
+  .reveal-zone{background:rgba(8,18,28,0.9);border:2px solid var(--border-teal);border-top:3px solid var(--teal);border-radius:3px;padding:40px 20px;text-align:center;min-height:210px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;margin-bottom:18px;backdrop-filter:blur(10px);}
+  .reveal-zone::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--teal-dark),var(--teal2),var(--teal-dark));}
+  .waiting-state{display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .trophy-icon{font-size:48px;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 0 12px rgba(0,168,156,0.4));}
+  @keyframes float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+  .waiting-text{font-size:13px;letter-spacing:4px;color:var(--muted);text-transform:uppercase;}
+  .spinning-name{font-family:'Anton',sans-serif;font-size:36px;letter-spacing:3px;color:var(--teal2);animation:spinPulse 0.12s infinite;}
+  @keyframes spinPulse{0%,100%{opacity:0.4}50%{opacity:1}}
+  .revealed-state{display:none;flex-direction:column;align-items:center;gap:6px;animation:revealIn 0.7s cubic-bezier(0.16,1,0.3,1) forwards;}
+  @keyframes revealIn{from{opacity:0;transform:scale(0.85) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .reveal-seed-label{font-size:12px;letter-spacing:4px;color:var(--teal2);text-transform:uppercase;}
+  .reveal-team-name{font-family:'Anton',sans-serif;font-size:clamp(38px,10vw,68px);letter-spacing:2px;line-height:1;background:linear-gradient(135deg,var(--chrome2),var(--chrome),#a0aab4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .reveal-odds{font-size:15px;color:var(--orange2);letter-spacing:2px;margin-top:4px;}
+  .confetti-burst{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+  .cp{position:absolute;width:7px;height:7px;border-radius:1px;animation:cfFall 1.3s ease-out forwards;}
+  @keyframes cfFall{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(var(--tx),140px) rotate(420deg);opacity:0}}
+  .btn-pick{width:100%;padding:18px;background:transparent;border:2px solid var(--orange);border-radius:3px;color:var(--orange2);font-family:'Anton',sans-serif;font-size:22px;letter-spacing:5px;cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden;margin-bottom:22px;}
+  .btn-pick::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--red),var(--orange));transform:translateX(-101%);transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);z-index:0;}
+  .btn-pick:hover::before{transform:translateX(0);} .btn-pick:hover{color:#fff;}
+  .btn-pick span{position:relative;z-index:1;}
+  .btn-pick:disabled{border-color:#333;color:#444;cursor:not-allowed;} .btn-pick:disabled::before{display:none;}
+  .results-section h3{font-family:'Anton',sans-serif;font-size:16px;letter-spacing:5px;color:var(--teal);margin-bottom:12px;border-bottom:1px solid var(--border-teal);padding-bottom:8px;}
+  .results-list{display:flex;flex-direction:column;gap:6px;}
+  .result-row{display:flex;align-items:center;gap:12px;background:rgba(8,18,28,0.8);border:1px solid var(--border-teal);border-left:3px solid var(--teal);border-radius:3px;padding:10px 14px;backdrop-filter:blur(6px);}
+  .result-row.animate{animation:slideIn 0.4s ease forwards;}
+  @keyframes slideIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+  .result-pick-num{font-family:'Anton',sans-serif;font-size:26px;background:linear-gradient(135deg,var(--orange2),var(--sunset));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;width:30px;flex-shrink:0;}
+  .result-divider{width:1px;height:30px;background:var(--border-teal);flex-shrink:0;}
+  .result-team{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:1px;flex:1;color:var(--chrome);}
+  .result-meta{font-family:'Barlow',sans-serif;font-size:11px;color:var(--muted);text-align:right;line-height:1.5;}
+  .result-meta .odds-highlight{color:var(--teal2);}
+  .complete-banner{text-align:center;padding:28px;background:rgba(8,18,28,0.9);border:2px solid var(--orange);border-top:4px solid var(--red);border-radius:3px;margin-bottom:20px;backdrop-filter:blur(10px);}
+  .complete-banner h2{font-family:'Anton',sans-serif;font-size:42px;letter-spacing:4px;background:linear-gradient(135deg,var(--orange2),var(--sunset));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .complete-banner p{font-size:13px;color:var(--muted);letter-spacing:1px;margin-top:6px;font-family:'Barlow',sans-serif;}
+  .odds-toggle{display:block;font-size:12px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;cursor:pointer;text-align:center;margin-top:20px;padding:10px;border:1px solid rgba(255,255,255,0.08);border-radius:3px;transition:color 0.2s,border-color 0.2s;font-family:'Teko',sans-serif;}
+  .odds-toggle:hover{color:var(--teal2);border-color:var(--border-teal);}
+  .odds-table-wrap{display:none;margin-top:10px;overflow-x:auto;background:rgba(8,18,28,0.85);border:1px solid var(--border-teal);border-radius:3px;padding:14px;}
+  .odds-table-wrap table{width:100%;border-collapse:collapse;font-size:12px;}
+  .odds-table-wrap th{color:var(--teal2);padding:6px 8px;text-align:center;border-bottom:1px solid var(--border-teal);letter-spacing:1px;font-size:11px;}
+  .odds-table-wrap td{padding:5px 8px;text-align:center;color:var(--text);border-bottom:1px solid rgba(255,255,255,0.03);}
+  .odds-table-wrap tr:hover td{background:rgba(0,168,156,0.05);}
+  .odds-table-wrap td:first-child{color:var(--orange2);font-weight:700;}
+  .btn-reset{padding:10px 28px;background:transparent;border:1px solid rgba(255,255,255,0.12);border-radius:3px;color:var(--muted);font-family:'Teko',sans-serif;font-size:14px;letter-spacing:3px;cursor:pointer;margin-top:14px;transition:border-color 0.2s,color 0.2s;text-transform:uppercase;}
+  .btn-reset:hover{border-color:var(--teal);color:var(--teal2);}
+  .btn-clear-league{padding:8px 20px;background:transparent;border:1px solid rgba(192,24,26,0.4);border-radius:3px;color:#e06060;font-family:'Teko',sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;margin-top:10px;transition:border-color 0.2s,color 0.2s;text-transform:uppercase;}
+  .btn-clear-league:hover{border-color:var(--red);color:#ff8080;}
+</style>
+</head>
+<body>
+
+<div class="bg-layer">
+  <div class="bg-sunset"></div>
+  <svg class="wave-layer wave1" viewBox="0 0 1440 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,80 C120,20 240,140 360,80 C480,20 600,140 720,80 C840,20 960,140 1080,80 C1200,20 1320,140 1440,80 L1440,200 L0,200 Z" fill="#00A89C" opacity="0.25"/>
+    <path d="M0,100 C180,40 360,160 540,100 C720,40 900,160 1080,100 C1260,40 1440,160 1440,100 L1440,200 L0,200 Z" fill="#005f5a" opacity="0.3"/>
+  </svg>
+  <svg class="wave-layer wave2" viewBox="0 0 1440 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,60 C90,120 180,20 360,70 C540,120 630,10 720,60 C810,110 990,20 1080,70 C1170,120 1350,30 1440,60 L1440,180 L0,180 Z" fill="#007a74" opacity="0.2"/>
+  </svg>
+  <svg class="wave-layer wave3" viewBox="0 0 1440 160" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,40 C200,100 400,0 600,50 C800,100 1000,0 1200,50 C1300,75 1370,30 1440,50 L1440,160 L0,160 Z" fill="#00C8BC" opacity="0.12"/>
+  </svg>
+  <div class="glow-orb orb-orange"></div>
+  <div class="glow-orb orb-teal"></div>
+  <div class="glow-orb orb-teal2"></div>
+</div>
+
+<div class="frame-line-top"></div>
+<div class="frame-line-bottom"></div>
+
+<div class="container">
+  <header>
+    <div class="commissioner-line">Commissioner cinccity</div>
+    <h1>LOTTERY DRAFT</h1>
+    <div class="header-sub">
+      <div class="header-sub-line"></div>
+      <span>Fantasy Football</span>
+      <div class="header-sub-line right"></div>
+    </div>
+    <div class="header-border"></div>
+  </header>
+
+  <!-- LEAGUE SELECT -->
+  <div id="league-select">
+    <div class="league-select-title">Select Your League</div>
+    <div class="league-cards">
+      <div class="league-card" id="card-CFL" onclick="selectLeague('CFL')">
+        <div class="league-card-name">CFL</div>
+        <div class="league-card-sub">Crosstown Fantasy League</div>
+        <div class="league-card-status status-new" id="status-CFL"><span class="status-dot"></span> <span id="status-text-CFL">New Draft</span></div>
+        <div class="league-card-arrow">›</div>
+      </div>
+      <div class="league-card" id="card-MinuteMaid" onclick="selectLeague('MinuteMaid')">
+        <div class="league-card-name">MinuteMaid</div>
+        <div class="league-card-sub">MinuteMaid Fantasy League</div>
+        <div class="league-card-status status-new" id="status-MinuteMaid"><span class="status-dot"></span> <span id="status-text-MinuteMaid">New Draft</span></div>
+        <div class="league-card-arrow">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVE LEAGUE BAR -->
+  <div class="active-league-bar" id="active-league-bar">
+    <div class="alb-left">
+      <div>
+        <div class="alb-label">Active League</div>
+        <div class="alb-league-name" id="alb-name"></div>
+      </div>
+    </div>
+    <button class="btn-switch-league" onclick="switchLeague()">⇄ Switch</button>
+  </div>
+
+  <!-- SETUP -->
+  <div id="setup-panel">
+    <h2>Enter Your Teams</h2>
+    <p>Enter teams from <strong>worst (seed 1)</strong> to best. Seeds 1–8 enter the lottery. Seeds 9–12 receive picks in order.</p>
+    <div class="teams-grid" id="teams-grid"></div>
+    <button class="btn-start" onclick="startLottery()">RUN THE LOTTERY</button>
+  </div>
+
+  <!-- LOTTERY -->
+  <div id="lottery-panel">
+    <div class="pick-header">
+      <div class="pick-label-top">Now Drawing</div>
+      <div>
+        <span class="pick-number-big" id="current-pick-num">8</span>
+        <span class="pick-suffix" id="pick-suffix">TH PICK</span>
+      </div>
+    </div>
+    <div class="reveal-zone" id="reveal-zone">
+      <div class="waiting-state" id="waiting-state">
+        <div class="trophy-icon">🏆</div>
+        <div class="waiting-text">Press to draw</div>
+      </div>
+      <div class="revealed-state" id="revealed-state">
+        <div class="reveal-seed-label" id="result-seed-label"></div>
+        <div class="reveal-team-name" id="result-team-name"></div>
+        <div class="reveal-odds" id="result-odds"></div>
+      </div>
+      <div class="confetti-burst" id="confetti-burst"></div>
+    </div>
+    <button class="btn-pick" id="pick-btn" onclick="handlePickClick()">
+      <span id="pick-btn-label">DRAW THE 8TH PICK</span>
+    </button>
+    <div class="results-section">
+      <h3>Lottery Results</h3>
+      <div class="results-list" id="results-list"></div>
+    </div>
+    <button class="odds-toggle" onclick="toggleOdds()">▼ Show Odds Table</button>
+    <div class="odds-table-wrap" id="odds-table-wrap"></div>
+    <div style="text-align:center;margin-top:20px;">
+      <button class="btn-reset" onclick="goToSetup()">✎ Edit Teams</button>
+      <br>
+      <div id="reset-confirm-zone" style="margin-top:12px;">
+        <button class="btn-clear-league" onclick="showResetConfirm()">✕ Reset This League</button>
+        <div id="reset-confirm-box" style="display:none;margin-top:10px;background:rgba(192,24,26,0.12);border:1px solid rgba(192,24,26,0.4);border-radius:3px;padding:14px;text-align:center;">
+          <div style="font-family:'Barlow',sans-serif;font-size:13px;color:#e06060;margin-bottom:12px;letter-spacing:1px;">This will erase all picks for this league. Are you sure?</div>
+          <div style="display:flex;gap:10px;justify-content:center;">
+            <button onclick="confirmReset()" style="padding:8px 20px;background:var(--red);border:none;border-radius:3px;color:#fff;font-family:'Anton',sans-serif;font-size:15px;letter-spacing:2px;cursor:pointer;">YES, RESET</button>
+            <button onclick="cancelReset()" style="padding:8px 20px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:3px;color:var(--muted);font-family:'Teko',sans-serif;font-size:15px;letter-spacing:2px;cursor:pointer;">CANCEL</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ODDS_TABLE = {
+  1:{1:14.0,2:13.4,3:12.7,4:12.0,5:47.9,6:0,7:0,8:0},
+  2:{1:14.0,2:13.4,3:12.7,4:12.0,5:27.8,6:20.0,7:0,8:0},
+  3:{1:14.0,2:13.4,3:12.7,4:12.0,5:14.8,6:26.0,7:7.0,8:0},
+  4:{1:12.5,2:12.2,3:11.9,4:11.5,5:7.2,6:25.7,7:16.7,8:2.2},
+  5:{1:10.5,2:10.5,3:10.6,4:10.5,5:2.2,6:19.6,7:26.7,8:8.7},
+  6:{1:9.0,2:9.2,3:9.4,4:9.6,5:0,6:8.6,7:29.8,8:20.5},
+  7:{1:7.5,2:7.8,3:8.1,4:8.5,5:0,6:0,7:19.7,8:34.1},
+  8:{1:6.0,2:6.3,3:6.7,4:7.2,5:0,6:0,7:0,8:34.5}
+};
+
+const LEAGUES = ['CFL','MinuteMaid'];
+let activeLeague = null;
+
+// Per-league state (loaded from localStorage)
+let teams={}, remainingSeeds=[], currentPickSlot=8, results=[], animating=false, revealed=false, lotteryStarted=false;
+
+// ── STORAGE ──────────────────────────────────────────────────────────────────
+function storageKey(league){ return `cinccity_lottery_${league}`; }
+
+function saveState() {
+  if (!activeLeague) return;
+  // revealIndex is always the CURRENT index being revealed or next to reveal
+  // If revealed=true, next to reveal is revealIndex-1; save that
+  const nextRevealIndex = revealed ? revealIndex - 1 : revealIndex;
+  const state = { teams, allResults, revealIndex: nextRevealIndex, results, lotteryStarted };
+  localStorage.setItem(storageKey(activeLeague), JSON.stringify(state));
+  refreshLeagueCards();
+}
+
+function loadState(league) {
+  const raw = localStorage.getItem(storageKey(league));
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch(e) { return null; }
+}
+
+function getLeagueStatus(league) {
+  const s = loadState(league);
+  if (!s || !s.lotteryStarted) return 'new';
+  if (s.revealIndex < 0) return 'done';
+  return 'progress';
+}
+
+// ── LEAGUE SELECT ─────────────────────────────────────────────────────────────
+function refreshLeagueCards() {
+  LEAGUES.forEach(league => {
+    const status = getLeagueStatus(league);
+    const card = document.getElementById(`card-${league}`);
+    const statusEl = document.getElementById(`status-${league}`);
+    const statusText = document.getElementById(`status-text-${league}`);
+    const s = loadState(league);
+
+    card.className = 'league-card' + (status !== 'new' ? ' has-progress' : '');
+    statusEl.className = `league-card-status status-${status === 'new' ? 'new' : status === 'done' ? 'done' : 'progress'}`;
+
+    if (status === 'new') {
+      statusText.textContent = 'New Draft';
+    } else if (status === 'done') {
+      statusText.textContent = 'Lottery Complete';
+    } else {
+      const drawn = 7 - s.revealIndex; // how many reveals completed
+      statusText.textContent = `In Progress · ${drawn}/8 revealed`;
+    }
+  });
+}
+
+function selectLeague(league) {
+  activeLeague = league;
+  document.getElementById('league-select').style.display = 'none';
+  document.getElementById('active-league-bar').style.display = 'flex';
+  document.getElementById('alb-name').textContent = league;
+
+  const saved = loadState(league);
+  if (saved && saved.lotteryStarted) {
+    // Resume
+    teams = saved.teams;
+    allResults = saved.allResults || [];
+    revealIndex = saved.revealIndex !== undefined ? saved.revealIndex : 7;
+    results = saved.results || [];
+    lotteryStarted = true;
+    revealed = false;
+    animating = false;
+
+    const isDone = revealIndex < 0;
+    buildOddsTable();
+    document.getElementById('setup-panel').style.display = 'none';
+    document.getElementById('lottery-panel').style.display = 'block';
+    document.getElementById('pick-btn').style.display = 'block';
+    document.getElementById('results-list').innerHTML = '';
+    const b = document.querySelector('.complete-banner'); if(b) b.remove();
+    renderResultsLog();
+
+    if (isDone) {
+      showCompleteBanner();
+      document.getElementById('pick-btn').style.display = 'none';
+    } else {
+      updatePickUI();
+      resetRevealZone();
+    }
+  } else {
+    // Fresh setup
+    teams={}; remainingSeeds=[1,2,3,4,5,6,7,8]; currentPickSlot=8; results=[]; lotteryStarted=false; revealed=false; animating=false;
+    buildSetupForm();
+    document.getElementById('setup-panel').style.display = 'block';
+    document.getElementById('lottery-panel').style.display = 'none';
+  }
+}
+
+function switchLeague() {
+  saveState();
+  activeLeague = null;
+  // Hide panels
+  document.getElementById('active-league-bar').style.display = 'none';
+  document.getElementById('setup-panel').style.display = 'none';
+  document.getElementById('lottery-panel').style.display = 'none';
+  // Clear complete banner if any
+  const b = document.querySelector('.complete-banner'); if(b) b.remove();
+  // Show league select
+  refreshLeagueCards();
+  document.getElementById('league-select').style.display = 'block';
+}
+
+// ── SETUP ─────────────────────────────────────────────────────────────────────
+function buildSetupForm() {
+  const grid = document.getElementById('teams-grid');
+  grid.innerHTML = '';
+  const saved = loadState(activeLeague);
+  for (let s=1; s<=12; s++) {
+    const row = document.createElement('div'); row.className='team-input-row';
+    const badge = document.createElement('div'); badge.className = s<=8 ? 'seed-badge lottery' : 'seed-badge'; badge.textContent=s;
+    const input = document.createElement('input'); input.className='team-input'; input.id=`team-${s}`;
+    input.placeholder = s<=8 ? `Seed ${s} · Lottery Team` : `Seed ${s} · Auto Pick`;
+    input.type='text';
+    // Pre-fill if previously saved
+    if (saved && saved.teams && saved.teams[s]) input.value = saved.teams[s];
+    row.appendChild(badge); row.appendChild(input); grid.appendChild(row);
+  }
+}
+
+function startLottery() {
+  for (let s=1; s<=12; s++) {
+    const v = document.getElementById(`team-${s}`).value.trim();
+    teams[s] = v || `Team ${s}`;
+  }
+  results=[]; revealed=false; lotteryStarted=true;
+  runFullLottery(); // run full draw upfront, reveal in reverse for drama
+  document.getElementById('setup-panel').style.display='none';
+  document.getElementById('lottery-panel').style.display='block';
+  document.getElementById('pick-btn').style.display='block';
+  document.getElementById('results-list').innerHTML='';
+  const b=document.querySelector('.complete-banner'); if(b) b.remove();
+  buildOddsTable(); updatePickUI(); resetRevealZone();
+  saveState();
+}
+
+function goToSetup() {
+  saveState();
+  document.getElementById('lottery-panel').style.display='none';
+  buildSetupForm();
+  document.getElementById('setup-panel').style.display='block';
+}
+
+// ── LOTTERY LOGIC ─────────────────────────────────────────────────────────────
+// allResults[i] = result for pick i+1 (index 0 = pick 1, index 7 = pick 8)
+// revealIndex counts down from 7 to 0 (revealing pick 8 first, pick 1 last)
+let allResults = [];
+let revealIndex = 7; // start revealing from pick 8 (index 7)
+
+function runFullLottery() {
+  // Run the entire lottery upfront picks 1→8 using correct sequential odds
+  let pool = [1,2,3,4,5,6,7,8];
+  allResults = [];
+  for (let slot = 1; slot <= 8; slot++) {
+    const w = pool.map(s => ODDS_TABLE[s][slot] || 0);
+    const total = w.reduce((a,b) => a+b, 0);
+    let r = Math.random() * total;
+    let winner = pool[pool.length-1];
+    for (let i=0; i<pool.length; i++) { r -= w[i]; if (r <= 0) { winner = pool[i]; break; } }
+    const odds = ODDS_TABLE[winner][slot] || 0;
+    allResults.push({ pick: slot, seed: winner, team: teams[winner], odds });
+    pool = pool.filter(s => s !== winner);
+  }
+  revealIndex = 7; // start revealing from pick 8
+}
+
+function handlePickClick() {
+  if (animating) return;
+  if (!revealed) { drawPick(); }
+  else {
+    revealIndex--;
+    revealed = false;
+    saveState();
+    resetRevealZone();
+    updatePickUI();
+  }
+}
+
+function drawPick() {
+  animating=true; document.getElementById('pick-btn').disabled=true;
+  const ws=document.getElementById('waiting-state');
+  // Show all remaining un-revealed team names spinning
+  const revealedSeeds = allResults.slice(revealIndex+1).map(r => r.seed);
+  const spinNames = allResults.filter((r,i) => i <= revealIndex).map(r => r.team);
+  ws.innerHTML=`<div class="spinning-name" id="spin-text">●</div><div class="waiting-text">Drawing...</div>`;
+  let spins=0; const totalSpins=20+Math.floor(Math.random()*12);
+  const iv=setInterval(()=>{
+    const idx=Math.floor(Math.random()*spinNames.length);
+    document.getElementById('spin-text').textContent=spinNames[idx].toUpperCase();
+    spins++;
+    if(spins>=totalSpins){ clearInterval(iv); showReveal(); }
+  }, 75);
+}
+
+function showReveal() {
+  const result = allResults[revealIndex];
+  const slot = result.pick; const name = result.team; const odds = result.odds; const seed = result.seed;
+  document.getElementById('waiting-state').style.display='none';
+  const rev=document.getElementById('revealed-state'); rev.style.display='flex';
+  document.getElementById('result-seed-label').textContent=`SEED ${seed} · LOTTERY TEAM`;
+  document.getElementById('result-team-name').textContent=name.toUpperCase();
+  document.getElementById('result-odds').textContent=`${odds.toFixed(1)}% odds to land pick #${slot}`;
+  launchConfetti(); addResultRow({pick:slot,seed,team:name,odds},true);
+  results.unshift({pick:slot,seed,team:name,odds});
+  revealed=true; animating=false;
+  document.getElementById('pick-btn').disabled=false;
+  saveState();
+  if(revealIndex===0){ setTimeout(()=>{ finalizeLottery(); saveState(); },300); }
+  else{ document.getElementById('pick-btn-label').textContent=`▶ NEXT PICK (#${revealIndex})`; }
+}
+
+function finalizeLottery() {
+  document.getElementById('pick-btn').style.display='none';
+  showCompleteBanner();
+}
+
+function showCompleteBanner() {
+  if(document.querySelector('.complete-banner')) return;
+  const b=document.createElement('div'); b.className='complete-banner';
+  b.innerHTML=`<h2>LOTTERY COMPLETE</h2><p>All draft positions assigned. Good luck this season.</p>`;
+  document.getElementById('lottery-panel').insertBefore(b,document.querySelector('.results-section'));
+}
+
+function renderResultsLog() {
+  const list=document.getElementById('results-list'); list.innerHTML='';
+  // results are stored newest-first (pick 8 first in array), display as-is
+  results.forEach(r => addResultRow(r, false));
+}
+
+function addResultRow({pick,seed,team,odds}, animate) {
+  const list=document.getElementById('results-list'); const row=document.createElement('div');
+  row.className='result-row' + (animate?' animate':'');
+  row.innerHTML=`<div class="result-pick-num">${pick}</div><div class="result-divider"></div><div class="result-team">${team.toUpperCase()}</div><div class="result-meta">Seed ${seed}<br><span class="odds-highlight">${odds.toFixed(1)}% odds</span></div>`;
+  list.insertBefore(row,list.firstChild);
+}
+
+function getSuffix(n){if(n===1)return'ST';if(n===2)return'ND';if(n===3)return'RD';return'TH';}
+
+function updatePickUI() {
+  const pickNum = revealIndex + 1; // pick 8 = revealIndex 7, pick 1 = revealIndex 0
+  const s = getSuffix(pickNum);
+  document.getElementById('current-pick-num').textContent = pickNum;
+  document.getElementById('pick-suffix').textContent = s + ' PICK';
+  document.getElementById('pick-btn-label').textContent = `DRAW THE ${pickNum}${s} PICK`;
+}
+
+function resetRevealZone() {
+  const w=document.getElementById('waiting-state'); w.style.display='flex';
+  w.innerHTML=`<div class="trophy-icon">🏆</div><div class="waiting-text">Press to draw</div>`;
+  const r=document.getElementById('revealed-state'); r.style.display='none'; r.style.animation='none'; void r.offsetWidth; r.style.animation='';
+  document.getElementById('confetti-burst').innerHTML='';
+}
+
+function launchConfetti() {
+  const burst=document.getElementById('confetti-burst'); burst.innerHTML='';
+  const colors=['#E8621A','#F5A623','#00A89C','#00C8BC','#ffffff','#F08030'];
+  for(let i=0;i<35;i++){
+    const p=document.createElement('div'); p.className='cp';
+    p.style.left=`${15+Math.random()*70}%`; p.style.top=`${5+Math.random()*50}%`;
+    p.style.background=colors[Math.floor(Math.random()*colors.length)];
+    p.style.setProperty('--tx',`${(Math.random()-0.5)*140}px`);
+    p.style.animationDelay=`${Math.random()*0.25}s`; p.style.animationDuration=`${0.9+Math.random()*0.5}s`;
+    burst.appendChild(p);
+  }
+}
+
+function toggleOdds() {
+  const w=document.getElementById('odds-table-wrap'); const t=document.querySelector('.odds-toggle');
+  if(w.style.display==='block'){w.style.display='none';t.textContent='▼ Show Odds Table';}
+  else{w.style.display='block';t.textContent='▲ Hide Odds Table';}
+}
+
+function buildOddsTable() {
+  const wrap=document.getElementById('odds-table-wrap');
+  let html='<table><thead><tr><th>SEED</th>';
+  for(let p=1;p<=8;p++) html+=`<th>#${p}</th>`;
+  html+='</tr></thead><tbody>';
+  for(let s=1;s<=8;s++){
+    html+=`<tr><td>${s}</td>`;
+    for(let p=1;p<=8;p++){const v=ODDS_TABLE[s][p];html+=`<td>${v>0?v.toFixed(1):'—'}</td>`;}
+    html+='</tr>';
+  }
+  html+='</tbody></table>'; wrap.innerHTML=html;
+}
+
+function showResetConfirm() {
+  document.getElementById('reset-confirm-box').style.display = 'block';
+}
+function cancelReset() {
+  document.getElementById('reset-confirm-box').style.display = 'none';
+}
+function confirmReset() {
+  localStorage.removeItem(storageKey(activeLeague));
+  // Reset in-memory state so saveState() inside switchLeague doesn't re-save old data
+  lotteryStarted = false;
+  teams = {}; remainingSeeds = []; results = []; currentPickSlot = 8; revealed = false;
+  switchLeague();
+}
+
+// Init
+refreshLeagueCards();
+</script>
+</body>
+</html>
