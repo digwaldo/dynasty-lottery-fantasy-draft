@@ -7,16 +7,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Teko:wght@300;400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --orange:#E8621A; --orange2:#F08030; --sunset:#F5A623;
-    --red:#C0181A; --teal:#00A89C; --teal2:#00C8BC; --teal-dark:#005f5a;
-    --navy:#0d1a2b; --navy2:#0a1520; --chrome:#d0d8e0; --chrome2:#f0f4f8;
-    --text:#f0ede8; --muted:#7a9ab0;
-    --border-teal:rgba(0,168,156,0.35); --border-orange:rgba(232,98,26,0.5);
+    --orange:#E8621A;--orange2:#F08030;--sunset:#F5A623;
+    --red:#C0181A;--teal:#00A89C;--teal2:#00C8BC;--teal-dark:#005f5a;
+    --navy:#0d1a2b;--navy2:#0a1520;--chrome:#d0d8e0;--chrome2:#f0f4f8;
+    --text:#f0ede8;--muted:#7a9ab0;
+    --border-teal:rgba(0,168,156,0.35);--border-orange:rgba(232,98,26,0.5);
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:var(--navy2);color:var(--text);font-family:'Teko',sans-serif;min-height:100vh;overflow-x:hidden;}
-
-  /* BG */
   .bg-layer{position:fixed;inset:0;z-index:0;overflow:hidden;}
   .bg-sunset{position:absolute;inset:0;background:linear-gradient(180deg,#0d1a2b 0%,#0d2040 20%,#1a3a5c 45%,#2a4a2a 60%,#3a2a0a 75%,#1a0a08 100%);}
   .wave-layer{position:absolute;bottom:0;left:0;width:200%;height:45%;}
@@ -31,8 +29,7 @@
   .orb-teal{width:400px;height:400px;background:rgba(0,168,156,0.08);bottom:-100px;left:-100px;}
   .orb-teal2{width:300px;height:300px;background:rgba(0,168,156,0.06);bottom:-50px;right:-50px;}
   .frame-line-top,.frame-line-bottom{position:fixed;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--red),var(--orange),var(--sunset),var(--orange),var(--red));z-index:100;}
-  .frame-line-top{top:0;} .frame-line-bottom{bottom:0;}
-
+  .frame-line-top{top:0;}.frame-line-bottom{bottom:0;}
   .container{position:relative;z-index:2;max-width:860px;margin:0 auto;padding:20px 16px 70px;}
 
   /* HEADER */
@@ -45,33 +42,18 @@
   .header-sub-line.right{background:linear-gradient(90deg,var(--orange),transparent);}
   .header-sub span{font-size:13px;letter-spacing:4px;color:var(--orange2);text-transform:uppercase;font-weight:600;}
 
-  /* ── LEAGUE SELECT SCREEN ── */
+  /* LEAGUE SELECT */
   #league-select{animation:fadeIn 0.5s ease;}
   @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-
   .league-select-title{text-align:center;font-family:'Anton',sans-serif;font-size:18px;letter-spacing:5px;color:var(--muted);margin-bottom:20px;text-transform:uppercase;}
-
   .league-cards{display:flex;flex-direction:column;gap:14px;}
-
-  .league-card{
-    background:rgba(10,21,32,0.85);
-    border:1px solid var(--border-orange);
-    border-left:4px solid var(--orange);
-    border-radius:4px;
-    padding:20px 20px;
-    cursor:pointer;
-    transition:all 0.25s;
-    backdrop-filter:blur(10px);
-    position:relative;
-    overflow:hidden;
-  }
+  .league-card{background:rgba(10,21,32,0.85);border:1px solid var(--border-orange);border-left:4px solid var(--orange);border-radius:4px;padding:20px;cursor:pointer;transition:all 0.25s;backdrop-filter:blur(10px);position:relative;overflow:hidden;}
   .league-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(232,98,26,0.06),transparent);opacity:0;transition:opacity 0.25s;}
   .league-card:hover{border-color:var(--orange2);transform:translateX(4px);}
   .league-card:hover::before{opacity:1;}
   .league-card.has-progress{border-left-color:var(--teal);}
   .league-card.has-progress::before{background:linear-gradient(135deg,rgba(0,168,156,0.06),transparent);}
   .league-card.has-progress:hover{border-color:var(--teal2);}
-
   .league-card-name{font-family:'Anton',sans-serif;font-size:30px;letter-spacing:3px;color:var(--chrome2);line-height:1;}
   .league-card-sub{font-size:13px;color:var(--muted);letter-spacing:2px;margin-top:4px;font-family:'Barlow',sans-serif;font-weight:300;}
   .league-card-status{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border-radius:2px;}
@@ -80,51 +62,48 @@
   .status-done{background:rgba(100,100,100,0.15);color:#888;border:1px solid rgba(100,100,100,0.3);}
   .status-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 2s infinite;}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-
   .league-card-arrow{position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:22px;color:var(--orange2);opacity:0.5;transition:opacity 0.2s,transform 0.2s;}
   .league-card:hover .league-card-arrow{opacity:1;transform:translateY(-50%) translateX(4px);}
 
-  /* Active league bar */
-  .active-league-bar{
-    display:none;
-    align-items:center;
-    justify-content:space-between;
-    background:rgba(10,21,32,0.8);
-    border:1px solid var(--border-teal);
-    border-radius:3px;
-    padding:10px 14px;
-    margin-bottom:18px;
-    backdrop-filter:blur(8px);
-  }
+  /* ACTIVE LEAGUE BAR */
+  .active-league-bar{display:none;align-items:center;justify-content:space-between;background:rgba(10,21,32,0.8);border:1px solid var(--border-teal);border-radius:3px;padding:10px 14px;margin-bottom:18px;backdrop-filter:blur(8px);}
   .alb-left{display:flex;align-items:center;gap:10px;}
   .alb-league-name{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:2px;color:var(--teal2);}
   .alb-label{font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
   .btn-switch-league{font-family:'Teko',sans-serif;font-size:13px;letter-spacing:2px;color:var(--orange2);background:transparent;border:1px solid var(--border-orange);border-radius:2px;padding:5px 12px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;}
   .btn-switch-league:hover{background:rgba(232,98,26,0.1);border-color:var(--orange);}
 
-  /* SETUP */
-  #setup-panel{background:rgba(10,21,32,0.85);border:1px solid var(--border-orange);border-top:3px solid var(--red);border-radius:3px;padding:26px;backdrop-filter:blur(10px);display:none;}
-  #setup-panel h2{font-family:'Anton',sans-serif;font-size:26px;letter-spacing:3px;color:var(--sunset);margin-bottom:6px;}
-  #setup-panel p{font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.5;font-family:'Barlow',sans-serif;font-weight:300;}
-  #setup-panel p strong{color:var(--teal2);}
-  .teams-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:22px;}
-  .team-input-row{display:flex;align-items:center;gap:8px;}
-  .seed-badge{width:30px;height:30px;background:linear-gradient(135deg,var(--red),#8a1010);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
-  .seed-badge.lottery{background:linear-gradient(135deg,var(--teal),var(--teal-dark));}
-  .team-input{flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:3px;padding:7px 10px;color:var(--text);font-family:'Teko',sans-serif;font-size:16px;outline:none;transition:border-color 0.2s,background 0.2s;}
-  .team-input:focus{border-color:var(--teal2);background:rgba(0,168,156,0.06);}
-  .team-input::placeholder{color:rgba(255,255,255,0.2);font-weight:300;}
-  .btn-start{width:100%;padding:16px;background:linear-gradient(135deg,var(--red),var(--orange),var(--orange2));border:none;border-radius:3px;color:#fff;font-family:'Anton',sans-serif;font-size:22px;letter-spacing:5px;cursor:pointer;transition:filter 0.2s,transform 0.1s;position:relative;overflow:hidden;}
-  .btn-start::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,0.15) 50%,transparent 60%);transform:translateX(-100%);transition:transform 0.5s;}
-  .btn-start:hover::after{transform:translateX(100%);} .btn-start:hover{filter:brightness(1.1);} .btn-start:active{transform:scale(0.99);}
+  /* LOADING */
+  #loading-panel{display:none;text-align:center;padding:40px 20px;}
+  .loading-spinner{width:40px;height:40px;border:3px solid var(--border-teal);border-top-color:var(--teal2);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{font-size:13px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
 
-  /* LOTTERY */
+  /* TEAM ROSTER PREVIEW */
+  #roster-panel{display:none;background:rgba(10,21,32,0.85);border:1px solid var(--border-orange);border-top:3px solid var(--red);border-radius:3px;padding:20px;backdrop-filter:blur(10px);margin-bottom:0;}
+  #roster-panel h2{font-family:'Anton',sans-serif;font-size:22px;letter-spacing:3px;color:var(--sunset);margin-bottom:4px;}
+  #roster-panel p{font-size:13px;color:var(--muted);margin-bottom:16px;font-family:'Barlow',sans-serif;font-weight:300;line-height:1.5;}
+  .roster-list{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;}
+  .roster-row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:3px;padding:8px 12px;}
+  .roster-seed{width:24px;height:24px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;font-family:'Barlow',sans-serif;}
+  .roster-seed.lottery{background:linear-gradient(135deg,var(--teal),var(--teal-dark));}
+  .roster-seed.auto{background:linear-gradient(135deg,var(--red),#8a1010);}
+  .roster-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;background:rgba(255,255,255,0.1);flex-shrink:0;border:1px solid rgba(255,255,255,0.1);}
+  .roster-avatar-placeholder{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);flex-shrink:0;font-family:'Barlow',sans-serif;border:1px solid rgba(255,255,255,0.1);}
+  .roster-info{flex:1;min-width:0;}
+  .roster-name{font-family:'Anton',sans-serif;font-size:16px;letter-spacing:1px;color:var(--chrome);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .roster-username{font-size:11px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:0.5px;}
+  .roster-traded{font-size:10px;color:var(--orange2);font-family:'Barlow',sans-serif;letter-spacing:0.5px;margin-top:1px;}
+  .division-label{font-family:'Anton',sans-serif;font-size:12px;letter-spacing:4px;color:var(--teal);padding:10px 0 4px;text-transform:uppercase;}
+
+  /* LOTTERY PANEL */
   #lottery-panel{display:none;}
   .pick-header{text-align:center;padding:16px 0 20px;}
   .pick-label-top{font-size:11px;letter-spacing:6px;color:var(--teal2);text-transform:uppercase;margin-bottom:2px;}
   .pick-number-big{font-family:'Anton',sans-serif;font-size:clamp(72px,20vw,130px);line-height:0.85;background:linear-gradient(160deg,var(--chrome2),var(--chrome),#8a9aaa,var(--chrome));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 4px 16px rgba(0,0,0,0.6));}
   .pick-suffix{font-family:'Anton',sans-serif;font-size:clamp(22px,5vw,36px);color:var(--orange2);letter-spacing:3px;}
-  .reveal-zone{background:rgba(8,18,28,0.9);border:2px solid var(--border-teal);border-top:3px solid var(--teal);border-radius:3px;padding:40px 20px;text-align:center;min-height:210px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;margin-bottom:18px;backdrop-filter:blur(10px);}
+
+  .reveal-zone{background:rgba(8,18,28,0.9);border:2px solid var(--border-teal);border-top:3px solid var(--teal);border-radius:3px;padding:30px 20px;text-align:center;min-height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;margin-bottom:18px;backdrop-filter:blur(10px);}
   .reveal-zone::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--teal-dark),var(--teal2),var(--teal-dark));}
   .waiting-state{display:flex;flex-direction:column;align-items:center;gap:10px;}
   .trophy-icon{font-size:48px;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 0 12px rgba(0,168,156,0.4));}
@@ -132,32 +111,50 @@
   .waiting-text{font-size:13px;letter-spacing:4px;color:var(--muted);text-transform:uppercase;}
   .spinning-name{font-family:'Anton',sans-serif;font-size:36px;letter-spacing:3px;color:var(--teal2);animation:spinPulse 0.12s infinite;}
   @keyframes spinPulse{0%,100%{opacity:0.4}50%{opacity:1}}
+
   .revealed-state{display:none;flex-direction:column;align-items:center;gap:6px;animation:revealIn 0.7s cubic-bezier(0.16,1,0.3,1) forwards;}
   @keyframes revealIn{from{opacity:0;transform:scale(0.85) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .reveal-avatar-wrap{position:relative;margin-bottom:4px;}
+  .reveal-avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid var(--teal);filter:drop-shadow(0 0 16px rgba(0,168,156,0.5));}
+  .reveal-avatar-placeholder{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:3px solid var(--teal);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--muted);font-family:'Anton',sans-serif;}
   .reveal-seed-label{font-size:12px;letter-spacing:4px;color:var(--teal2);text-transform:uppercase;}
-  .reveal-team-name{font-family:'Anton',sans-serif;font-size:clamp(38px,10vw,68px);letter-spacing:2px;line-height:1;background:linear-gradient(135deg,var(--chrome2),var(--chrome),#a0aab4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .reveal-team-name{font-family:'Anton',sans-serif;font-size:clamp(28px,8vw,56px);letter-spacing:2px;line-height:1;background:linear-gradient(135deg,var(--chrome2),var(--chrome),#a0aab4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;}
+  .reveal-traded{font-size:12px;color:var(--orange2);letter-spacing:1px;font-family:'Barlow',sans-serif;margin-top:2px;}
+  .reveal-traded strong{color:#fff;}
   .reveal-odds{font-size:15px;color:var(--orange2);letter-spacing:2px;margin-top:4px;}
+
   .confetti-burst{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
   .cp{position:absolute;width:7px;height:7px;border-radius:1px;animation:cfFall 1.3s ease-out forwards;}
   @keyframes cfFall{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(var(--tx),140px) rotate(420deg);opacity:0}}
+
   .btn-pick{width:100%;padding:18px;background:transparent;border:2px solid var(--orange);border-radius:3px;color:var(--orange2);font-family:'Anton',sans-serif;font-size:22px;letter-spacing:5px;cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden;margin-bottom:22px;}
   .btn-pick::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--red),var(--orange));transform:translateX(-101%);transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);z-index:0;}
-  .btn-pick:hover::before{transform:translateX(0);} .btn-pick:hover{color:#fff;}
+  .btn-pick:hover::before{transform:translateX(0);}
+  .btn-pick:hover{color:#fff;}
   .btn-pick span{position:relative;z-index:1;}
-  .btn-pick:disabled{border-color:#333;color:#444;cursor:not-allowed;} .btn-pick:disabled::before{display:none;}
+  .btn-pick:disabled{border-color:#333;color:#444;cursor:not-allowed;}
+  .btn-pick:disabled::before{display:none;}
+
+  /* RESULTS */
   .results-section h3{font-family:'Anton',sans-serif;font-size:16px;letter-spacing:5px;color:var(--teal);margin-bottom:12px;border-bottom:1px solid var(--border-teal);padding-bottom:8px;}
   .results-list{display:flex;flex-direction:column;gap:6px;}
-  .result-row{display:flex;align-items:center;gap:12px;background:rgba(8,18,28,0.8);border:1px solid var(--border-teal);border-left:3px solid var(--teal);border-radius:3px;padding:10px 14px;backdrop-filter:blur(6px);}
+  .result-row{display:flex;align-items:center;gap:10px;background:rgba(8,18,28,0.8);border:1px solid var(--border-teal);border-left:3px solid var(--teal);border-radius:3px;padding:10px 12px;backdrop-filter:blur(6px);}
   .result-row.animate{animation:slideIn 0.4s ease forwards;}
   @keyframes slideIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
-  .result-pick-num{font-family:'Anton',sans-serif;font-size:26px;background:linear-gradient(135deg,var(--orange2),var(--sunset));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;width:30px;flex-shrink:0;}
-  .result-divider{width:1px;height:30px;background:var(--border-teal);flex-shrink:0;}
-  .result-team{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:1px;flex:1;color:var(--chrome);}
-  .result-meta{font-family:'Barlow',sans-serif;font-size:11px;color:var(--muted);text-align:right;line-height:1.5;}
+  .result-pick-num{font-family:'Anton',sans-serif;font-size:26px;background:linear-gradient(135deg,var(--orange2),var(--sunset));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;width:28px;flex-shrink:0;text-align:center;}
+  .result-divider{width:1px;height:36px;background:var(--border-teal);flex-shrink:0;}
+  .result-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,0.1);flex-shrink:0;}
+  .result-avatar-placeholder{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);flex-shrink:0;font-family:'Barlow',sans-serif;}
+  .result-info{flex:1;min-width:0;}
+  .result-team{font-family:'Anton',sans-serif;font-size:17px;letter-spacing:1px;color:var(--chrome);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .result-traded-line{font-size:10px;color:var(--orange2);font-family:'Barlow',sans-serif;letter-spacing:0.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .result-meta{font-family:'Barlow',sans-serif;font-size:11px;color:var(--muted);text-align:right;line-height:1.5;flex-shrink:0;}
   .result-meta .odds-highlight{color:var(--teal2);}
+
   .complete-banner{text-align:center;padding:28px;background:rgba(8,18,28,0.9);border:2px solid var(--orange);border-top:4px solid var(--red);border-radius:3px;margin-bottom:20px;backdrop-filter:blur(10px);}
   .complete-banner h2{font-family:'Anton',sans-serif;font-size:42px;letter-spacing:4px;background:linear-gradient(135deg,var(--orange2),var(--sunset));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
   .complete-banner p{font-size:13px;color:var(--muted);letter-spacing:1px;margin-top:6px;font-family:'Barlow',sans-serif;}
+
   .odds-toggle{display:block;font-size:12px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;cursor:pointer;text-align:center;margin-top:20px;padding:10px;border:1px solid rgba(255,255,255,0.08);border-radius:3px;transition:color 0.2s,border-color 0.2s;font-family:'Teko',sans-serif;}
   .odds-toggle:hover{color:var(--teal2);border-color:var(--border-teal);}
   .odds-table-wrap{display:none;margin-top:10px;overflow-x:auto;background:rgba(8,18,28,0.85);border:1px solid var(--border-teal);border-radius:3px;padding:14px;}
@@ -166,6 +163,13 @@
   .odds-table-wrap td{padding:5px 8px;text-align:center;color:var(--text);border-bottom:1px solid rgba(255,255,255,0.03);}
   .odds-table-wrap tr:hover td{background:rgba(0,168,156,0.05);}
   .odds-table-wrap td:first-child{color:var(--orange2);font-weight:700;}
+
+  .btn-start{width:100%;padding:16px;background:linear-gradient(135deg,var(--red),var(--orange),var(--orange2));border:none;border-radius:3px;color:#fff;font-family:'Anton',sans-serif;font-size:22px;letter-spacing:5px;cursor:pointer;transition:filter 0.2s,transform 0.1s;position:relative;overflow:hidden;}
+  .btn-start::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,0.15) 50%,transparent 60%);transform:translateX(-100%);transition:transform 0.5s;}
+  .btn-start:hover::after{transform:translateX(100%);}
+  .btn-start:hover{filter:brightness(1.1);}
+  .btn-start:active{transform:scale(0.99);}
+
   .btn-reset{padding:10px 28px;background:transparent;border:1px solid rgba(255,255,255,0.12);border-radius:3px;color:var(--muted);font-family:'Teko',sans-serif;font-size:14px;letter-spacing:3px;cursor:pointer;margin-top:14px;transition:border-color 0.2s,color 0.2s;text-transform:uppercase;}
   .btn-reset:hover{border-color:var(--teal);color:var(--teal2);}
   .btn-clear-league{padding:8px 20px;background:transparent;border:1px solid rgba(192,24,26,0.4);border-radius:3px;color:#e06060;font-family:'Teko',sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;margin-top:10px;transition:border-color 0.2s,color 0.2s;text-transform:uppercase;}
@@ -173,7 +177,6 @@
 </style>
 </head>
 <body>
-
 <div class="bg-layer">
   <div class="bg-sunset"></div>
   <svg class="wave-layer wave1" viewBox="0 0 1440 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
@@ -190,7 +193,6 @@
   <div class="glow-orb orb-teal"></div>
   <div class="glow-orb orb-teal2"></div>
 </div>
-
 <div class="frame-line-top"></div>
 <div class="frame-line-bottom"></div>
 
@@ -212,14 +214,14 @@
     <div class="league-cards">
       <div class="league-card" id="card-CFL" onclick="selectLeague('CFL')">
         <div class="league-card-name">CFL</div>
-        <div class="league-card-sub">Crosstown Fantasy League</div>
-        <div class="league-card-status status-new" id="status-CFL"><span class="status-dot"></span> <span id="status-text-CFL">New Draft</span></div>
+        <div class="league-card-sub">Crosstown Fantasy League · 12 Teams</div>
+        <div class="league-card-status status-new" id="status-CFL"><span class="status-dot"></span><span id="status-text-CFL">New Draft</span></div>
         <div class="league-card-arrow">›</div>
       </div>
       <div class="league-card" id="card-MinuteMaid" onclick="selectLeague('MinuteMaid')">
         <div class="league-card-name">MinuteMaid</div>
-        <div class="league-card-sub">MinuteMaid Fantasy League</div>
-        <div class="league-card-status status-new" id="status-MinuteMaid"><span class="status-dot"></span> <span id="status-text-MinuteMaid">New Draft</span></div>
+        <div class="league-card-sub">MinuteMaid Fantasy League · 10 Teams</div>
+        <div class="league-card-status status-new" id="status-MinuteMaid"><span class="status-dot"></span><span id="status-text-MinuteMaid">New Draft</span></div>
         <div class="league-card-arrow">›</div>
       </div>
     </div>
@@ -236,11 +238,17 @@
     <button class="btn-switch-league" onclick="switchLeague()">⇄ Switch</button>
   </div>
 
-  <!-- SETUP -->
-  <div id="setup-panel">
-    <h2>Enter Your Teams</h2>
-    <p>Enter teams from <strong>worst (seed 1)</strong> to best. Seeds 1–8 enter the lottery. Seeds 9–12 receive picks in order.</p>
-    <div class="teams-grid" id="teams-grid"></div>
+  <!-- LOADING -->
+  <div id="loading-panel">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading teams from Sleeper...</div>
+  </div>
+
+  <!-- ROSTER PREVIEW -->
+  <div id="roster-panel">
+    <h2 id="roster-title">LOTTERY TEAMS</h2>
+    <p>Review the seedings below then start the lottery. Traded picks are noted.</p>
+    <div class="roster-list" id="roster-list"></div>
     <button class="btn-start" onclick="startLottery()">RUN THE LOTTERY</button>
   </div>
 
@@ -259,8 +267,13 @@
         <div class="waiting-text">Press to draw</div>
       </div>
       <div class="revealed-state" id="revealed-state">
+        <div class="reveal-avatar-wrap">
+          <img class="reveal-avatar" id="reveal-avatar-img" src="" alt="" onerror="this.style.display='none';document.getElementById('reveal-avatar-ph').style.display='flex';">
+          <div class="reveal-avatar-placeholder" id="reveal-avatar-ph" style="display:none;">?</div>
+        </div>
         <div class="reveal-seed-label" id="result-seed-label"></div>
         <div class="reveal-team-name" id="result-team-name"></div>
+        <div class="reveal-traded" id="result-traded" style="display:none;"></div>
         <div class="reveal-odds" id="result-odds"></div>
       </div>
       <div class="confetti-burst" id="confetti-burst"></div>
@@ -275,7 +288,7 @@
     <button class="odds-toggle" onclick="toggleOdds()">▼ Show Odds Table</button>
     <div class="odds-table-wrap" id="odds-table-wrap"></div>
     <div style="text-align:center;margin-top:20px;">
-      <button class="btn-reset" onclick="goToSetup()">✎ Edit Teams</button>
+      <button class="btn-reset" onclick="goToRoster()">← Back to Teams</button>
       <br>
       <div id="reset-confirm-zone" style="margin-top:12px;">
         <button class="btn-clear-league" onclick="showResetConfirm()">✕ Reset This League</button>
@@ -292,6 +305,50 @@
 </div>
 
 <script>
+// ── LEAGUE CONFIG ─────────────────────────────────────────────────────────────
+const LEAGUE_CONFIG = {
+  CFL: {
+    sleeperLeagueId: '1325949536840974336',
+    // seed order 1=worst to 12=best, username matches Sleeper
+    seeds: [
+      { seed:1,  username:'FrankE324',        tradedTo: null },
+      { seed:2,  username:'BizyBonez',         tradedTo: null },
+      { seed:3,  username:'RipCamilton03',     tradedTo: 'ifeellikemontez' }, // Full Speed CHASE
+      { seed:4,  username:'cinccity',          tradedTo: null },
+      { seed:5,  username:'bleedgreenz',       tradedTo: 'BizyBonez' },
+      { seed:6,  username:'BarbieBry',         tradedTo: null },
+      { seed:7,  username:'ifeellikemontez',   tradedTo: null },
+      { seed:8,  username:'SPCTIGERS',         tradedTo: null },
+      { seed:9,  username:'TheAmberErica',     tradedTo: null },
+      { seed:10, username:'jwilly301',         tradedTo: null },
+      { seed:11, username:'dweeebzz',          tradedTo: null },
+      { seed:12, username:'Kushwopp',          tradedTo: null },
+    ],
+    divisions: [
+      { name:'CFL NORTH (CECIL)',       usernames:['SPCTIGERS','dweeebzz','Kushwopp'] },
+      { name:'CFL EAST (HOWARD)',       usernames:['bleedgreenz','BarbieBry','jwilly301'] },
+      { name:'CFL WEST (BALTIMORE)',    usernames:['cinccity','ifeellikemontez','TheAmberErica'] },
+      { name:'CFL SOUTH (PRINCE GEORGE\'S)', usernames:['FrankE324','BizyBonez','RipCamilton03'] },
+    ]
+  },
+  MinuteMaid: {
+    sleeperLeagueId: '1325971620531015680',
+    seeds: [
+      { seed:1,  username:'tredagoat082410',  tradedTo: null },
+      { seed:2,  username:'xtepps',           tradedTo: null },
+      { seed:3,  username:'dweeebzz',         tradedTo: null },
+      { seed:4,  username:'meedzs',           tradedTo: null },
+      { seed:5,  username:'bleedgreenz',      tradedTo: null },
+      { seed:6,  username:'ifeellikemontez',  tradedTo: null },
+      { seed:7,  username:'BarbieBry',        tradedTo: null },
+      { seed:8,  username:'TheAmberErica',    tradedTo: null },
+      { seed:9,  username:'cinccity',         tradedTo: null },
+      { seed:10, username:'jwilly301',        tradedTo: null },
+    ],
+    divisions: null
+  }
+};
+
 const ODDS_TABLE = {
   1:{1:14.0,2:13.4,3:12.7,4:12.0,5:47.9,6:0,7:0,8:0},
   2:{1:14.0,2:13.4,3:12.7,4:12.0,5:27.8,6:20.0,7:0,8:0},
@@ -305,19 +362,53 @@ const ODDS_TABLE = {
 
 const LEAGUES = ['CFL','MinuteMaid'];
 let activeLeague = null;
+// sleeperData[league][username] = { displayName, avatarUrl }
+let sleeperData = {};
+let allResults = [];
+let revealIndex = 7;
+let results = [];
+let animating = false;
+let revealed = false;
+let lotteryStarted = false;
 
-// Per-league state (loaded from localStorage)
-let teams={}, remainingSeeds=[], currentPickSlot=8, results=[], animating=false, revealed=false, lotteryStarted=false;
+// ── SLEEPER API ───────────────────────────────────────────────────────────────
+async function fetchSleeperData(league) {
+  if (sleeperData[league]) return; // already loaded
+  const leagueId = LEAGUE_CONFIG[league].sleeperLeagueId;
+  sleeperData[league] = {};
+  try {
+    const res = await fetch(`https://api.sleeper.app/v1/league/${leagueId}/users`);
+    const users = await res.json();
+    users.forEach(u => {
+      const avatar = u.avatar
+        ? `https://sleepercdn.com/avatars/thumbs/${u.avatar}`
+        : null;
+      const teamName = (u.metadata && u.metadata.team_name) ? u.metadata.team_name : u.display_name;
+      sleeperData[league][u.username.toLowerCase()] = {
+        displayName: teamName || u.display_name,
+        username: u.display_name,
+        avatarUrl: avatar
+      };
+    });
+  } catch(e) {
+    console.warn('Sleeper fetch failed', e);
+  }
+}
 
-// ── STORAGE ──────────────────────────────────────────────────────────────────
-function storageKey(league){ return `cinccity_lottery_${league}`; }
+function getTeamData(league, username) {
+  const key = username.toLowerCase();
+  const d = sleeperData[league] && sleeperData[league][key];
+  if (d) return d;
+  return { displayName: username, username: username, avatarUrl: null };
+}
+
+// ── STORAGE ───────────────────────────────────────────────────────────────────
+function storageKey(league){ return `cinccity_lottery_v2_${league}`; }
 
 function saveState() {
   if (!activeLeague) return;
-  // revealIndex is always the CURRENT index being revealed or next to reveal
-  // If revealed=true, next to reveal is revealIndex-1; save that
   const nextRevealIndex = revealed ? revealIndex - 1 : revealIndex;
-  const state = { teams, allResults, revealIndex: nextRevealIndex, results, lotteryStarted };
+  const state = { allResults, revealIndex: nextRevealIndex, results, lotteryStarted };
   localStorage.setItem(storageKey(activeLeague), JSON.stringify(state));
   refreshLeagueCards();
 }
@@ -335,7 +426,6 @@ function getLeagueStatus(league) {
   return 'progress';
 }
 
-// ── LEAGUE SELECT ─────────────────────────────────────────────────────────────
 function refreshLeagueCards() {
   LEAGUES.forEach(league => {
     const status = getLeagueStatus(league);
@@ -343,214 +433,282 @@ function refreshLeagueCards() {
     const statusEl = document.getElementById(`status-${league}`);
     const statusText = document.getElementById(`status-text-${league}`);
     const s = loadState(league);
-
     card.className = 'league-card' + (status !== 'new' ? ' has-progress' : '');
     statusEl.className = `league-card-status status-${status === 'new' ? 'new' : status === 'done' ? 'done' : 'progress'}`;
-
-    if (status === 'new') {
-      statusText.textContent = 'New Draft';
-    } else if (status === 'done') {
-      statusText.textContent = 'Lottery Complete';
-    } else {
-      const drawn = 7 - s.revealIndex; // how many reveals completed
-      statusText.textContent = `In Progress · ${drawn}/8 revealed`;
-    }
+    if (status === 'new') statusText.textContent = 'New Draft';
+    else if (status === 'done') statusText.textContent = 'Lottery Complete';
+    else { const drawn = 7 - (s.revealIndex || 0); statusText.textContent = `In Progress · ${drawn}/8 revealed`; }
   });
 }
 
-function selectLeague(league) {
+// ── LEAGUE SELECT ─────────────────────────────────────────────────────────────
+async function selectLeague(league) {
   activeLeague = league;
   document.getElementById('league-select').style.display = 'none';
   document.getElementById('active-league-bar').style.display = 'flex';
   document.getElementById('alb-name').textContent = league;
 
+  // Load Sleeper data
+  document.getElementById('loading-panel').style.display = 'block';
+  await fetchSleeperData(league);
+  document.getElementById('loading-panel').style.display = 'none';
+
   const saved = loadState(league);
   if (saved && saved.lotteryStarted) {
-    // Resume
-    teams = saved.teams;
     allResults = saved.allResults || [];
     revealIndex = saved.revealIndex !== undefined ? saved.revealIndex : 7;
     results = saved.results || [];
     lotteryStarted = true;
     revealed = false;
     animating = false;
-
     const isDone = revealIndex < 0;
     buildOddsTable();
-    document.getElementById('setup-panel').style.display = 'none';
+    document.getElementById('roster-panel').style.display = 'none';
     document.getElementById('lottery-panel').style.display = 'block';
     document.getElementById('pick-btn').style.display = 'block';
     document.getElementById('results-list').innerHTML = '';
     const b = document.querySelector('.complete-banner'); if(b) b.remove();
     renderResultsLog();
-
-    if (isDone) {
-      showCompleteBanner();
-      document.getElementById('pick-btn').style.display = 'none';
-    } else {
-      updatePickUI();
-      resetRevealZone();
-    }
+    if (isDone) { showCompleteBanner(); document.getElementById('pick-btn').style.display = 'none'; }
+    else { updatePickUI(); resetRevealZone(); }
   } else {
-    // Fresh setup
-    teams={}; remainingSeeds=[1,2,3,4,5,6,7,8]; currentPickSlot=8; results=[]; lotteryStarted=false; revealed=false; animating=false;
-    buildSetupForm();
-    document.getElementById('setup-panel').style.display = 'block';
+    lotteryStarted = false; allResults = []; results = []; revealIndex = 7; revealed = false; animating = false;
+    buildRosterPreview(league);
+    document.getElementById('roster-panel').style.display = 'block';
     document.getElementById('lottery-panel').style.display = 'none';
   }
 }
 
 function switchLeague() {
-  saveState();
   activeLeague = null;
-  // Hide panels
   document.getElementById('active-league-bar').style.display = 'none';
-  document.getElementById('setup-panel').style.display = 'none';
+  document.getElementById('roster-panel').style.display = 'none';
   document.getElementById('lottery-panel').style.display = 'none';
-  // Clear complete banner if any
+  document.getElementById('loading-panel').style.display = 'none';
   const b = document.querySelector('.complete-banner'); if(b) b.remove();
-  // Show league select
   refreshLeagueCards();
   document.getElementById('league-select').style.display = 'block';
 }
 
-// ── SETUP ─────────────────────────────────────────────────────────────────────
-function buildSetupForm() {
-  const grid = document.getElementById('teams-grid');
-  grid.innerHTML = '';
-  const saved = loadState(activeLeague);
-  for (let s=1; s<=12; s++) {
-    const row = document.createElement('div'); row.className='team-input-row';
-    const badge = document.createElement('div'); badge.className = s<=8 ? 'seed-badge lottery' : 'seed-badge'; badge.textContent=s;
-    const input = document.createElement('input'); input.className='team-input'; input.id=`team-${s}`;
-    input.placeholder = s<=8 ? `Seed ${s} · Lottery Team` : `Seed ${s} · Auto Pick`;
-    input.type='text';
-    // Pre-fill if previously saved
-    if (saved && saved.teams && saved.teams[s]) input.value = saved.teams[s];
-    row.appendChild(badge); row.appendChild(input); grid.appendChild(row);
-  }
+// ── ROSTER PREVIEW ────────────────────────────────────────────────────────────
+function buildRosterPreview(league) {
+  const config = LEAGUE_CONFIG[league];
+  const list = document.getElementById('roster-list');
+  list.innerHTML = '';
+  document.getElementById('roster-title').textContent = `${league.toUpperCase()} · LOTTERY TEAMS`;
+
+  config.seeds.forEach(s => {
+    const td = getTeamData(league, s.username);
+    // Find traded-to display name if applicable
+    let tradedToDisplay = null;
+    if (s.tradedTo) {
+      const tdTo = getTeamData(league, s.tradedTo);
+      tradedToDisplay = tdTo.displayName || s.tradedTo;
+    }
+
+    const row = document.createElement('div');
+    row.className = 'roster-row';
+
+    const badge = document.createElement('div');
+    badge.className = `roster-seed ${s.seed <= 8 ? 'lottery' : 'auto'}`;
+    badge.textContent = s.seed;
+
+    let avatarEl;
+    if (td.avatarUrl) {
+      avatarEl = document.createElement('img');
+      avatarEl.className = 'roster-avatar';
+      avatarEl.src = td.avatarUrl;
+      avatarEl.alt = td.displayName;
+      avatarEl.onerror = function(){ this.style.display='none'; };
+    } else {
+      avatarEl = document.createElement('div');
+      avatarEl.className = 'roster-avatar-placeholder';
+      avatarEl.textContent = (td.displayName||'?')[0].toUpperCase();
+    }
+
+    const info = document.createElement('div');
+    info.className = 'roster-info';
+    info.innerHTML = `<div class="roster-name">${td.displayName}</div>
+      <div class="roster-username">@${s.username}</div>
+      ${tradedToDisplay ? `<div class="roster-traded">⇄ Pick traded to ${tradedToDisplay}</div>` : ''}`;
+
+    row.appendChild(badge);
+    row.appendChild(avatarEl);
+    row.appendChild(info);
+    list.appendChild(row);
+  });
 }
 
-function startLottery() {
-  for (let s=1; s<=12; s++) {
-    const v = document.getElementById(`team-${s}`).value.trim();
-    teams[s] = v || `Team ${s}`;
-  }
-  results=[]; revealed=false; lotteryStarted=true;
-  runFullLottery(); // run full draw upfront, reveal in reverse for drama
-  document.getElementById('setup-panel').style.display='none';
-  document.getElementById('lottery-panel').style.display='block';
-  document.getElementById('pick-btn').style.display='block';
-  document.getElementById('results-list').innerHTML='';
-  const b=document.querySelector('.complete-banner'); if(b) b.remove();
-  buildOddsTable(); updatePickUI(); resetRevealZone();
-  saveState();
+function goToRoster() {
+  document.getElementById('lottery-panel').style.display = 'none';
+  buildRosterPreview(activeLeague);
+  document.getElementById('roster-panel').style.display = 'block';
 }
 
-function goToSetup() {
-  saveState();
-  document.getElementById('lottery-panel').style.display='none';
-  buildSetupForm();
-  document.getElementById('setup-panel').style.display='block';
-}
-
-// ── LOTTERY LOGIC ─────────────────────────────────────────────────────────────
-// allResults[i] = result for pick i+1 (index 0 = pick 1, index 7 = pick 8)
-// revealIndex counts down from 7 to 0 (revealing pick 8 first, pick 1 last)
-let allResults = [];
-let revealIndex = 7; // start revealing from pick 8 (index 7)
-
+// ── LOTTERY ───────────────────────────────────────────────────────────────────
 function runFullLottery() {
-  // Run the entire lottery upfront picks 1→8 using correct sequential odds
   let pool = [1,2,3,4,5,6,7,8];
   allResults = [];
+  const config = LEAGUE_CONFIG[activeLeague];
   for (let slot = 1; slot <= 8; slot++) {
     const w = pool.map(s => ODDS_TABLE[s][slot] || 0);
     const total = w.reduce((a,b) => a+b, 0);
-    let r = Math.random() * total;
-    let winner = pool[pool.length-1];
-    for (let i=0; i<pool.length; i++) { r -= w[i]; if (r <= 0) { winner = pool[i]; break; } }
+    // Only seeds with non-zero odds are eligible for this slot
+    const eligiblePool = pool.filter(s => (ODDS_TABLE[s][slot] || 0) > 0);
+    let winner;
+    if (eligiblePool.length === 0) {
+      // Fallback: all remaining seeds equally (should not happen with correct table)
+      winner = pool[Math.floor(Math.random() * pool.length)];
+    } else if (total <= 0) {
+      winner = eligiblePool[Math.floor(Math.random() * eligiblePool.length)];
+    } else {
+      let r = Math.random() * total;
+      winner = eligiblePool[eligiblePool.length - 1]; // safe fallback within eligible only
+      for (let i=0; i<pool.length; i++) { r -= w[i]; if (r <= 0) { winner = pool[i]; break; } }
+      // Final safety: if winner somehow has 0 odds, pick randomly from eligible
+      if ((ODDS_TABLE[winner][slot] || 0) === 0) {
+        winner = eligiblePool[Math.floor(Math.random() * eligiblePool.length)];
+      }
+    }
     const odds = ODDS_TABLE[winner][slot] || 0;
-    allResults.push({ pick: slot, seed: winner, team: teams[winner], odds });
+    const seedConfig = config.seeds.find(s => s.seed === winner);
+    const username = seedConfig ? seedConfig.username : '';
+    const tradedTo = seedConfig ? seedConfig.tradedTo : null;
+    const td = getTeamData(activeLeague, username);
+    let tradedToDisplay = null;
+    if (tradedTo) {
+      const tdTo = getTeamData(activeLeague, tradedTo);
+      tradedToDisplay = tdTo.displayName || tradedTo;
+    }
+    allResults.push({ pick: slot, seed: winner, team: td.displayName, username, avatarUrl: td.avatarUrl, odds, tradedTo, tradedToDisplay });
     pool = pool.filter(s => s !== winner);
   }
-  revealIndex = 7; // start revealing from pick 8
+  revealIndex = 7;
+}
+
+function startLottery() {
+  results = []; revealed = false; lotteryStarted = true;
+  runFullLottery();
+  document.getElementById('roster-panel').style.display = 'none';
+  document.getElementById('lottery-panel').style.display = 'block';
+  document.getElementById('pick-btn').style.display = 'block';
+  document.getElementById('results-list').innerHTML = '';
+  const b = document.querySelector('.complete-banner'); if(b) b.remove();
+  buildOddsTable(); updatePickUI(); resetRevealZone();
+  saveState();
 }
 
 function handlePickClick() {
   if (animating) return;
   if (!revealed) { drawPick(); }
-  else {
-    revealIndex--;
-    revealed = false;
-    saveState();
-    resetRevealZone();
-    updatePickUI();
-  }
+  else { revealIndex--; revealed = false; saveState(); resetRevealZone(); updatePickUI(); }
 }
 
 function drawPick() {
-  animating=true; document.getElementById('pick-btn').disabled=true;
-  const ws=document.getElementById('waiting-state');
-  // Show all remaining un-revealed team names spinning
-  const revealedSeeds = allResults.slice(revealIndex+1).map(r => r.seed);
+  animating = true; document.getElementById('pick-btn').disabled = true;
+  const ws = document.getElementById('waiting-state');
   const spinNames = allResults.filter((r,i) => i <= revealIndex).map(r => r.team);
-  ws.innerHTML=`<div class="spinning-name" id="spin-text">●</div><div class="waiting-text">Drawing...</div>`;
-  let spins=0; const totalSpins=20+Math.floor(Math.random()*12);
-  const iv=setInterval(()=>{
-    const idx=Math.floor(Math.random()*spinNames.length);
-    document.getElementById('spin-text').textContent=spinNames[idx].toUpperCase();
+  ws.innerHTML = `<div class="spinning-name" id="spin-text">●</div><div class="waiting-text">Drawing...</div>`;
+  let spins = 0; const totalSpins = 20 + Math.floor(Math.random()*12);
+  const iv = setInterval(() => {
+    const idx = Math.floor(Math.random()*spinNames.length);
+    document.getElementById('spin-text').textContent = spinNames[idx].toUpperCase();
     spins++;
-    if(spins>=totalSpins){ clearInterval(iv); showReveal(); }
+    if (spins >= totalSpins) { clearInterval(iv); showReveal(); }
   }, 75);
 }
 
 function showReveal() {
   const result = allResults[revealIndex];
-  const slot = result.pick; const name = result.team; const odds = result.odds; const seed = result.seed;
-  document.getElementById('waiting-state').style.display='none';
-  const rev=document.getElementById('revealed-state'); rev.style.display='flex';
-  document.getElementById('result-seed-label').textContent=`SEED ${seed} · LOTTERY TEAM`;
-  document.getElementById('result-team-name').textContent=name.toUpperCase();
-  document.getElementById('result-odds').textContent=`${odds.toFixed(1)}% odds to land pick #${slot}`;
-  launchConfetti(); addResultRow({pick:slot,seed,team:name,odds},true);
-  results.unshift({pick:slot,seed,team:name,odds});
-  revealed=true; animating=false;
-  document.getElementById('pick-btn').disabled=false;
+  const { pick, seed, team, avatarUrl, odds, tradedTo, tradedToDisplay } = result;
+
+  document.getElementById('waiting-state').style.display = 'none';
+  const rev = document.getElementById('revealed-state');
+  rev.style.display = 'flex';
+
+  // Avatar
+  const img = document.getElementById('reveal-avatar-img');
+  const ph = document.getElementById('reveal-avatar-ph');
+  if (avatarUrl) {
+    img.src = avatarUrl; img.style.display = 'block'; ph.style.display = 'none';
+    ph.textContent = team[0].toUpperCase();
+  } else {
+    img.style.display = 'none'; ph.style.display = 'flex';
+    ph.textContent = team[0].toUpperCase();
+  }
+
+  document.getElementById('result-seed-label').textContent = `SEED ${seed} · LOTTERY TEAM`;
+  document.getElementById('result-team-name').textContent = team.toUpperCase();
+
+  const tradedEl = document.getElementById('result-traded');
+  if (tradedTo) {
+    tradedEl.style.display = 'block';
+    tradedEl.innerHTML = `Pick rights traded to · <strong>${(tradedToDisplay||tradedTo).toUpperCase()}</strong>`;
+  } else {
+    tradedEl.style.display = 'none';
+  }
+
+  document.getElementById('result-odds').textContent = `${odds.toFixed(1)}% odds to land pick #${pick}`;
+  launchConfetti();
+  results.unshift({ pick, seed, team, avatarUrl, odds, tradedTo, tradedToDisplay });
+  addResultRow({ pick, seed, team, avatarUrl, odds, tradedTo, tradedToDisplay }, true);
+  revealed = true; animating = false;
+  document.getElementById('pick-btn').disabled = false;
   saveState();
-  if(revealIndex===0){ setTimeout(()=>{ finalizeLottery(); saveState(); },300); }
-  else{ document.getElementById('pick-btn-label').textContent=`▶ NEXT PICK (#${revealIndex})`; }
+  if (revealIndex === 0) { setTimeout(() => { finalizeLottery(); saveState(); }, 300); }
+  else { document.getElementById('pick-btn-label').textContent = `▶ NEXT PICK (#${revealIndex})`; }
 }
 
 function finalizeLottery() {
-  document.getElementById('pick-btn').style.display='none';
+  document.getElementById('pick-btn').style.display = 'none';
   showCompleteBanner();
 }
 
 function showCompleteBanner() {
-  if(document.querySelector('.complete-banner')) return;
-  const b=document.createElement('div'); b.className='complete-banner';
-  b.innerHTML=`<h2>LOTTERY COMPLETE</h2><p>All draft positions assigned. Good luck this season.</p>`;
-  document.getElementById('lottery-panel').insertBefore(b,document.querySelector('.results-section'));
+  if (document.querySelector('.complete-banner')) return;
+  const b = document.createElement('div'); b.className = 'complete-banner';
+  b.innerHTML = `<h2>LOTTERY COMPLETE</h2><p>All draft positions assigned. Good luck this season.</p>`;
+  document.getElementById('lottery-panel').insertBefore(b, document.querySelector('.results-section'));
 }
 
 function renderResultsLog() {
-  const list=document.getElementById('results-list'); list.innerHTML='';
-  // results are stored newest-first (pick 8 first in array), display as-is
+  const list = document.getElementById('results-list'); list.innerHTML = '';
   results.forEach(r => addResultRow(r, false));
 }
 
-function addResultRow({pick,seed,team,odds}, animate) {
-  const list=document.getElementById('results-list'); const row=document.createElement('div');
-  row.className='result-row' + (animate?' animate':'');
-  row.innerHTML=`<div class="result-pick-num">${pick}</div><div class="result-divider"></div><div class="result-team">${team.toUpperCase()}</div><div class="result-meta">Seed ${seed}<br><span class="odds-highlight">${odds.toFixed(1)}% odds</span></div>`;
-  list.insertBefore(row,list.firstChild);
+function addResultRow({ pick, seed, team, avatarUrl, odds, tradedTo, tradedToDisplay }, animate) {
+  const list = document.getElementById('results-list');
+  const row = document.createElement('div');
+  row.className = 'result-row' + (animate ? ' animate' : '');
+
+  let avatarHtml;
+  if (avatarUrl) {
+    avatarHtml = `<img class="result-avatar" src="${avatarUrl}" alt="${team}" onerror="this.style.display='none'">`;
+  } else {
+    avatarHtml = `<div class="result-avatar-placeholder">${(team||'?')[0].toUpperCase()}</div>`;
+  }
+
+  const tradedLine = tradedTo
+    ? `<div class="result-traded-line">⇄ Traded to ${(tradedToDisplay||tradedTo)}</div>`
+    : '';
+
+  row.innerHTML = `
+    <div class="result-pick-num">${pick}</div>
+    <div class="result-divider"></div>
+    ${avatarHtml}
+    <div class="result-info">
+      <div class="result-team">${team.toUpperCase()}</div>
+      ${tradedLine}
+    </div>
+    <div class="result-meta">Seed ${seed}<br><span class="odds-highlight">${odds.toFixed(1)}%</span></div>
+  `;
+  list.insertBefore(row, list.firstChild);
 }
 
 function getSuffix(n){if(n===1)return'ST';if(n===2)return'ND';if(n===3)return'RD';return'TH';}
 
 function updatePickUI() {
-  const pickNum = revealIndex + 1; // pick 8 = revealIndex 7, pick 1 = revealIndex 0
+  const pickNum = revealIndex + 1;
   const s = getSuffix(pickNum);
   document.getElementById('current-pick-num').textContent = pickNum;
   document.getElementById('pick-suffix').textContent = s + ' PICK';
@@ -558,55 +716,51 @@ function updatePickUI() {
 }
 
 function resetRevealZone() {
-  const w=document.getElementById('waiting-state'); w.style.display='flex';
-  w.innerHTML=`<div class="trophy-icon">🏆</div><div class="waiting-text">Press to draw</div>`;
-  const r=document.getElementById('revealed-state'); r.style.display='none'; r.style.animation='none'; void r.offsetWidth; r.style.animation='';
-  document.getElementById('confetti-burst').innerHTML='';
+  const w = document.getElementById('waiting-state'); w.style.display = 'flex';
+  w.innerHTML = `<div class="trophy-icon">🏆</div><div class="waiting-text">Press to draw</div>`;
+  const r = document.getElementById('revealed-state'); r.style.display = 'none';
+  r.style.animation = 'none'; void r.offsetWidth; r.style.animation = '';
+  document.getElementById('confetti-burst').innerHTML = '';
 }
 
 function launchConfetti() {
-  const burst=document.getElementById('confetti-burst'); burst.innerHTML='';
-  const colors=['#E8621A','#F5A623','#00A89C','#00C8BC','#ffffff','#F08030'];
-  for(let i=0;i<35;i++){
-    const p=document.createElement('div'); p.className='cp';
-    p.style.left=`${15+Math.random()*70}%`; p.style.top=`${5+Math.random()*50}%`;
-    p.style.background=colors[Math.floor(Math.random()*colors.length)];
-    p.style.setProperty('--tx',`${(Math.random()-0.5)*140}px`);
-    p.style.animationDelay=`${Math.random()*0.25}s`; p.style.animationDuration=`${0.9+Math.random()*0.5}s`;
+  const burst = document.getElementById('confetti-burst'); burst.innerHTML = '';
+  const colors = ['#E8621A','#F5A623','#00A89C','#00C8BC','#ffffff','#F08030'];
+  for (let i=0; i<35; i++) {
+    const p = document.createElement('div'); p.className = 'cp';
+    p.style.left = `${15+Math.random()*70}%`; p.style.top = `${5+Math.random()*50}%`;
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.setProperty('--tx', `${(Math.random()-0.5)*140}px`);
+    p.style.animationDelay = `${Math.random()*0.25}s`;
+    p.style.animationDuration = `${0.9+Math.random()*0.5}s`;
     burst.appendChild(p);
   }
 }
 
 function toggleOdds() {
-  const w=document.getElementById('odds-table-wrap'); const t=document.querySelector('.odds-toggle');
-  if(w.style.display==='block'){w.style.display='none';t.textContent='▼ Show Odds Table';}
-  else{w.style.display='block';t.textContent='▲ Hide Odds Table';}
+  const w = document.getElementById('odds-table-wrap'); const t = document.querySelector('.odds-toggle');
+  if (w.style.display === 'block') { w.style.display = 'none'; t.textContent = '▼ Show Odds Table'; }
+  else { w.style.display = 'block'; t.textContent = '▲ Hide Odds Table'; }
 }
 
 function buildOddsTable() {
-  const wrap=document.getElementById('odds-table-wrap');
-  let html='<table><thead><tr><th>SEED</th>';
-  for(let p=1;p<=8;p++) html+=`<th>#${p}</th>`;
-  html+='</tr></thead><tbody>';
-  for(let s=1;s<=8;s++){
-    html+=`<tr><td>${s}</td>`;
-    for(let p=1;p<=8;p++){const v=ODDS_TABLE[s][p];html+=`<td>${v>0?v.toFixed(1):'—'}</td>`;}
-    html+='</tr>';
+  const wrap = document.getElementById('odds-table-wrap');
+  let html = '<table><thead><tr><th>SEED</th>';
+  for (let p=1; p<=8; p++) html += `<th>#${p}</th>`;
+  html += '</tr></thead><tbody>';
+  for (let s=1; s<=8; s++) {
+    html += `<tr><td>${s}</td>`;
+    for (let p=1; p<=8; p++) { const v = ODDS_TABLE[s][p]; html += `<td>${v>0?v.toFixed(1):'—'}</td>`; }
+    html += '</tr>';
   }
-  html+='</tbody></table>'; wrap.innerHTML=html;
+  html += '</tbody></table>'; wrap.innerHTML = html;
 }
 
-function showResetConfirm() {
-  document.getElementById('reset-confirm-box').style.display = 'block';
-}
-function cancelReset() {
-  document.getElementById('reset-confirm-box').style.display = 'none';
-}
+function showResetConfirm() { document.getElementById('reset-confirm-box').style.display = 'block'; }
+function cancelReset() { document.getElementById('reset-confirm-box').style.display = 'none'; }
 function confirmReset() {
   localStorage.removeItem(storageKey(activeLeague));
-  // Reset in-memory state so saveState() inside switchLeague doesn't re-save old data
-  lotteryStarted = false;
-  teams = {}; remainingSeeds = []; results = []; currentPickSlot = 8; revealed = false;
+  lotteryStarted = false; allResults = []; results = []; revealIndex = 7; revealed = false;
   switchLeague();
 }
 
