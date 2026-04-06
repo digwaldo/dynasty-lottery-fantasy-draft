@@ -309,12 +309,11 @@ function switchLeague(league) {
 
 function renderTeamGrid() {
   const content = document.getElementById('main-content');
-  const teams = TEAM_DATA[activeLeague];
-  const usernames = Object.keys(teams);
+  const usernames = Object.keys(TEAM_DATA[activeLeague]);
 
   let html = `<div class="section-label">${activeLeague} Teams — Click to view profile</div><div class="team-grid">`;
   usernames.forEach(username => {
-    const t = teams[username];
+    const t = getTeam(activeLeague, username); // use getTeam so avatar is proxied
     html += `
       <div class="team-card" onclick="openTeamProfile('${username}')">
         ${t.avatarUrl
@@ -335,9 +334,10 @@ async function openTeamProfile(username) {
   const league = activeLeague;
   const t = getTeam(league, username);
 
-  // Set header
+  // Set header — t already has proxied avatarUrl from getTeam()
   const img = document.getElementById('modal-avatar');
   const ph = document.getElementById('modal-avatar-ph');
+  img.crossOrigin = 'anonymous';
   if (t.avatarUrl) {
     img.src = t.avatarUrl; img.style.display='block'; ph.style.display='none';
   } else {
@@ -437,9 +437,9 @@ async function loadTradesTab(league, username) {
 
   function teamBadge(rId) {
     const uname = getRosterUsername(league, rId);
-    const td = getTeam(league, uname);
+    const td = getTeam(league, uname); // already proxied
     const avHtml = td.avatarUrl
-      ? `<img crossorigin="anonymous" src="${td.avatarUrl}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">`
+      ? `<img crossorigin="anonymous" src="${td.avatarUrl}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none';this.nextSibling&&(this.nextSibling.style.display='flex')">`
       : `<div style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);font-family:'Barlow',sans-serif;">${(td.displayName||'?')[0]}</div>`;
     return `<div class="trade-team-badge">${avHtml}<span>${td.displayName}</span></div>`;
   }
