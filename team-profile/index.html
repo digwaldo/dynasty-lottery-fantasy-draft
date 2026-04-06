@@ -11,7 +11,7 @@
     --red:#C0181A;--teal:#00A89C;--teal2:#00C8BC;--teal-dark:#005f5a;
     --navy:#0d1a2b;--navy2:#0a1520;--chrome:#d0d8e0;--chrome2:#f0f4f8;
     --text:#f0ede8;--muted:#7a9ab0;
-    --border-teal:rgba(0,168,156,0.35);--border-orange:rgba(232,98,26,0.5);
+    --border-teal:rgba(0,168,156,0.35);--border-orange:rgba(232,98,26,0.5);--gold:#F5A623;
     --card:rgba(10,21,32,0.9);
   }
   *{margin:0;padding:0;box-sizing:border-box;}
@@ -117,26 +117,25 @@
   .draft-pick-round{font-size:11px;color:var(--teal2);font-family:'Barlow',sans-serif;letter-spacing:1px;}
   .draft-year-label{font-family:'Anton',sans-serif;font-size:13px;letter-spacing:4px;color:var(--orange2);padding:10px 0 6px;border-bottom:1px solid var(--border-orange);margin-bottom:8px;}
 
-  /* DRAFT ANALYSIS */
-  .analysis-loading{display:flex;flex-direction:column;align-items:center;gap:14px;padding:40px 20px;text-align:center;}
-  .analysis-spinner{width:44px;height:44px;border:3px solid var(--border-teal);border-top-color:var(--teal2);border-radius:50%;animation:spin 0.8s linear infinite;}
-  .analysis-loading-text{font-size:13px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;font-family:'Barlow',sans-serif;}
-  .analysis-loading-sub{font-size:11px;color:var(--teal-dark);letter-spacing:1px;font-family:'Barlow',sans-serif;}
-  .analysis-wrap{padding:4px 0;}
-  .analysis-section{margin-bottom:18px;}
-  .analysis-section-title{font-family:'Anton',sans-serif;font-size:15px;letter-spacing:3px;color:var(--orange2);margin-bottom:8px;text-transform:uppercase;padding-bottom:6px;border-bottom:1px solid var(--border-orange);}
-  .analysis-text{font-family:'Barlow',sans-serif;font-size:14px;color:var(--text);line-height:1.7;font-weight:300;}
-  .analysis-text strong{color:var(--teal2);font-weight:500;}
-  .analysis-grade{display:inline-flex;align-items:center;gap:10px;background:rgba(0,168,156,0.08);border:1px solid var(--border-teal);border-radius:3px;padding:10px 16px;margin-bottom:16px;}
-  .analysis-grade-letter{font-family:'Anton',sans-serif;font-size:42px;background:linear-gradient(135deg,var(--teal2),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;}
-  .analysis-grade-label{font-size:12px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-family:'Barlow',sans-serif;}
-  .analysis-tag{display:inline-block;font-size:11px;font-family:'Barlow',sans-serif;padding:3px 8px;border-radius:2px;margin:2px 3px 2px 0;}
-  .analysis-tag.strength{background:rgba(0,168,156,0.12);color:var(--teal2);border:1px solid rgba(0,168,156,0.3);}
-  .analysis-tag.need{background:rgba(232,98,26,0.1);color:var(--orange2);border:1px solid rgba(232,98,26,0.3);}
-  .analysis-tag.pick{background:rgba(245,166,35,0.1);color:var(--sunset);border:1px solid rgba(245,166,35,0.3);}
-  .analysis-error{text-align:center;padding:30px;color:var(--muted);font-family:'Barlow',sans-serif;font-size:13px;}
-  .btn-regen{display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:8px 16px;background:transparent;border:1px solid var(--border-teal);border-radius:3px;color:var(--teal2);font-family:'Teko',sans-serif;font-size:14px;letter-spacing:2px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
-  .btn-regen:hover{background:rgba(0,168,156,0.08);}
+  /* HARDWARE TAB */
+  .hardware-empty{text-align:center;padding:40px 20px;color:var(--muted);font-family:'Barlow',sans-serif;font-size:14px;letter-spacing:1px;line-height:1.6;}
+  .hardware-empty-icon{font-size:36px;margin-bottom:12px;}
+  .hardware-section-label{font-family:'Anton',sans-serif;font-size:13px;letter-spacing:4px;color:var(--gold);padding:10px 0 6px;border-bottom:1px solid rgba(245,166,35,0.3);margin-bottom:12px;text-transform:uppercase;}
+  .hardware-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px;}
+  .hardware-card{position:relative;border-radius:4px;overflow:hidden;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 2px 12px rgba(0,0,0,0.4);}
+  .hardware-card:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 4px 20px rgba(245,166,35,0.2);}
+  .hardware-card img{width:100%;display:block;border-radius:4px;}
+  .hardware-card-label{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.8));padding:6px 4px 4px;text-align:center;font-family:'Anton',sans-serif;font-size:10px;letter-spacing:1px;color:#fff;}
+  .hardware-champ-badge{position:absolute;top:6px;right:6px;background:rgba(245,166,35,0.9);color:var(--navy2);font-family:'Anton',sans-serif;font-size:9px;letter-spacing:1px;padding:2px 5px;border-radius:2px;}
+
+  /* lightbox reuse */
+  .hw-lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:600;display:none;align-items:center;justify-content:center;padding:20px;}
+  .hw-lightbox.open{display:flex;}
+  .hw-lightbox-inner{position:relative;max-width:90vw;max-height:90vh;}
+  .hw-lightbox-inner img{max-width:88vw;max-height:84vh;object-fit:contain;border-radius:4px;}
+  .hw-lightbox-close{position:absolute;top:-14px;right:-14px;width:34px;height:34px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:15px;}
+  .hw-lightbox-close:hover{background:rgba(255,255,255,0.2);}
+
 </style>
 </head>
 <body>
@@ -181,6 +180,14 @@
   </div>
 </div>
 
+<!-- HARDWARE LIGHTBOX -->
+<div class="hw-lightbox" id="hw-lightbox" onclick="closeHwLightbox()">
+  <div class="hw-lightbox-inner" onclick="event.stopPropagation()">
+    <div class="hw-lightbox-close" onclick="closeHwLightbox()">✕</div>
+    <img id="hw-lightbox-img" src="" alt="">
+  </div>
+</div>
+
 <!-- MODAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
   <div class="modal" id="modal">
@@ -199,7 +206,7 @@
     <div class="modal-tabs">
       <div class="modal-tab active" id="tab-trades" onclick="switchTab('trades')">Trades</div>
       <div class="modal-tab" id="tab-draft" onclick="switchTab('draft')">Rookie Drafts</div>
-      <div class="modal-tab" id="tab-analysis" onclick="switchTab('analysis')">Draft Analysis</div>
+      <div class="modal-tab" id="tab-hardware" onclick="switchTab('hardware')">🏆 Hardware</div>
     </div>
     <div class="modal-body" id="modal-body">
       <div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading...</div></div>
@@ -286,7 +293,6 @@ let activeTab = 'trades';
 let playerCache = {};
 let tradeCache = {};
 let draftCache = {};
-let analysisCache = {}; // username_league -> analysis HTML
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function getTeam(league, username) {
@@ -372,7 +378,7 @@ async function openTeamProfile(username) {
   // Set tabs
   document.getElementById('tab-trades').classList.add('active');
   document.getElementById('tab-draft').classList.remove('active');
-  document.getElementById('tab-analysis').classList.remove('active');
+  document.getElementById('tab-hardware').classList.remove('active');
 
   // Show modal
   document.getElementById('modal-overlay').classList.add('open');
@@ -395,10 +401,10 @@ async function switchTab(tab) {
   activeTab = tab;
   document.getElementById('tab-trades').classList.toggle('active', tab === 'trades');
   document.getElementById('tab-draft').classList.toggle('active', tab === 'draft');
-  document.getElementById('tab-analysis').classList.toggle('active', tab === 'analysis');
+  document.getElementById('tab-hardware').classList.toggle('active', tab === 'hardware');
   if (tab === 'trades') await loadTradesTab(activeLeague, activeTeam);
   else if (tab === 'draft') await loadDraftTab(activeLeague, activeTeam);
-  else await loadAnalysisTab(activeLeague, activeTeam);
+  else loadHardwareTab(activeLeague, activeTeam);
 }
 
 // ── TRADES TAB ────────────────────────────────────────────────────────────────
@@ -593,198 +599,98 @@ async function loadDraftTab(league, username) {
   body.innerHTML = html;
 }
 
-// ── DRAFT ANALYSIS TAB ────────────────────────────────────────────────────────
-async function loadAnalysisTab(league, username) {
-  const body = document.getElementById('modal-body');
-  const cacheKey = `${league}_${username}`;
+// ── HARDWARE DATA ────────────────────────────────────────────────────────────
+const HARDWARE = {
+  CFL: {
+    'Kushwopp': [
+      { type: 'championship', year: 2025, label: '2025 Champion · 12-2', image: '/images/cfl-champ-kushwopp-2025.png' },
+      { type: 'division',     year: 2025, label: 'North Division · 2025', image: '/images/cfl-div-kushwopp-2025.png' },
+    ],
+    'bleedgreenz': [
+      { type: 'championship', year: 2024, label: '2024 Champion · 11-3', image: '/images/cfl-champ-bleedgreenz-2024.png' },
+    ],
+    'dweeebzz': [
+      { type: 'division', year: 2025, label: 'East Division · 2025', image: '/images/cfl-div-dweeebzz-2025.png' },
+    ],
+    'ifeellikemontez': [
+      { type: 'division', year: 2025, label: 'West Division · 2025', image: '/images/cfl-div-montez-2025.png' },
+    ],
+    'SPCTIGERS': [
+      { type: 'division', year: 2025, label: 'South Division · 2025', image: '/images/cfl-div-spctigers-2025.png' },
+    ],
+  },
+  MinuteMaid: {
+    'jwilly301': [
+      { type: 'championship', year: 2025, label: '2025 Inaugural Champion · 7-7', image: '/images/mm-champ-jwilly-2025.png' },
+    ],
+    'BarbieBry': [
+      { type: 'division', year: 2025, label: 'Fruit Punch Division · 2025', image: '/images/mm-div-barbiebry-2025.png' },
+    ],
+    'TheAmberErica': [
+      { type: 'division', year: 2025, label: 'Tropical Punch Division · 2025', image: '/images/mm-div-ambererica-2025.png' },
+    ],
+  }
+};
 
-  // Return cached result
-  if (analysisCache[cacheKey]) {
-    body.innerHTML = analysisCache[cacheKey];
+function loadHardwareTab(league, username) {
+  const body = document.getElementById('modal-body');
+  const teamHardware = (HARDWARE[league] && HARDWARE[league][username]) || [];
+
+  if (teamHardware.length === 0) {
+    const t = getTeam(league, username);
+    body.innerHTML = `
+      <div class="hardware-empty">
+        <div class="hardware-empty-icon">🔩</div>
+        <div><strong style="color:var(--chrome);">${t.displayName}</strong> hasn't won any hardware yet.</div>
+        <div style="margin-top:6px;font-size:12px;">No rings. No banners. Just motivation.</div>
+      </div>`;
     return;
   }
 
-  // Show loading
-  body.innerHTML = `
-    <div class="analysis-loading">
-      <div class="analysis-spinner"></div>
-      <div class="analysis-loading-text">Analyzing roster...</div>
-      <div class="analysis-loading-sub">Claude is reviewing this team's build, age curve & draft needs</div>
-    </div>`;
+  const championships = teamHardware.filter(h => h.type === 'championship');
+  const divisions = teamHardware.filter(h => h.type === 'division');
+  let html = '';
 
-  // Get team info
-  const t = getTeam(league, username);
-  const rosterMap = ROSTER_MAP[league];
-  const rosterId = parseInt(Object.keys(rosterMap).find(k => rosterMap[k] === username));
-  const leagueName = league === 'CFL' ? 'Crosstown Fantasy League (CFL)' : 'MinuteMaid Fantasy League';
-  const leagueSize = league === 'CFL' ? 12 : 10;
-
-  // Load players if not cached
-  if (Object.keys(playerCache).length === 0) {
-    try {
-      const res = await fetch(API('players/nfl'));
-      if (res.ok) { const data = await res.json(); Object.assign(playerCache, data); }
-    } catch {}
-  }
-
-  // Get traded picks owned by this team
-  let tradedPicksOwned = [];
-  try {
-    const res = await fetch(API(`league/${LEAGUE_IDS[league]}/traded_picks`));
-    if (res.ok) {
-      const picks = await res.json();
-      tradedPicksOwned = picks.filter(p => p.owner_id === rosterId);
-    }
-  } catch {}
-
-  // Build roster summary from rosters endpoint
-  let rosterPlayers = [];
-  try {
-    const res = await fetch(API(`league/${LEAGUE_IDS[league]}/rosters`));
-    if (res.ok) {
-      const rosters = await res.json();
-      const myRoster = rosters.find(r => r.roster_id === rosterId);
-      if (myRoster && myRoster.players) {
-        rosterPlayers = myRoster.players.map(id => {
-          const p = playerCache[id];
-          if (!p) return null;
-          return {
-            name: p.full_name || `${p.first_name||''} ${p.last_name||''}`.trim(),
-            position: p.position,
-            team: p.team,
-            age: p.age,
-            years_exp: p.years_exp
-          };
-        }).filter(Boolean);
-      }
-    }
-  } catch {}
-
-  // Group by position
-  const byPos = {};
-  rosterPlayers.forEach(p => {
-    if (!byPos[p.position]) byPos[p.position] = [];
-    byPos[p.position].push(p);
-  });
-
-  // Build roster summary string
-  const rosterSummary = Object.entries(byPos).map(([pos, players]) => {
-    const list = players.map(p => `${p.name} (age ${p.age||'?'}, ${p.years_exp||0} yrs exp)`).join(', ');
-    return `${pos}: ${list}`;
-  }).join('');
-
-  // Build draft capital summary
-  const pickSummary = tradedPicksOwned.length > 0
-    ? tradedPicksOwned.map(p => `${p.season} Round ${p.round}`).join(', ')
-    : 'Own picks only (no additional traded picks)';
-
-  // Call Claude API
-  try {
-    const prompt = `You are an expert fantasy football dynasty analyst. Analyze this team and provide a draft strategy recommendation.
-
-LEAGUE CONTEXT:
-- League: ${leagueName} (${leagueSize} teams, 2QB/SuperFlex, PPR, dynasty)
-- Team: ${t.displayName} (@${username})
-
-CURRENT ROSTER:
-${rosterSummary || 'Roster data unavailable'}
-
-FUTURE DRAFT CAPITAL:
-${pickSummary}
-
-Provide a concise dynasty draft analysis with these exact sections:
-1. ROSTER GRADE (give a letter grade A-F and one sentence why)
-2. STRENGTHS (2-3 bullet points of positional strengths)  
-3. DRAFT NEEDS (2-3 positions they must target in the rookie draft, with brief reasoning)
-4. DRAFT STRATEGY (1 paragraph: should they trade up, trade down, BPA, or target specific positions? Factor in their age curve and 2QB format)
-5. KEY TARGETS (name 2-3 specific rookie player types or positions to prioritize)
-
-Be specific, direct, and factor in that 2QB/SuperFlex leagues make QBs significantly more valuable. Keep each section brief and punchy.`;
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-
-    const data = await response.json();
-    const text = data.content?.[0]?.text || '';
-
-    if (!text) throw new Error('No response');
-
-    // Parse sections and render
-    const html = renderAnalysis(text, t.displayName);
-    analysisCache[cacheKey] = html;
-    body.innerHTML = html;
-
-  } catch (err) {
-    body.innerHTML = `
-      <div class="analysis-error">
-        <div style="font-size:28px;margin-bottom:10px;">⚠️</div>
-        <div>Could not generate analysis. Please try again.</div>
-        <button class="btn-regen" onclick="delete analysisCache['${cacheKey}'];loadAnalysisTab('${league}','${username}')">↺ Retry</button>
+  if (championships.length > 0) {
+    html += '<div class="hardware-section-label">🏆 Championships</div><div class="hardware-grid">';
+    championships.forEach(h => {
+      html += `<div class="hardware-card" onclick="openHwLightbox('${h.image}')">
+        <img src="${h.image}" alt="${h.label}" loading="lazy" onerror="this.parentElement.style.display='none'">
+        <div class="hardware-champ-badge">CHAMP</div>
+        <div class="hardware-card-label">${h.label}</div>
       </div>`;
-  }
-}
-
-function regenAnalysis() {
-  const key = `${activeLeague}_${activeTeam}`;
-  delete analysisCache[key];
-  loadAnalysisTab(activeLeague, activeTeam);
-}
-
-function renderAnalysis(text, teamName) {
-  const lines = text.split('\n').filter(function(l) { return l.trim(); });
-  let html = '<div class="analysis-wrap">';
-  let currentSection = '';
-  let sectionContent = [];
-
-  function flushSection() {
-    if (!currentSection) return;
-    html += '<div class="analysis-section">';
-    html += '<div class="analysis-section-title">' + currentSection + '</div>';
-    html += '<div class="analysis-text">' + sectionContent.join('<br>') + '</div>';
-    html += '</div>';
-    sectionContent = [];
-  }
-
-  // Extract letter grade
-  const gradeMatch = text.match(/grade[^A-Za-z]*([A-F][+-]?)/i);
-  if (gradeMatch) {
-    html += '<div class="analysis-grade">';
-    html += '<div class="analysis-grade-letter">' + gradeMatch[1] + '</div>';
-    html += '<div class="analysis-grade-label">' + teamName + '<br>Dynasty Grade</div>';
+    });
     html += '</div>';
   }
 
-  const sectionPattern = /^(ROSTER GRADE|STRENGTHS|DRAFT NEEDS|DRAFT STRATEGY|KEY TARGETS)/i;
+  if (divisions.length > 0) {
+    html += '<div class="hardware-section-label">🎖️ Division Titles</div><div class="hardware-grid">';
+    divisions.forEach(h => {
+      html += `<div class="hardware-card" onclick="openHwLightbox('${h.image}')">
+        <img src="${h.image}" alt="${h.label}" loading="lazy" onerror="this.parentElement.style.display='none'">
+        <div class="hardware-card-label">${h.label}</div>
+      </div>`;
+    });
+    html += '</div>';
+  }
 
-  lines.forEach(function(line) {
-    const clean = line.replace(/^#+\s*/, '').replace(/^\d+\.\s*/, '').trim();
-    if (sectionPattern.test(clean)) {
-      flushSection();
-      currentSection = clean.replace(/[:*]/g, '').trim().toUpperCase();
-    } else if (clean) {
-      let styled = clean
-        .replace(/^\*\s/, '• ')
-        .replace(/^-\s/, '• ')
-        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*([^*]+)\*/g, '<strong>$1</strong>');
-      sectionContent.push(styled);
-    }
-  });
-  flushSection();
-
-  html += '<div style="text-align:center;margin-top:14px;">';
-  html += '<button class="btn-regen" onclick="regenAnalysis()">↺ Regenerate</button>';
-  html += '</div>';
-  html += '</div>';
-  return html;
+  body.innerHTML = html;
 }
+
+function openHwLightbox(src) {
+  document.getElementById('hw-lightbox-img').src = src;
+  document.getElementById('hw-lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeHwLightbox() {
+  document.getElementById('hw-lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeHwLightbox();
+});
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 renderTeamGrid();
