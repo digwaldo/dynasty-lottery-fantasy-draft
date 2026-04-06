@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commissioner cinccity · League Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Teko:wght@300;400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange:#E8621A;--orange2:#F08030;--sunset:#F5A623;
+    --red:#C0181A;--teal:#00A89C;--teal2:#00C8BC;--teal-dark:#005f5a;
+    --navy:#0d1a2b;--navy2:#0a1520;--chrome:#d0d8e0;--chrome2:#f0f4f8;
+    --text:#f0ede8;--muted:#7a9ab0;
+    --border-teal:rgba(0,168,156,0.35);--border-orange:rgba(232,98,26,0.5);
+    --card:rgba(10,21,32,0.9);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--navy2);color:var(--text);font-family:'Teko',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+  /* BG */
+  .bg-layer{position:fixed;inset:0;z-index:0;overflow:hidden;}
+  .bg-sunset{position:absolute;inset:0;background:linear-gradient(180deg,#0d1a2b 0%,#0d2040 20%,#1a3a5c 45%,#2a4a2a 60%,#3a2a0a 75%,#1a0a08 100%);}
+  .wave-layer{position:absolute;bottom:0;left:0;width:200%;height:45%;}
+  .wave1{animation:waveMove1 8s linear infinite;opacity:0.6;}
+  .wave2{animation:waveMove2 12s linear infinite;opacity:0.4;bottom:2%;}
+  @keyframes waveMove1{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @keyframes waveMove2{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+  .glow-orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;}
+  .orb-orange{width:500px;height:300px;background:rgba(232,98,26,0.12);top:30%;left:50%;transform:translateX(-50%);}
+  .orb-teal{width:400px;height:400px;background:rgba(0,168,156,0.08);bottom:-100px;left:-100px;}
+  .frame-line-top,.frame-line-bottom{position:fixed;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--red),var(--orange),var(--sunset),var(--orange),var(--red));z-index:100;}
+  .frame-line-top{top:0;}.frame-line-bottom{bottom:0;}
+
+  .container{position:relative;z-index:2;max-width:900px;margin:0 auto;padding:20px 16px 70px;}
+
+  /* HEADER */
+  header{text-align:center;padding:28px 0 22px;margin-bottom:24px;position:relative;}
+  .header-border{position:absolute;bottom:0;left:10%;right:10%;height:2px;background:linear-gradient(90deg,transparent,var(--red),var(--orange),var(--teal),var(--red),transparent);}
+  .commissioner-line{font-size:12px;letter-spacing:5px;color:var(--teal2);text-transform:uppercase;margin-bottom:4px;}
+  header h1{font-family:'Anton',sans-serif;font-size:clamp(36px,10vw,72px);letter-spacing:2px;line-height:0.88;background:linear-gradient(160deg,var(--chrome2),var(--chrome),#a0aab4,var(--chrome),var(--chrome2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .header-sub{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px;}
+  .header-sub-line{flex:1;max-width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--orange));}
+  .header-sub-line.right{background:linear-gradient(90deg,var(--orange),transparent);}
+  .header-sub span{font-size:13px;letter-spacing:4px;color:var(--orange2);text-transform:uppercase;font-weight:600;}
+
+  /* LEAGUE TABS */
+  .league-tabs{display:flex;gap:8px;margin-bottom:20px;}
+  .league-tab{flex:1;padding:12px;background:var(--card);border:1px solid var(--border-orange);border-radius:3px;font-family:'Anton',sans-serif;font-size:18px;letter-spacing:3px;color:var(--muted);cursor:pointer;text-align:center;transition:all 0.2s;}
+  .league-tab.active{border-color:var(--teal);color:var(--teal2);background:rgba(0,168,156,0.08);}
+  .league-tab:hover{color:var(--text);}
+
+  /* TEAM GRID */
+  .section-label{font-family:'Anton',sans-serif;font-size:14px;letter-spacing:5px;color:var(--teal);margin-bottom:12px;text-transform:uppercase;}
+  .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:30px;}
+  .team-card{background:var(--card);border:1px solid var(--border-teal);border-radius:4px;padding:14px 12px;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;}
+  .team-card:hover{border-color:var(--teal2);transform:translateY(-2px);background:rgba(0,168,156,0.06);}
+  .team-card-avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--border-teal);}
+  .team-card-avatar-ph{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.07);border:2px solid var(--border-teal);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:18px;color:var(--muted);}
+  .team-card-name{font-family:'Anton',sans-serif;font-size:13px;letter-spacing:1px;color:var(--chrome);line-height:1.2;}
+  .team-card-username{font-size:11px;color:var(--muted);font-family:'Barlow',sans-serif;}
+
+  /* LOADING */
+  .loading-wrap{text-align:center;padding:40px;}
+  .spinner{width:36px;height:36px;border:3px solid var(--border-teal);border-top-color:var(--teal2);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{font-size:13px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
+
+  /* ── MODAL ── */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;display:none;align-items:flex-end;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:#0d1a2b;border:1px solid var(--border-teal);border-top:3px solid var(--teal);border-radius:12px 12px 0 0;width:100%;max-width:700px;max-height:90vh;display:flex;flex-direction:column;animation:slideUp 0.35s cubic-bezier(0.16,1,0.3,1);}
+  @keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+
+  .modal-header{padding:16px 18px 0;flex-shrink:0;}
+  .modal-drag{width:40px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto 14px;}
+  .modal-team-info{display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:1px solid var(--border-teal);}
+  .modal-avatar{width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--teal);flex-shrink:0;}
+  .modal-avatar-ph{width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.07);border:2px solid var(--teal);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:22px;color:var(--muted);flex-shrink:0;}
+  .modal-team-name{font-family:'Anton',sans-serif;font-size:clamp(20px,5vw,28px);letter-spacing:2px;color:var(--chrome2);line-height:1;}
+  .modal-username{font-size:13px;color:var(--muted);font-family:'Barlow',sans-serif;margin-top:3px;}
+  .modal-close{margin-left:auto;width:32px;height:32px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:16px;flex-shrink:0;transition:all 0.2s;}
+  .modal-close:hover{background:rgba(255,255,255,0.12);color:var(--text);}
+
+  /* MODAL TABS */
+  .modal-tabs{display:flex;border-bottom:1px solid var(--border-teal);margin:0 18px;flex-shrink:0;}
+  .modal-tab{padding:12px 16px;font-family:'Anton',sans-serif;font-size:15px;letter-spacing:3px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;text-transform:uppercase;}
+  .modal-tab.active{color:var(--teal2);border-bottom-color:var(--teal2);}
+  .modal-tab:hover{color:var(--text);}
+
+  /* MODAL BODY */
+  .modal-body{flex:1;overflow-y:auto;padding:16px 18px 24px;}
+  .modal-body::-webkit-scrollbar{width:4px;}
+  .modal-body::-webkit-scrollbar-track{background:transparent;}
+  .modal-body::-webkit-scrollbar-thumb{background:var(--border-teal);border-radius:2px;}
+
+  /* TRADE LIST */
+  .trade-card{background:rgba(255,255,255,0.03);border:1px solid var(--border-teal);border-left:3px solid var(--teal);border-radius:3px;padding:12px 14px;margin-bottom:10px;}
+  .trade-date{font-size:11px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;margin-bottom:8px;}
+  .trade-parties{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+  .trade-team-badge{display:flex;align-items:center;gap:6px;background:rgba(0,168,156,0.08);border:1px solid var(--border-teal);border-radius:3px;padding:4px 8px;}
+  .trade-team-badge img{width:22px;height:22px;border-radius:50%;object-fit:cover;}
+  .trade-team-badge-ph{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);font-family:'Barlow',sans-serif;}
+  .trade-team-badge span{font-family:'Teko',sans-serif;font-size:14px;letter-spacing:1px;color:var(--chrome);}
+  .trade-vs{font-size:11px;color:var(--muted);font-family:'Barlow',sans-serif;}
+  .trade-section-label{font-size:10px;letter-spacing:2px;color:var(--orange2);text-transform:uppercase;font-family:'Barlow',sans-serif;margin:6px 0 3px;}
+  .trade-items{display:flex;flex-wrap:wrap;gap:4px;}
+  .trade-item{font-size:12px;font-family:'Barlow',sans-serif;color:var(--text);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:2px;padding:2px 7px;}
+  .trade-item.pick{color:var(--sunset);border-color:rgba(245,166,35,0.3);background:rgba(245,166,35,0.05);}
+  .empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-family:'Barlow',sans-serif;font-size:14px;letter-spacing:1px;}
+
+  /* DRAFT LIST */
+  .draft-pick-row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:3px;padding:10px 12px;margin-bottom:6px;}
+  .draft-pick-num{font-family:'Anton',sans-serif;font-size:20px;background:linear-gradient(135deg,var(--orange2),var(--sunset));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;width:36px;flex-shrink:0;text-align:center;}
+  .draft-pick-info{flex:1;}
+  .draft-pick-player{font-family:'Anton',sans-serif;font-size:16px;letter-spacing:1px;color:var(--chrome);}
+  .draft-pick-meta{font-size:11px;color:var(--muted);font-family:'Barlow',sans-serif;margin-top:1px;}
+  .draft-pick-round{font-size:11px;color:var(--teal2);font-family:'Barlow',sans-serif;letter-spacing:1px;}
+  .draft-year-label{font-family:'Anton',sans-serif;font-size:13px;letter-spacing:4px;color:var(--orange2);padding:10px 0 6px;border-bottom:1px solid var(--border-orange);margin-bottom:8px;}
+</style>
+</head>
+<body>
+<div class="bg-layer">
+  <div class="bg-sunset"></div>
+  <svg class="wave-layer wave1" viewBox="0 0 1440 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,80 C120,20 240,140 360,80 C480,20 600,140 720,80 C840,20 960,140 1080,80 C1200,20 1320,140 1440,80 L1440,200 L0,200 Z" fill="#00A89C" opacity="0.25"/>
+    <path d="M0,100 C180,40 360,160 540,100 C720,40 900,160 1080,100 C1260,40 1440,160 1440,100 L1440,200 L0,200 Z" fill="#005f5a" opacity="0.3"/>
+  </svg>
+  <svg class="wave-layer wave2" viewBox="0 0 1440 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,60 C90,120 180,20 360,70 C540,120 630,10 720,60 C810,110 990,20 1080,70 C1170,120 1350,30 1440,60 L1440,180 L0,180 Z" fill="#007a74" opacity="0.2"/>
+  </svg>
+  <div class="glow-orb orb-orange"></div>
+  <div class="glow-orb orb-teal"></div>
+</div>
+<div class="frame-line-top"></div>
+<div class="frame-line-bottom"></div>
+
+<div class="container">
+  <header>
+    <div class="commissioner-line">Commissioner cinccity</div>
+    <h1>LEAGUE HUB</h1>
+    <div class="header-sub">
+      <div class="header-sub-line"></div>
+      <span>Team Profiles</span>
+      <div class="header-sub-line right"></div>
+    </div>
+    <div class="header-border"></div>
+  </header>
+
+  <div class="league-tabs">
+    <div class="league-tab active" onclick="switchLeague('CFL')">CFL</div>
+    <div class="league-tab" onclick="switchLeague('MinuteMaid')">MinuteMaid</div>
+  </div>
+
+  <div id="main-content">
+    <div class="loading-wrap">
+      <div class="spinner"></div>
+      <div class="loading-text">Loading teams...</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-drag"></div>
+      <div class="modal-team-info">
+        <img class="modal-avatar" id="modal-avatar" src="" alt="" onerror="this.style.display='none';document.getElementById('modal-avatar-ph').style.display='flex'">
+        <div class="modal-avatar-ph" id="modal-avatar-ph" style="display:none">?</div>
+        <div>
+          <div class="modal-team-name" id="modal-team-name"></div>
+          <div class="modal-username" id="modal-username"></div>
+        </div>
+        <div class="modal-close" onclick="closeModal()">✕</div>
+      </div>
+    </div>
+    <div class="modal-tabs">
+      <div class="modal-tab active" id="tab-trades" onclick="switchTab('trades')">Trades</div>
+      <div class="modal-tab" id="tab-draft" onclick="switchTab('draft')">Rookie Drafts</div>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading...</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const API = (endpoint) => `/api/sleeper?endpoint=${encodeURIComponent(endpoint)}`;
+
+const LEAGUE_IDS = {
+  CFL: '1325949536840974336',
+  MinuteMaid: '1325971620531015680'
+};
+
+// Hardcoded roster_id -> username mapping
+const ROSTER_MAP = {
+  CFL: {
+    1:'cinccity', 2:'bleedgreenz', 3:'FrankE324', 4:'Kushwopp',
+    5:'dweeebzz', 6:'jwilly301', 7:'BizyBonez', 8:'ifeellikemontez',
+    9:'RipCamilton03', 10:'SPCTIGERS', 11:'TheAmberErica', 12:'BarbieBry'
+  },
+  MinuteMaid: {
+    1:'cinccity', 2:'dweeebzz', 3:'ifeellikemontez', 4:'tredagoat082410',
+    5:'BarbieBry', 6:'meedzs', 7:'bleedgreenz', 8:'TheAmberErica',
+    9:'jwilly301', 10:'xtepps'
+  }
+};
+
+// Hardcoded team data from Sleeper JSON
+const TEAM_DATA = {
+  CFL: {
+    'FrankE324':      {displayName:'Team FrankE324',    avatarUrl:'https://sleepercdn.com/avatars/thumbs/1838a0a4b18ccce61fcb2e1b93618dc1'},
+    'dweeebzz':       {displayName:'Team dweeebzz',      avatarUrl:'https://sleepercdn.com/avatars/thumbs/8eb8f8bf999945d523f2c4033f70473e'},
+    'cinccity':       {displayName:'CINCCITY CINNERS',   avatarUrl:'https://sleepercdn.com/uploads/499bc6ec6994f5ed8cef6c3a4efa5fbb.jpg'},
+    'Kushwopp':       {displayName:'Team 4',              avatarUrl:'https://sleepercdn.com/avatars/thumbs/b3338675f635c2c1f42b469621d38ec6'},
+    'ifeellikemontez':{displayName:'MontezBykeeeee',     avatarUrl:'https://sleepercdn.com/avatars/thumbs/0a937d29c073d8893dfd7b4e365e4363'},
+    'SPCTIGERS':      {displayName:'Team SPCTIGERS',     avatarUrl:'https://sleepercdn.com/avatars/thumbs/e7af4deab0289b4f5505646424895246'},
+    'jwilly301':      {displayName:'jwilly',              avatarUrl:'https://sleepercdn.com/avatars/thumbs/8edabc3e52325542fcd4228726b804e0'},
+    'RipCamilton03':  {displayName:'Full Speed CHASE',   avatarUrl:'https://sleepercdn.com/avatars/thumbs/b319fdf8b7b5b0359d3c78622ba4d70c'},
+    'bleedgreenz':    {displayName:'Bleedgreen wes',     avatarUrl:'https://sleepercdn.com/avatars/thumbs/b3338675f635c2c1f42b469621d38ec6'},
+    'BizyBonez':      {displayName:'Team BizyBonez',     avatarUrl:'https://sleepercdn.com/avatars/thumbs/2bd384d96491e4a841ca5e6c5f5eff74'},
+    'BarbieBry':      {displayName:'Lamarvelous Flock',  avatarUrl:'https://sleepercdn.com/avatars/thumbs/c1c03ad4aabca1013a119f17661d23fb'},
+    'TheAmberErica':  {displayName:'Team TheAmberErica', avatarUrl:'https://sleepercdn.com/avatars/thumbs/0a8202bcaec9acdd00beaec067cc75b4'},
+  },
+  MinuteMaid: {
+    'dweeebzz':        {displayName:'HOLD EM!',                 avatarUrl:'https://sleepercdn.com/avatars/thumbs/8eb8f8bf999945d523f2c4033f70473e'},
+    'cinccity':        {displayName:'CINCCITY CINNERS',          avatarUrl:'https://sleepercdn.com/uploads/36efd46e6c2d65db7b4a12434fcb4ee2.jpg'},
+    'meedzs':          {displayName:'Team meedzs',               avatarUrl:'https://sleepercdn.com/avatars/thumbs/13eea83d867b32106862ac0b2b3d3c40'},
+    'ifeellikemontez': {displayName:"Montezuma's Negras",        avatarUrl:'https://sleepercdn.com/avatars/thumbs/0a937d29c073d8893dfd7b4e365e4363'},
+    'jwilly301':       {displayName:'Team jwilly301',            avatarUrl:'https://sleepercdn.com/avatars/thumbs/8edabc3e52325542fcd4228726b804e0'},
+    'tredagoat082410': {displayName:'Cold plays hot corner',     avatarUrl:'https://sleepercdn.com/avatars/thumbs/4f4090e5e9c3941414db40a871e3e909'},
+    'bleedgreenz':     {displayName:'Team bleedgreenz',          avatarUrl:'https://sleepercdn.com/avatars/thumbs/b3338675f635c2c1f42b469621d38ec6'},
+    'BarbieBry':       {displayName:'DemChickensAshtonImLotion', avatarUrl:'https://sleepercdn.com/avatars/thumbs/c1c03ad4aabca1013a119f17661d23fb'},
+    'TheAmberErica':   {displayName:'Team TheAmberErica',        avatarUrl:'https://sleepercdn.com/avatars/thumbs/0a8202bcaec9acdd00beaec067cc75b4'},
+    'xtepps':          {displayName:'Team xtepps',               avatarUrl:'https://sleepercdn.com/avatars/thumbs/725aaca491cef7045d2090c9cfa4c025'},
+  }
+};
+
+// Draft IDs
+const DRAFT_IDS = {
+  CFL: ['1331771621614026752'],        // 2026 rookie draft
+  MinuteMaid: ['1325971620543627265']  // 2026 rookie draft
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let activeLeague = 'CFL';
+let activeTeam = null;
+let activeTab = 'trades';
+let playerCache = {};
+let tradeCache = {};
+let draftCache = {};
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function getTeam(league, username) {
+  return TEAM_DATA[league][username] || { displayName: username, avatarUrl: null };
+}
+
+function getRosterUsername(league, rosterId) {
+  return ROSTER_MAP[league][rosterId] || `Roster ${rosterId}`;
+}
+
+function avatarHtml(avatarUrl, name, size=52, cls='') {
+  if (avatarUrl) {
+    return `<img style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:2px solid var(--border-teal);" crossorigin="anonymous" src="${avatarUrl}" alt="${name}" onerror="this.style.display='none'">`;
+  }
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:rgba(255,255,255,0.07);border:2px solid var(--border-teal);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:${Math.floor(size*0.35)}px;color:var(--muted);">${(name||'?')[0].toUpperCase()}</div>`;
+}
+
+function formatDate(ts) {
+  return new Date(ts).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+}
+
+async function fetchPlayer(playerId) {
+  if (playerCache[playerId]) return playerCache[playerId];
+  try {
+    const res = await fetch(API(`players/nfl`));
+    if (!res.ok) return playerId;
+    // This is huge - only do once
+    const data = await res.json();
+    Object.assign(playerCache, data);
+    return playerCache[playerId] || playerId;
+  } catch { return playerId; }
+}
+
+// ── RENDER TEAMS ──────────────────────────────────────────────────────────────
+function switchLeague(league) {
+  activeLeague = league;
+  document.querySelectorAll('.league-tab').forEach((t,i) => {
+    t.classList.toggle('active', ['CFL','MinuteMaid'][i] === league);
+  });
+  renderTeamGrid();
+}
+
+function renderTeamGrid() {
+  const content = document.getElementById('main-content');
+  const teams = TEAM_DATA[activeLeague];
+  const usernames = Object.keys(teams);
+
+  let html = `<div class="section-label">${activeLeague} Teams — Click to view profile</div><div class="team-grid">`;
+  usernames.forEach(username => {
+    const t = teams[username];
+    html += `
+      <div class="team-card" onclick="openTeamProfile('${username}')">
+        ${t.avatarUrl
+          ? `<img class="team-card-avatar" crossorigin="anonymous" src="${t.avatarUrl}" alt="${t.displayName}" onerror="this.outerHTML='<div class=team-card-avatar-ph>${t.displayName[0]}</div>'">`
+          : `<div class="team-card-avatar-ph">${t.displayName[0]}</div>`}
+        <div class="team-card-name">${t.displayName}</div>
+        <div class="team-card-username">@${username}</div>
+      </div>`;
+  });
+  html += '</div>';
+  content.innerHTML = html;
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+async function openTeamProfile(username) {
+  activeTeam = username;
+  activeTab = 'trades';
+  const league = activeLeague;
+  const t = getTeam(league, username);
+
+  // Set header
+  const img = document.getElementById('modal-avatar');
+  const ph = document.getElementById('modal-avatar-ph');
+  if (t.avatarUrl) {
+    img.src = t.avatarUrl; img.style.display='block'; ph.style.display='none';
+  } else {
+    img.style.display='none'; ph.style.display='flex'; ph.textContent=t.displayName[0];
+  }
+  document.getElementById('modal-team-name').textContent = t.displayName.toUpperCase();
+  document.getElementById('modal-username').textContent = `@${username} · ${league}`;
+
+  // Set tabs
+  document.getElementById('tab-trades').classList.add('active');
+  document.getElementById('tab-draft').classList.remove('active');
+
+  // Show modal
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Load trades tab
+  await loadTradesTab(league, username);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+async function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('tab-trades').classList.toggle('active', tab === 'trades');
+  document.getElementById('tab-draft').classList.toggle('active', tab === 'draft');
+  if (tab === 'trades') await loadTradesTab(activeLeague, activeTeam);
+  else await loadDraftTab(activeLeague, activeTeam);
+}
+
+// ── TRADES TAB ────────────────────────────────────────────────────────────────
+async function loadTradesTab(league, username) {
+  const body = document.getElementById('modal-body');
+  body.innerHTML = '<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading trades...</div></div>';
+
+  // Find roster_id for this username
+  const rosterMap = ROSTER_MAP[league];
+  const rosterId = parseInt(Object.keys(rosterMap).find(k => rosterMap[k] === username));
+
+  // Fetch transactions weeks 1-18
+  const leagueId = LEAGUE_IDS[league];
+  const cacheKey = `${league}_trades`;
+
+  if (!tradeCache[cacheKey]) {
+    const weeks = Array.from({length:18}, (_,i) => i+1);
+    const allTrades = [];
+    for (const week of weeks) {
+      try {
+        const res = await fetch(API(`league/${leagueId}/transactions/${week}`));
+        if (!res.ok) break;
+        const txns = await res.json();
+        if (!txns || txns.length === 0) continue;
+        const trades = txns.filter(t => t.type === 'trade');
+        allTrades.push(...trades);
+      } catch { break; }
+    }
+    tradeCache[cacheKey] = allTrades;
+  }
+
+  // Filter to trades involving this roster
+  const myTrades = tradeCache[cacheKey].filter(t =>
+    t.roster_ids && t.roster_ids.includes(rosterId)
+  );
+
+  if (myTrades.length === 0) {
+    body.innerHTML = '<div class="empty-state">No trades found for this team.</div>';
+    return;
+  }
+
+  // Fetch player names (try cache first)
+  const playerIds = new Set();
+  myTrades.forEach(t => {
+    if (t.adds) Object.keys(t.adds).forEach(id => { if (isNaN(id) === false || id.length > 2) playerIds.add(id); });
+    if (t.drops) Object.keys(t.drops).forEach(id => { if (isNaN(id) === false || id.length > 2) playerIds.add(id); });
+  });
+
+  // Load players if not cached
+  if (Object.keys(playerCache).length === 0 && playerIds.size > 0) {
+    try {
+      const res = await fetch(API('players/nfl'));
+      if (res.ok) { const data = await res.json(); Object.assign(playerCache, data); }
+    } catch {}
+  }
+
+  function playerName(id) {
+    const p = playerCache[id];
+    if (!p) return id;
+    return p.full_name || `${p.first_name||''} ${p.last_name||''}`.trim() || id;
+  }
+
+  function teamBadge(rId) {
+    const uname = getRosterUsername(league, rId);
+    const td = getTeam(league, uname);
+    const avHtml = td.avatarUrl
+      ? `<img crossorigin="anonymous" src="${td.avatarUrl}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">`
+      : `<div style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);font-family:'Barlow',sans-serif;">${(td.displayName||'?')[0]}</div>`;
+    return `<div class="trade-team-badge">${avHtml}<span>${td.displayName}</span></div>`;
+  }
+
+  // Sort newest first
+  myTrades.sort((a,b) => b.created - a.created);
+
+  let html = '';
+  myTrades.forEach(trade => {
+    const otherRosterIds = trade.roster_ids.filter(r => r !== rosterId);
+    const date = formatDate(trade.created);
+
+    // What this team received (adds to their roster)
+    const myAdds = trade.adds ? Object.entries(trade.adds).filter(([,rid]) => rid === rosterId) : [];
+    const myDrops = trade.drops ? Object.entries(trade.drops).filter(([,rid]) => rid === rosterId) : [];
+    // Picks going to this team
+    const picksIn = trade.draft_picks ? trade.draft_picks.filter(p => p.owner_id === rosterId) : [];
+    // Picks leaving this team
+    const picksOut = trade.draft_picks ? trade.draft_picks.filter(p => p.previous_owner_id === rosterId && p.owner_id !== rosterId) : [];
+
+    html += `<div class="trade-card">
+      <div class="trade-date">${date}</div>
+      <div class="trade-parties">
+        ${teamBadge(rosterId)}
+        <span class="trade-vs">⇄</span>
+        ${otherRosterIds.map(r => teamBadge(r)).join('')}
+      </div>`;
+
+    if (myAdds.length || picksIn.length) {
+      html += `<div class="trade-section-label">Received</div><div class="trade-items">`;
+      myAdds.forEach(([pid]) => html += `<span class="trade-item">${playerName(pid)}</span>`);
+      picksIn.forEach(p => html += `<span class="trade-item pick">${p.season} Rd ${p.round} (via ${getRosterUsername(league, p.roster_id)})</span>`);
+      html += `</div>`;
+    }
+    if (myDrops.length || picksOut.length) {
+      html += `<div class="trade-section-label">Sent</div><div class="trade-items">`;
+      myDrops.forEach(([pid]) => html += `<span class="trade-item">${playerName(pid)}</span>`);
+      picksOut.forEach(p => html += `<span class="trade-item pick">${p.season} Rd ${p.round} (${getRosterUsername(league, p.roster_id)}'s pick)</span>`);
+      html += `</div>`;
+    }
+    html += `</div>`;
+  });
+
+  body.innerHTML = html;
+}
+
+// ── DRAFT TAB ─────────────────────────────────────────────────────────────────
+async function loadDraftTab(league, username) {
+  const body = document.getElementById('modal-body');
+  body.innerHTML = '<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading draft history...</div></div>';
+
+  const rosterMap = ROSTER_MAP[league];
+  const rosterId = parseInt(Object.keys(rosterMap).find(k => rosterMap[k] === username));
+  const draftIds = DRAFT_IDS[league];
+
+  if (!draftIds || draftIds.length === 0) {
+    body.innerHTML = '<div class="empty-state">No rookie drafts found.</div>';
+    return;
+  }
+
+  // Load players if not cached
+  if (Object.keys(playerCache).length === 0) {
+    try {
+      const res = await fetch(API('players/nfl'));
+      if (res.ok) { const data = await res.json(); Object.assign(playerCache, data); }
+    } catch {}
+  }
+
+  function playerName(id) {
+    const p = playerCache[id];
+    if (!p) return id;
+    return p.full_name || `${p.first_name||''} ${p.last_name||''}`.trim() || id;
+  }
+
+  function playerMeta(id) {
+    const p = playerCache[id];
+    if (!p) return '';
+    const parts = [p.position, p.team].filter(Boolean);
+    return parts.join(' · ');
+  }
+
+  let html = '';
+  for (const draftId of draftIds) {
+    const cacheKey = `draft_${draftId}`;
+    if (!draftCache[cacheKey]) {
+      try {
+        const res = await fetch(API(`draft/${draftId}/picks`));
+        if (res.ok) draftCache[cacheKey] = await res.json();
+        else draftCache[cacheKey] = [];
+      } catch { draftCache[cacheKey] = []; }
+    }
+    const allPicks = draftCache[cacheKey];
+    const myPicks = allPicks.filter(p => p.roster_id === rosterId);
+
+    if (myPicks.length === 0) continue;
+
+    const season = myPicks[0]?.metadata?.season || '2026';
+    html += `<div class="draft-year-label">${season} Rookie Draft</div>`;
+
+    myPicks.sort((a,b) => a.pick_no - b.pick_no);
+    myPicks.forEach(pick => {
+      const overall = pick.pick_no;
+      const round = pick.round;
+      const name = pick.metadata?.first_name
+        ? `${pick.metadata.first_name} ${pick.metadata.last_name}`
+        : playerName(pick.player_id);
+      const pos = pick.metadata?.position || '';
+      const team = pick.metadata?.team || '';
+      html += `
+        <div class="draft-pick-row">
+          <div class="draft-pick-num">${overall}</div>
+          <div class="draft-pick-info">
+            <div class="draft-pick-player">${name}</div>
+            <div class="draft-pick-meta">${[pos,team].filter(Boolean).join(' · ')}</div>
+          </div>
+          <div class="draft-pick-round">Rd ${round}</div>
+        </div>`;
+    });
+  }
+
+  if (!html) {
+    body.innerHTML = '<div class="empty-state">No rookie draft picks found for this team.</div>';
+    return;
+  }
+  body.innerHTML = html;
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+renderTeamGrid();
+</script>
+</body>
+</html>
