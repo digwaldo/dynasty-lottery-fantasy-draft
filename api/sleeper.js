@@ -1,6 +1,5 @@
 // Vercel serverless function — proxies Sleeper API to avoid CORS
-export default async function handler(req, res) {
-  // Allow all origins (your own frontend)
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET');
 
@@ -9,7 +8,6 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing endpoint param' });
   }
 
-  // Whitelist only sleeper API paths for security
   const allowed = [
     /^league\/\d+\/users$/,
     /^league\/\d+\/rosters$/,
@@ -32,7 +30,6 @@ export default async function handler(req, res) {
       return res.status(sleeperRes.status).json({ error: 'Sleeper API error' });
     }
     const data = await sleeperRes.json();
-    // Cache for 5 minutes
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
     return res.status(200).json(data);
   } catch (err) {
