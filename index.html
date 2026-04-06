@@ -268,7 +268,7 @@
       </div>
       <div class="revealed-state" id="revealed-state">
         <div class="reveal-avatar-wrap">
-          <img class="reveal-avatar" id="reveal-avatar-img" src="" alt="" onerror="this.style.display='none';document.getElementById('reveal-avatar-ph').style.display='flex';">
+          <img class="reveal-avatar" crossorigin="anonymous" id="reveal-avatar-img" src="" alt="" onerror="this.style.display='none';document.getElementById('reveal-avatar-ph').style.display='flex';">
           <div class="reveal-avatar-placeholder" id="reveal-avatar-ph" style="display:none;">?</div>
         </div>
         <div class="reveal-seed-label" id="result-seed-label"></div>
@@ -371,35 +371,114 @@ let animating = false;
 let revealed = false;
 let lotteryStarted = false;
 
-// ── SLEEPER API ───────────────────────────────────────────────────────────────
-async function fetchSleeperData(league) {
-  if (sleeperData[league]) return; // already loaded
-  const leagueId = LEAGUE_CONFIG[league].sleeperLeagueId;
-  sleeperData[league] = {};
-  try {
-    const res = await fetch(`https://api.sleeper.app/v1/league/${leagueId}/users`);
-    const users = await res.json();
-    users.forEach(u => {
-      const avatar = u.avatar
-        ? `https://sleepercdn.com/avatars/thumbs/${u.avatar}`
-        : null;
-      const teamName = (u.metadata && u.metadata.team_name) ? u.metadata.team_name : u.display_name;
-      sleeperData[league][u.username.toLowerCase()] = {
-        displayName: teamName || u.display_name,
-        username: u.display_name,
-        avatarUrl: avatar
-      };
-    });
-  } catch(e) {
-    console.warn('Sleeper fetch failed', e);
+// ── HARDCODED TEAM DATA (from Sleeper API) ───────────────────────────────────
+const TEAM_DATA = {
+  CFL: {
+  "FrankE324": {
+    "displayName": "Team FrankE324",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/1838a0a4b18ccce61fcb2e1b93618dc1"
+  },
+  "dweeebzz": {
+    "displayName": "Team dweeebzz",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/8eb8f8bf999945d523f2c4033f70473e"
+  },
+  "cinccity": {
+    "displayName": "CINCCITY CINNERS",
+    "avatarUrl": "https://sleepercdn.com/uploads/499bc6ec6994f5ed8cef6c3a4efa5fbb.jpg"
+  },
+  "Kushwopp": {
+    "displayName": "Team 4",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/b3338675f635c2c1f42b469621d38ec6"
+  },
+  "ifeellikemontez": {
+    "displayName": "MontezBykeeeee",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/0a937d29c073d8893dfd7b4e365e4363"
+  },
+  "SPCTIGERS": {
+    "displayName": "Team SPCTIGERS",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/e7af4deab0289b4f5505646424895246"
+  },
+  "jwilly301": {
+    "displayName": "jwilly",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/8edabc3e52325542fcd4228726b804e0"
+  },
+  "RipCamilton03": {
+    "displayName": "Full Speed CHASE",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/b319fdf8b7b5b0359d3c78622ba4d70c"
+  },
+  "bleedgreenz": {
+    "displayName": "Bleedgreen wes",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/b3338675f635c2c1f42b469621d38ec6"
+  },
+  "BizyBonez": {
+    "displayName": "Team BizyBonez",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/2bd384d96491e4a841ca5e6c5f5eff74"
+  },
+  "BarbieBry": {
+    "displayName": "Lamarvelous Flock",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/c1c03ad4aabca1013a119f17661d23fb"
+  },
+  "TheAmberErica": {
+    "displayName": "Team TheAmberErica",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/0a8202bcaec9acdd00beaec067cc75b4"
   }
+},
+  MinuteMaid: {
+  "dweeebzz": {
+    "displayName": "HOLD EM!",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/8eb8f8bf999945d523f2c4033f70473e"
+  },
+  "cinccity": {
+    "displayName": "CINCCITY CINNERS",
+    "avatarUrl": "https://sleepercdn.com/uploads/36efd46e6c2d65db7b4a12434fcb4ee2.jpg"
+  },
+  "meedzs": {
+    "displayName": "Team meedzs",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/13eea83d867b32106862ac0b2b3d3c40"
+  },
+  "ifeellikemontez": {
+    "displayName": "Montezuma's Negras",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/0a937d29c073d8893dfd7b4e365e4363"
+  },
+  "jwilly301": {
+    "displayName": "Team jwilly301",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/8edabc3e52325542fcd4228726b804e0"
+  },
+  "tredagoat082410": {
+    "displayName": "Cold plays hot corner",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/4f4090e5e9c3941414db40a871e3e909"
+  },
+  "bleedgreenz": {
+    "displayName": "Team bleedgreenz",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/b3338675f635c2c1f42b469621d38ec6"
+  },
+  "BarbieBry": {
+    "displayName": "DemChickensAshtonImLotion",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/c1c03ad4aabca1013a119f17661d23fb"
+  },
+  "TheAmberErica": {
+    "displayName": "Team TheAmberErica",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/0a8202bcaec9acdd00beaec067cc75b4"
+  },
+  "xtepps": {
+    "displayName": "Team xtepps",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/725aaca491cef7045d2090c9cfa4c025"
+  }
+}
+};
+
+async function fetchSleeperData(league) {
+  // Data is hardcoded — no API call needed
+  sleeperData[league] = TEAM_DATA[league] || {};
 }
 
 function getTeamData(league, username) {
-  const key = username.toLowerCase();
-  const d = sleeperData[league] && sleeperData[league][key];
-  if (d) return d;
-  return { displayName: username, username: username, avatarUrl: null };
+  const store = sleeperData[league] || TEAM_DATA[league] || {};
+  // Try exact match first, then case-insensitive
+  if (store[username]) return store[username];
+  const key = Object.keys(store).find(k => k.toLowerCase() === username.toLowerCase());
+  if (key) return store[key];
+  return { displayName: username, avatarUrl: null };
 }
 
 // ── STORAGE ───────────────────────────────────────────────────────────────────
@@ -519,6 +598,7 @@ function buildRosterPreview(league) {
       avatarEl.className = 'roster-avatar';
       avatarEl.src = td.avatarUrl;
       avatarEl.alt = td.displayName;
+      avatarEl.crossOrigin = 'anonymous';
       avatarEl.onerror = function(){ this.style.display='none'; };
     } else {
       avatarEl = document.createElement('div');
@@ -630,6 +710,7 @@ function showReveal() {
   const img = document.getElementById('reveal-avatar-img');
   const ph = document.getElementById('reveal-avatar-ph');
   if (avatarUrl) {
+    img.crossOrigin = 'anonymous';
     img.src = avatarUrl; img.style.display = 'block'; ph.style.display = 'none';
     ph.textContent = team[0].toUpperCase();
   } else {
@@ -683,7 +764,7 @@ function addResultRow({ pick, seed, team, avatarUrl, odds, tradedTo, tradedToDis
 
   let avatarHtml;
   if (avatarUrl) {
-    avatarHtml = `<img class="result-avatar" src="${avatarUrl}" alt="${team}" onerror="this.style.display='none'">`;
+    avatarHtml = `<img class="result-avatar" crossorigin="anonymous" src="${avatarUrl}" alt="${team}" onerror="this.style.display='none'">`;
   } else {
     avatarHtml = `<div class="result-avatar-placeholder">${(team||'?')[0].toUpperCase()}</div>`;
   }
