@@ -188,6 +188,19 @@
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 const API = (endpoint) => `/api/sleeper?endpoint=${encodeURIComponent(endpoint)}`;
 
+function proxyAvatar(url) {
+  if (!url) return null;
+  if (url.includes('sleepercdn.com/uploads/')) {
+    const path = url.split('sleepercdn.com/')[1];
+    return `/api/sleeper?avatar=${encodeURIComponent(path)}`;
+  }
+  if (url.includes('sleepercdn.com/avatars/thumbs/')) {
+    const hash = url.split('/thumbs/')[1];
+    return `/api/sleeper?avatar=${encodeURIComponent(hash)}`;
+  }
+  return url;
+}
+
 const LEAGUE_IDS = {
   CFL: '1325949536840974336',
   MinuteMaid: '1325971620531015680'
@@ -253,7 +266,8 @@ let draftCache = {};
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function getTeam(league, username) {
-  return TEAM_DATA[league][username] || { displayName: username, avatarUrl: null };
+  const data = TEAM_DATA[league][username] || { displayName: username, avatarUrl: null };
+  return { ...data, avatarUrl: proxyAvatar(data.avatarUrl) };
 }
 
 function getRosterUsername(league, rosterId) {

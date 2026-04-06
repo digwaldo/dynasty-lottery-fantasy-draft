@@ -379,6 +379,21 @@ let animating = false;
 let revealed = false;
 let lotteryStarted = false;
 
+// ── AVATAR PROXY ─────────────────────────────────────────────────────────────
+function proxyAvatar(url) {
+  if (!url) return null;
+  // Route through our Vercel proxy to fix iOS Safari CORS issues
+  if (url.includes('sleepercdn.com/uploads/')) {
+    const path = url.split('sleepercdn.com/')[1];
+    return `/api/sleeper?avatar=${encodeURIComponent(path)}`;
+  }
+  if (url.includes('sleepercdn.com/avatars/thumbs/')) {
+    const hash = url.split('/thumbs/')[1];
+    return `/api/sleeper?avatar=${encodeURIComponent(hash)}`;
+  }
+  return url;
+}
+
 // ── HARDCODED TEAM DATA (from Sleeper API) ───────────────────────────────────
 const TEAM_DATA = {
   CFL: {
@@ -482,11 +497,14 @@ async function fetchSleeperData(league) {
 
 function getTeamData(league, username) {
   const store = sleeperData[league] || TEAM_DATA[league] || {};
-  // Try exact match first, then case-insensitive
-  if (store[username]) return store[username];
-  const key = Object.keys(store).find(k => k.toLowerCase() === username.toLowerCase());
-  if (key) return store[key];
-  return { displayName: username, avatarUrl: null };
+  let data = store[username];
+  if (!data) {
+    const key = Object.keys(store).find(k => k.toLowerCase() === username.toLowerCase());
+    if (key) data = store[key];
+  }
+  if (!data) return { displayName: username, avatarUrl: null };
+  // Proxy avatar through our server to fix iOS Safari
+  return { ...data, avatarUrl: proxyAvatar(data.avatarUrl) };
 }
 
 // ── STORAGE ───────────────────────────────────────────────────────────────────
