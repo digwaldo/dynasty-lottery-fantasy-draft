@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commissioner cinccity · League History</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Teko:wght@300;400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange:#E8621A;--orange2:#F08030;--sunset:#F5A623;
+    --red:#C0181A;--teal:#00A89C;--teal2:#00C8BC;--teal-dark:#005f5a;
+    --navy:#0d1a2b;--navy2:#0a1520;--chrome:#d0d8e0;--chrome2:#f0f4f8;
+    --text:#f0ede8;--muted:#7a9ab0;--gold:#F5A623;
+    --border-teal:rgba(0,168,156,0.35);--border-orange:rgba(232,98,26,0.5);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--navy2);color:var(--text);font-family:'Teko',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+  .bg-layer{position:fixed;inset:0;z-index:0;overflow:hidden;}
+  .bg-sunset{position:absolute;inset:0;background:linear-gradient(180deg,#0d1a2b 0%,#0d2040 20%,#1a3a5c 45%,#2a4a2a 60%,#3a2a0a 75%,#1a0a08 100%);}
+  .wave-layer{position:absolute;bottom:0;left:0;width:200%;height:45%;}
+  .wave1{animation:waveMove1 8s linear infinite;opacity:0.6;}
+  .wave2{animation:waveMove2 12s linear infinite;opacity:0.4;bottom:2%;}
+  .wave3{animation:waveMove3 6s linear infinite;opacity:0.3;bottom:-2%;}
+  @keyframes waveMove1{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @keyframes waveMove2{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+  @keyframes waveMove3{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .glow-orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;}
+  .orb-orange{width:500px;height:300px;background:rgba(232,98,26,0.12);top:30%;left:50%;transform:translateX(-50%);}
+  .orb-teal{width:400px;height:400px;background:rgba(0,168,156,0.08);bottom:-100px;left:-100px;}
+  .orb-gold{width:300px;height:300px;background:rgba(245,166,35,0.05);top:10%;right:-100px;}
+  .frame-line-top,.frame-line-bottom{position:fixed;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--red),var(--orange),var(--sunset),var(--orange),var(--red));z-index:100;}
+  .frame-line-top{top:0;}.frame-line-bottom{bottom:0;}
+
+  .container{position:relative;z-index:2;max-width:900px;margin:0 auto;padding:20px 16px 80px;}
+
+  /* HEADER */
+  header{text-align:center;padding:28px 0 22px;margin-bottom:24px;position:relative;}
+  .header-border{position:absolute;bottom:0;left:10%;right:10%;height:2px;background:linear-gradient(90deg,transparent,var(--gold),var(--orange),var(--gold),transparent);}
+  .commissioner-line{font-size:12px;letter-spacing:5px;color:var(--teal2);text-transform:uppercase;margin-bottom:4px;}
+  header h1{font-family:'Anton',sans-serif;font-size:clamp(38px,10vw,78px);letter-spacing:2px;line-height:0.88;background:linear-gradient(160deg,var(--chrome2),var(--chrome),#a0aab4,var(--chrome),var(--chrome2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.5));}
+  .header-sub{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px;}
+  .header-sub-line{flex:1;max-width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--gold));}
+  .header-sub-line.right{background:linear-gradient(90deg,var(--gold),transparent);}
+  .header-sub span{font-size:13px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;font-weight:600;}
+
+  /* NAV */
+  .nav-back{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-family:'Teko',sans-serif;font-size:14px;letter-spacing:3px;text-decoration:none;text-transform:uppercase;padding:8px 0;margin-bottom:8px;transition:color 0.2s;}
+  .nav-back:hover{color:var(--teal2);}
+
+  /* LEAGUE TABS */
+  .league-tabs{display:flex;gap:8px;margin-bottom:28px;}
+  .league-tab{flex:1;padding:12px;background:rgba(10,21,32,0.85);border:1px solid var(--border-orange);border-radius:3px;font-family:'Anton',sans-serif;font-size:18px;letter-spacing:3px;color:var(--muted);cursor:pointer;text-align:center;transition:all 0.2s;}
+  .league-tab.active{border-color:var(--gold);color:var(--gold);background:rgba(245,166,35,0.06);}
+  .league-tab:hover{color:var(--text);}
+
+  /* SECTION HEADERS */
+  .section-header{display:flex;align-items:center;gap:14px;margin-bottom:16px;margin-top:8px;}
+  .section-icon{font-size:22px;}
+  .section-title{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:4px;text-transform:uppercase;}
+  .section-title.gold{color:var(--gold);}
+  .section-title.teal{color:var(--teal2);}
+  .section-line{flex:1;height:1px;}
+  .section-line.gold{background:linear-gradient(90deg,var(--gold),transparent);}
+  .section-line.teal{background:linear-gradient(90deg,var(--border-teal),transparent);}
+
+  /* CHAMPIONSHIP BANNERS - large, prominent */
+  .champ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:36px;}
+  .champ-card{position:relative;border-radius:6px;overflow:hidden;cursor:pointer;transition:transform 0.25s,box-shadow 0.25s;box-shadow:0 4px 24px rgba(0,0,0,0.5);}
+  .champ-card:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 8px 40px rgba(245,166,35,0.25);}
+  .champ-card img{width:100%;display:block;border-radius:6px;}
+  .champ-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 50%);border-radius:6px;pointer-events:none;}
+  .champ-card-badge{position:absolute;top:10px;right:10px;background:rgba(245,166,35,0.9);color:var(--navy2);font-family:'Anton',sans-serif;font-size:11px;letter-spacing:2px;padding:3px 8px;border-radius:2px;}
+
+  /* DIVISION BANNERS - smaller grid */
+  .div-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:36px;}
+  .div-card{position:relative;border-radius:5px;overflow:hidden;cursor:pointer;transition:transform 0.25s,box-shadow 0.25s;box-shadow:0 2px 16px rgba(0,0,0,0.4);}
+  .div-card:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 6px 28px rgba(0,168,156,0.2);}
+  .div-card img{width:100%;display:block;border-radius:5px;}
+  .div-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 40%);border-radius:5px;pointer-events:none;}
+  .div-card-label{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-family:'Anton',sans-serif;font-size:11px;letter-spacing:2px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.8);}
+
+  /* LIGHTBOX */
+  .lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;}
+  .lightbox.open{display:flex;}
+  .lightbox-inner{position:relative;max-width:90vw;max-height:90vh;}
+  .lightbox img{max-width:90vw;max-height:85vh;object-fit:contain;border-radius:4px;box-shadow:0 8px 60px rgba(0,0,0,0.8);}
+  .lightbox-close{position:absolute;top:-14px;right:-14px;width:36px;height:36px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:16px;transition:background 0.2s;}
+  .lightbox-close:hover{background:rgba(255,255,255,0.2);}
+
+  /* EMPTY */
+  .empty-section{text-align:center;padding:30px;color:var(--muted);font-family:'Barlow',sans-serif;font-size:13px;letter-spacing:1px;background:rgba(255,255,255,0.02);border:1px dashed rgba(255,255,255,0.08);border-radius:4px;margin-bottom:24px;}
+</style>
+</head>
+<body>
+<div class="bg-layer">
+  <div class="bg-sunset"></div>
+  <svg class="wave-layer wave1" viewBox="0 0 1440 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,80 C120,20 240,140 360,80 C480,20 600,140 720,80 C840,20 960,140 1080,80 C1200,20 1320,140 1440,80 L1440,200 L0,200 Z" fill="#00A89C" opacity="0.25"/>
+    <path d="M0,100 C180,40 360,160 540,100 C720,40 900,160 1080,100 C1260,40 1440,160 1440,100 L1440,200 L0,200 Z" fill="#005f5a" opacity="0.3"/>
+  </svg>
+  <svg class="wave-layer wave2" viewBox="0 0 1440 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,60 C90,120 180,20 360,70 C540,120 630,10 720,60 C810,110 990,20 1080,70 C1170,120 1350,30 1440,60 L1440,180 L0,180 Z" fill="#007a74" opacity="0.2"/>
+  </svg>
+  <svg class="wave-layer wave3" viewBox="0 0 1440 160" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,40 C200,100 400,0 600,50 C800,100 1000,0 1200,50 C1300,75 1370,30 1440,50 L1440,160 L0,160 Z" fill="#00C8BC" opacity="0.12"/>
+  </svg>
+  <div class="glow-orb orb-orange"></div>
+  <div class="glow-orb orb-teal"></div>
+  <div class="glow-orb orb-gold"></div>
+</div>
+<div class="frame-line-top"></div>
+<div class="frame-line-bottom"></div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <div class="lightbox-inner" onclick="event.stopPropagation()">
+    <div class="lightbox-close" onclick="closeLightbox()">✕</div>
+    <img id="lightbox-img" src="" alt="">
+  </div>
+</div>
+
+<div class="container">
+  <a href="/" class="nav-back">‹ Lottery Home</a>
+
+  <header>
+    <div class="commissioner-line">Commissioner cinccity</div>
+    <h1>LEAGUE HISTORY</h1>
+    <div class="header-sub">
+      <div class="header-sub-line"></div>
+      <span>Champions &amp; Division Winners</span>
+      <div class="header-sub-line right"></div>
+    </div>
+    <div class="header-border"></div>
+  </header>
+
+  <div class="league-tabs">
+    <div class="league-tab active" id="tab-CFL" onclick="switchLeague('CFL')">CFL</div>
+    <div class="league-tab" id="tab-MinuteMaid" onclick="switchLeague('MinuteMaid')">MinuteMaid</div>
+  </div>
+
+  <div id="history-content"></div>
+</div>
+
+<script>
+const HISTORY = {
+  CFL: {
+    championships: [
+      {
+        year: 2025,
+        team: 'Kushwopp',
+        record: '12-2',
+        image: '/images/cfl-champ-kushwopp-2025.png',
+        label: '2025 Champion'
+      },
+      {
+        year: 2024,
+        team: 'Bleedgreenz',
+        record: '11-3',
+        image: '/images/cfl-champ-bleedgreenz-2024.png',
+        label: '2024 Champion'
+      },
+    ],
+    divisions: [
+      {
+        year: 2025,
+        team: 'Kushwopp',
+        division: 'North Division (Cecil)',
+        image: '/images/cfl-div-kushwopp-2025.png',
+        label: 'North · 2025'
+      },
+      {
+        year: 2025,
+        team: 'dweeebzz',
+        division: 'East Division (Howard)',
+        image: '/images/cfl-div-dweeebzz-2025.png',
+        label: 'East · 2025'
+      },
+      {
+        year: 2025,
+        team: 'ifeellikemontez',
+        division: 'West Division (Baltimore)',
+        image: '/images/cfl-div-montez-2025.png',
+        label: 'West · 2025'
+      },
+      {
+        year: 2025,
+        team: 'SPCTIGERS',
+        division: 'South Division (Prince George\'s)',
+        image: '/images/cfl-div-spctigers-2025.png',
+        label: 'South · 2025'
+      },
+    ]
+  },
+  MinuteMaid: {
+    championships: [
+      {
+        year: 2025,
+        team: 'jwilly301',
+        record: '7-7',
+        image: '/images/mm-champ-jwilly-2025.png',
+        label: '2025 Inaugural Champion'
+      },
+    ],
+    divisions: [
+      {
+        year: 2025,
+        team: 'TheAmberErica',
+        division: 'Tropical Punch Division',
+        image: '/images/mm-div-ambererica-2025.png',
+        label: 'Tropical Punch · 2025'
+      },
+      {
+        year: 2025,
+        team: 'BarbieBry',
+        division: 'Fruit Punch Division',
+        image: '/images/mm-div-barbiebry-2025.png',
+        label: 'Fruit Punch · 2025'
+      },
+    ]
+  }
+};
+
+let activeLeague = 'CFL';
+
+function switchLeague(league) {
+  activeLeague = league;
+  document.getElementById('tab-CFL').classList.toggle('active', league === 'CFL');
+  document.getElementById('tab-MinuteMaid').classList.toggle('active', league === 'MinuteMaid');
+  render();
+}
+
+function render() {
+  const data = HISTORY[activeLeague];
+  let html = '';
+
+  // CHAMPIONSHIPS
+  html += `<div class="section-header">
+    <span class="section-icon">🏆</span>
+    <div class="section-title gold">Championships</div>
+    <div class="section-line gold"></div>
+  </div>`;
+
+  if (data.championships.length > 0) {
+    html += '<div class="champ-grid">';
+    data.championships.forEach((c, i) => {
+      html += `<div class="champ-card" onclick="openLightbox('${c.image}')">
+        <img src="${c.image}" alt="${c.team} ${c.year}" loading="lazy" onerror="this.parentElement.style.display='none'">
+        <div class="champ-card-overlay"></div>
+        <div class="champ-card-badge">${c.label}</div>
+      </div>`;
+    });
+    html += '</div>';
+  } else {
+    html += '<div class="empty-section">No championship banners yet.</div>';
+  }
+
+  // DIVISIONS
+  html += `<div class="section-header">
+    <span class="section-icon">🎖️</span>
+    <div class="section-title teal">Division Winners</div>
+    <div class="section-line teal"></div>
+  </div>`;
+
+  if (data.divisions.length > 0) {
+    html += '<div class="div-grid">';
+    data.divisions.forEach(d => {
+      html += `<div class="div-card" onclick="openLightbox('${d.image}')">
+        <img src="${d.image}" alt="${d.team} ${d.division}" loading="lazy" onerror="this.parentElement.style.display='none'">
+        <div class="div-card-overlay"></div>
+        <div class="div-card-label">${d.label}</div>
+      </div>`;
+    });
+    html += '</div>';
+  } else {
+    html += '<div class="empty-section">No division banners yet.</div>';
+  }
+
+  document.getElementById('history-content').innerHTML = html;
+}
+
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeLightbox();
+});
+
+render();
+</script>
+</body>
+</html>
