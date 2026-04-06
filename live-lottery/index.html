@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commissioner cinccity · Live Draft Lottery</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Teko:wght@300;400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --orange:#E8621A;--orange2:#F08030;--sunset:#F5A623;
+    --red:#C0181A;--teal:#00A89C;--teal2:#00C8BC;--teal-dark:#005f5a;
+    --navy:#0d1a2b;--navy2:#0a1520;--chrome:#d0d8e0;--chrome2:#f0f4f8;
+    --text:#f0ede8;--muted:#7a9ab0;
+    --border-teal:rgba(0,168,156,0.35);--border-orange:rgba(232,98,26,0.5);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--navy2);color:var(--text);font-family:'Teko',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+  /* BG */
+  .bg-layer{position:fixed;inset:0;z-index:0;overflow:hidden;}
+  .bg-sunset{position:absolute;inset:0;background:linear-gradient(180deg,#0d1a2b 0%,#0d2040 20%,#1a3a5c 45%,#2a4a2a 60%,#3a2a0a 75%,#1a0a08 100%);}
+  .wave-layer{position:absolute;bottom:0;left:0;width:200%;height:45%;}
+  .wave1{animation:waveMove1 8s linear infinite;opacity:0.6;}
+  .wave2{animation:waveMove2 12s linear infinite;opacity:0.4;bottom:2%;}
+  .wave3{animation:waveMove3 6s linear infinite;opacity:0.3;bottom:-2%;}
+  @keyframes waveMove1{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @keyframes waveMove2{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+  @keyframes waveMove3{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .glow-orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;}
+  .orb-orange{width:500px;height:300px;background:rgba(232,98,26,0.12);top:30%;left:50%;transform:translateX(-50%);}
+  .orb-teal{width:400px;height:400px;background:rgba(0,168,156,0.08);bottom:-100px;left:-100px;}
+  .orb-teal2{width:300px;height:300px;background:rgba(0,168,156,0.06);bottom:-50px;right:-50px;}
+  .frame-line-top,.frame-line-bottom{position:fixed;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--red),var(--orange),var(--sunset),var(--orange),var(--red));z-index:100;}
+  .frame-line-top{top:0;}.frame-line-bottom{bottom:0;}
+
+  .container{position:relative;z-index:2;max-width:860px;margin:0 auto;padding:20px 16px 70px;}
+
+  /* HEADER */
+  header{text-align:center;padding:28px 0 18px;margin-bottom:20px;position:relative;}
+  .header-border{position:absolute;bottom:0;left:10%;right:10%;height:2px;background:linear-gradient(90deg,transparent,var(--red),var(--orange),var(--teal),var(--red),transparent);}
+  .commissioner-line{font-size:12px;letter-spacing:5px;color:var(--teal2);text-transform:uppercase;margin-bottom:4px;}
+  header h1{font-family:'Anton',sans-serif;font-size:clamp(36px,10vw,72px);letter-spacing:2px;line-height:0.88;background:linear-gradient(160deg,var(--chrome2),var(--chrome),#a0aab4,var(--chrome),var(--chrome2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .header-sub{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:8px;}
+  .header-sub-line{flex:1;max-width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--orange));}
+  .header-sub-line.right{background:linear-gradient(90deg,var(--orange),transparent);}
+  .header-sub span{font-size:13px;letter-spacing:4px;color:var(--orange2);text-transform:uppercase;font-weight:600;}
+
+  /* LEAGUE TABS */
+  .league-tabs{display:flex;gap:8px;margin-bottom:20px;}
+  .league-tab{flex:1;padding:11px;background:rgba(10,21,32,0.85);border:1px solid var(--border-orange);border-radius:3px;font-family:'Anton',sans-serif;font-size:18px;letter-spacing:3px;color:var(--muted);cursor:pointer;text-align:center;transition:all 0.2s;}
+  .league-tab.active{border-color:var(--teal);color:var(--teal2);background:rgba(0,168,156,0.08);}
+
+  /* LIVE BADGE */
+  .live-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(192,24,26,0.15);border:1px solid rgba(192,24,26,0.4);border-radius:2px;padding:4px 10px;font-size:11px;letter-spacing:3px;color:#ff6060;text-transform:uppercase;font-family:'Barlow',sans-serif;margin-bottom:16px;}
+  .live-dot{width:6px;height:6px;border-radius:50%;background:#ff4040;animation:livePulse 1s infinite;}
+  @keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
+
+  /* COUNTDOWN */
+  .countdown-wrap{background:rgba(10,21,32,0.9);border:1px solid var(--border-teal);border-top:3px solid var(--teal);border-radius:4px;padding:20px;text-align:center;margin-bottom:20px;backdrop-filter:blur(10px);}
+  .countdown-label{font-size:11px;letter-spacing:4px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;font-family:'Barlow',sans-serif;}
+  .countdown-pick{font-family:'Anton',sans-serif;font-size:14px;letter-spacing:4px;color:var(--orange2);margin-bottom:12px;}
+  .countdown-timer{display:flex;align-items:center;justify-content:center;gap:8px;}
+  .countdown-unit{text-align:center;}
+  .countdown-num{font-family:'Anton',sans-serif;font-size:clamp(32px,8vw,52px);line-height:1;background:linear-gradient(135deg,var(--chrome2),var(--chrome));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .countdown-unit-label{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-family:'Barlow',sans-serif;}
+  .countdown-sep{font-family:'Anton',sans-serif;font-size:36px;color:var(--border-teal);margin-bottom:12px;}
+  .countdown-date{font-size:12px;color:var(--muted);letter-spacing:2px;font-family:'Barlow',sans-serif;margin-top:8px;}
+
+  /* SCHEDULE STRIP */
+  .schedule-strip{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:20px;-ms-overflow-style:none;scrollbar-width:none;}
+  .schedule-strip::-webkit-scrollbar{display:none;}
+  .schedule-day{flex-shrink:0;background:rgba(10,21,32,0.8);border:1px solid var(--border-teal);border-radius:3px;padding:8px 10px;text-align:center;min-width:60px;}
+  .schedule-day.today{border-color:var(--orange);background:rgba(232,98,26,0.08);}
+  .schedule-day.done{border-color:var(--teal-dark);opacity:0.6;}
+  .schedule-day.upcoming{opacity:0.5;}
+  .schedule-day-date{font-size:10px;color:var(--muted);letter-spacing:1px;font-family:'Barlow',sans-serif;}
+  .schedule-day-pick{font-family:'Anton',sans-serif;font-size:16px;color:var(--chrome);letter-spacing:1px;}
+  .schedule-day.done .schedule-day-pick{color:var(--teal2);}
+  .schedule-day.today .schedule-day-pick{color:var(--orange2);}
+  .schedule-day-check{font-size:12px;color:var(--teal2);margin-top:2px;}
+
+  /* REVEAL ZONE */
+  .reveal-zone{background:rgba(8,18,28,0.9);border:2px solid var(--border-teal);border-top:3px solid var(--teal);border-radius:3px;padding:30px 20px;text-align:center;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;margin-bottom:18px;backdrop-filter:blur(10px);}
+  .reveal-zone::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--teal-dark),var(--teal2),var(--teal-dark));}
+  .waiting-state{display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .trophy-icon{font-size:48px;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 0 12px rgba(0,168,156,0.4));}
+  @keyframes float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+  .waiting-text{font-size:13px;letter-spacing:4px;color:var(--muted);text-transform:uppercase;}
+  .spinning-name{font-family:'Anton',sans-serif;font-size:36px;letter-spacing:3px;color:var(--teal2);animation:spinPulse 0.12s infinite;}
+  @keyframes spinPulse{0%,100%{opacity:0.4}50%{opacity:1}}
+  .revealed-state{display:none;flex-direction:column;align-items:center;gap:6px;animation:revealIn 0.7s cubic-bezier(0.16,1,0.3,1) forwards;}
+  @keyframes revealIn{from{opacity:0;transform:scale(0.85) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .reveal-avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid var(--teal);filter:drop-shadow(0 0 16px rgba(0,168,156,0.5));}
+  .reveal-avatar-ph{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:3px solid var(--teal);display:flex;align-items:center;justify-content:center;font-size:24px;font-family:'Anton',sans-serif;color:var(--muted);}
+  .reveal-pick-label{font-size:12px;letter-spacing:4px;color:var(--teal2);text-transform:uppercase;}
+  .reveal-team-name{font-family:'Anton',sans-serif;font-size:clamp(30px,8vw,56px);letter-spacing:2px;line-height:1;background:linear-gradient(135deg,var(--chrome2),var(--chrome),#a0aab4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;}
+  .reveal-traded{font-size:12px;color:var(--orange2);letter-spacing:1px;font-family:'Barlow',sans-serif;}
+  .reveal-traded strong{color:#fff;}
+  .reveal-odds{font-size:14px;color:var(--orange2);letter-spacing:2px;}
+  .confetti-burst{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+  .cp{position:absolute;width:7px;height:7px;border-radius:1px;animation:cfFall 1.3s ease-out forwards;}
+  @keyframes cfFall{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(var(--tx),140px) rotate(420deg);opacity:0}}
+
+  /* COMMISSIONER DRAW BUTTON */
+  .btn-draw{width:100%;padding:18px;background:transparent;border:2px solid var(--orange);border-radius:3px;color:var(--orange2);font-family:'Anton',sans-serif;font-size:22px;letter-spacing:5px;cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden;margin-bottom:22px;}
+  .btn-draw::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--red),var(--orange));transform:translateX(-101%);transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);z-index:0;}
+  .btn-draw:hover::before{transform:translateX(0);}
+  .btn-draw:hover{color:#fff;}
+  .btn-draw span{position:relative;z-index:1;}
+  .btn-draw:disabled{border-color:#333;color:#444;cursor:not-allowed;}
+  .btn-draw:disabled::before{display:none;}
+
+  /* RESULTS LOG */
+  .results-section h3{font-family:'Anton',sans-serif;font-size:16px;letter-spacing:5px;color:var(--teal);margin-bottom:12px;border-bottom:1px solid var(--border-teal);padding-bottom:8px;}
+  .results-list{display:flex;flex-direction:column;gap:6px;}
+  .result-row{display:flex;align-items:center;gap:10px;background:rgba(8,18,28,0.8);border:1px solid var(--border-teal);border-left:3px solid var(--teal);border-radius:3px;padding:10px 12px;backdrop-filter:blur(6px);}
+  .result-row.animate{animation:slideIn 0.4s ease forwards;}
+  @keyframes slideIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+  .result-pick-num{font-family:'Anton',sans-serif;font-size:26px;background:linear-gradient(135deg,var(--orange2),var(--sunset));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;width:28px;flex-shrink:0;text-align:center;}
+  .result-divider{width:1px;height:36px;background:var(--border-teal);flex-shrink:0;}
+  .result-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid var(--border-teal);flex-shrink:0;}
+  .result-avatar-ph{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:13px;font-family:'Anton',sans-serif;color:var(--muted);flex-shrink:0;}
+  .result-info{flex:1;min-width:0;}
+  .result-team{font-family:'Anton',sans-serif;font-size:17px;letter-spacing:1px;color:var(--chrome);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .result-traded-line{font-size:10px;color:var(--orange2);font-family:'Barlow',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .result-meta{font-family:'Barlow',sans-serif;font-size:11px;color:var(--muted);text-align:right;line-height:1.5;flex-shrink:0;}
+  .result-meta .odds-highlight{color:var(--teal2);}
+  .result-date{font-size:10px;color:var(--teal-dark);font-family:'Barlow',sans-serif;}
+
+  /* COMMISSIONER PANEL */
+  .commissioner-panel{background:rgba(10,21,32,0.9);border:1px solid var(--border-orange);border-top:3px solid var(--red);border-radius:3px;padding:16px;margin-bottom:20px;backdrop-filter:blur(10px);}
+  .commissioner-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;letter-spacing:3px;color:var(--orange2);text-transform:uppercase;font-family:'Barlow',sans-serif;margin-bottom:12px;}
+  .commissioner-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--orange2);}
+
+  /* PIN MODAL */
+  .pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;display:flex;align-items:center;justify-content:center;}
+  .pin-box{background:var(--navy);border:1px solid var(--border-orange);border-top:3px solid var(--red);border-radius:4px;padding:28px;width:90%;max-width:340px;text-align:center;}
+  .pin-title{font-family:'Anton',sans-serif;font-size:24px;letter-spacing:3px;color:var(--chrome2);margin-bottom:6px;}
+  .pin-sub{font-size:13px;color:var(--muted);font-family:'Barlow',sans-serif;margin-bottom:20px;letter-spacing:1px;}
+  .pin-input{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border-orange);border-radius:3px;padding:12px;color:var(--text);font-family:'Teko',sans-serif;font-size:24px;letter-spacing:8px;text-align:center;outline:none;margin-bottom:12px;}
+  .pin-input:focus{border-color:var(--orange);}
+  .pin-error{font-size:12px;color:var(--red);font-family:'Barlow',sans-serif;margin-bottom:10px;min-height:16px;}
+  .btn-pin{width:100%;padding:13px;background:linear-gradient(135deg,var(--red),var(--orange));border:none;border-radius:3px;color:#fff;font-family:'Anton',sans-serif;font-size:18px;letter-spacing:4px;cursor:pointer;}
+  .btn-commissioner-toggle{font-size:12px;color:var(--muted);letter-spacing:2px;text-align:center;cursor:pointer;margin-top:16px;font-family:'Barlow',sans-serif;text-decoration:underline;display:block;}
+
+  /* COMPLETE BANNER */
+  .complete-banner{text-align:center;padding:28px;background:rgba(8,18,28,0.9);border:2px solid var(--orange);border-top:4px solid var(--red);border-radius:3px;margin-bottom:20px;}
+  .complete-banner h2{font-family:'Anton',sans-serif;font-size:38px;letter-spacing:4px;background:linear-gradient(135deg,var(--orange2),var(--sunset));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .complete-banner p{font-size:13px;color:var(--muted);letter-spacing:1px;margin-top:6px;font-family:'Barlow',sans-serif;}
+
+  /* NAV */
+  .nav-back{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-family:'Teko',sans-serif;font-size:14px;letter-spacing:3px;text-decoration:none;text-transform:uppercase;padding:8px 0;margin-bottom:8px;transition:color 0.2s;}
+  .nav-back:hover{color:var(--teal2);}
+
+  .loading-wrap{text-align:center;padding:40px;}
+  .spinner{width:36px;height:36px;border:3px solid var(--border-teal);border-top-color:var(--teal2);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{font-size:13px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
+</style>
+</head>
+<body>
+<div class="bg-layer">
+  <div class="bg-sunset"></div>
+  <svg class="wave-layer wave1" viewBox="0 0 1440 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,80 C120,20 240,140 360,80 C480,20 600,140 720,80 C840,20 960,140 1080,80 C1200,20 1320,140 1440,80 L1440,200 L0,200 Z" fill="#00A89C" opacity="0.25"/>
+    <path d="M0,100 C180,40 360,160 540,100 C720,40 900,160 1080,100 C1260,40 1440,160 1440,100 L1440,200 L0,200 Z" fill="#005f5a" opacity="0.3"/>
+  </svg>
+  <svg class="wave-layer wave2" viewBox="0 0 1440 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,60 C90,120 180,20 360,70 C540,120 630,10 720,60 C810,110 990,20 1080,70 C1170,120 1350,30 1440,60 L1440,180 L0,180 Z" fill="#007a74" opacity="0.2"/>
+  </svg>
+  <svg class="wave-layer wave3" viewBox="0 0 1440 160" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,40 C200,100 400,0 600,50 C800,100 1000,0 1200,50 C1300,75 1370,30 1440,50 L1440,160 L0,160 Z" fill="#00C8BC" opacity="0.12"/>
+  </svg>
+  <div class="glow-orb orb-orange"></div>
+  <div class="glow-orb orb-teal"></div>
+  <div class="glow-orb orb-teal2"></div>
+</div>
+<div class="frame-line-top"></div>
+<div class="frame-line-bottom"></div>
+
+<!-- PIN MODAL -->
+<div class="pin-overlay" id="pin-overlay" style="display:none;">
+  <div class="pin-box">
+    <div class="pin-title">COMMISSIONER</div>
+    <div class="pin-sub">Enter your PIN to draw picks</div>
+    <input class="pin-input" id="pin-input" type="password" maxlength="8" placeholder="••••••••">
+    <div class="pin-error" id="pin-error"></div>
+    <button class="btn-pin" onclick="submitPin()">ENTER</button>
+  </div>
+</div>
+
+<div class="container">
+  <a href="/" class="nav-back">‹ Lottery Home</a>
+
+  <header>
+    <div class="commissioner-line">Commissioner cinccity</div>
+    <h1>LIVE DRAFT</h1>
+    <div class="header-sub">
+      <div class="header-sub-line"></div>
+      <span>2026 Rookie Lottery</span>
+      <div class="header-sub-line right"></div>
+    </div>
+    <div class="header-border"></div>
+  </header>
+
+  <div class="league-tabs">
+    <div class="league-tab active" id="tab-CFL" onclick="switchLeague('CFL')">CFL</div>
+    <div class="league-tab" id="tab-MinuteMaid" onclick="switchLeague('MinuteMaid')">MinuteMaid</div>
+  </div>
+
+  <div id="main-content">
+    <div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading...</div></div>
+  </div>
+
+  <a class="btn-commissioner-toggle" onclick="showPinModal()" id="commissioner-toggle">🔐 Commissioner Login</a>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://vnpsxpofnquntnydcklu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucHN4cG9mbnF1bnRueWRja2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODQ5MzgsImV4cCI6MjA4OTg2MDkzOH0.ergWPNr6dWBAYQP2S03f5_wOtH2QA03TxaBpOSC9Bj8';
+const COMMISSIONER_PIN = '00136860';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Draft schedule: pick_slot -> date (ET 5:30pm)
+// Pick slot 8 = Apr 18, slot 7 = Apr 19, ..., slot 1 = Apr 25 (both 1.01 & 1.02 on last day)
+const SCHEDULE = [
+  { slot: 8, date: '2026-04-18', label: 'Apr 18' },
+  { slot: 7, date: '2026-04-19', label: 'Apr 19' },
+  { slot: 6, date: '2026-04-20', label: 'Apr 20' },
+  { slot: 5, date: '2026-04-21', label: 'Apr 21' },
+  { slot: 4, date: '2026-04-22', label: 'Apr 22' },
+  { slot: 3, date: '2026-04-23', label: 'Apr 23' },
+  { slot: 2, date: '2026-04-24', label: 'Apr 24' },
+  { slot: 1, date: '2026-04-24', label: 'Apr 24' },
+];
+
+const ODDS_TABLE = {
+  1:{1:14.0,2:13.4,3:12.7,4:12.0,5:47.9,6:0,7:0,8:0},
+  2:{1:14.0,2:13.4,3:12.7,4:12.0,5:27.8,6:20.0,7:0,8:0},
+  3:{1:14.0,2:13.4,3:12.7,4:12.0,5:14.8,6:26.0,7:7.0,8:0},
+  4:{1:12.5,2:12.2,3:11.9,4:11.5,5:7.2,6:25.7,7:16.7,8:2.2},
+  5:{1:10.5,2:10.5,3:10.6,4:10.5,5:2.2,6:19.6,7:26.7,8:8.7},
+  6:{1:9.0,2:9.2,3:9.4,4:9.6,5:0,6:8.6,7:29.8,8:20.5},
+  7:{1:7.5,2:7.8,3:8.1,4:8.5,5:0,6:0,7:19.7,8:34.1},
+  8:{1:6.0,2:6.3,3:6.7,4:7.2,5:0,6:0,7:0,8:34.5}
+};
+
+const LEAGUE_CONFIG = {
+  CFL: {
+    seeds: [
+      {seed:1, username:'FrankE324',       tradedTo:null},
+      {seed:2, username:'BizyBonez',        tradedTo:null},
+      {seed:3, username:'RipCamilton03',    tradedTo:'ifeellikemontez'},
+      {seed:4, username:'cinccity',         tradedTo:null},
+      {seed:5, username:'bleedgreenz',      tradedTo:'BizyBonez'},
+      {seed:6, username:'BarbieBry',        tradedTo:null},
+      {seed:7, username:'ifeellikemontez',  tradedTo:null},
+      {seed:8, username:'SPCTIGERS',        tradedTo:null},
+    ]
+  },
+  MinuteMaid: {
+    seeds: [
+      {seed:1, username:'tredagoat082410',  tradedTo:'ifeellikemontez'},
+      {seed:2, username:'xtepps',           tradedTo:null},
+      {seed:3, username:'dweeebzz',         tradedTo:null},
+      {seed:4, username:'meedzs',           tradedTo:'bleedgreenz'},
+      {seed:5, username:'bleedgreenz',      tradedTo:'dweeebzz'},
+      {seed:6, username:'ifeellikemontez',  tradedTo:null},
+      {seed:7, username:'BarbieBry',        tradedTo:null},
+      {seed:8, username:'TheAmberErica',    tradedTo:null},
+    ]
+  }
+};
+
+function proxyAvatar(url) {
+  if (!url) return null;
+  if (url.includes('sleepercdn.com/uploads/')) return `/api/sleeper?avatar=${encodeURIComponent(url.split('sleepercdn.com/')[1])}`;
+  if (url.includes('sleepercdn.com/avatars/thumbs/')) return `/api/sleeper?avatar=${encodeURIComponent(url.split('/thumbs/')[1])}`;
+  return url;
+}
+
+const TEAM_DATA = {
+  CFL: {
+    'FrankE324':      {displayName:'Team FrankE324',    avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/1838a0a4b18ccce61fcb2e1b93618dc1')},
+    'BizyBonez':      {displayName:'Team BizyBonez',    avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/2bd384d96491e4a841ca5e6c5f5eff74')},
+    'RipCamilton03':  {displayName:'Full Speed CHASE',  avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/b319fdf8b7b5b0359d3c78622ba4d70c')},
+    'cinccity':       {displayName:'CINCCITY CINNERS',  avatarUrl:proxyAvatar('https://sleepercdn.com/uploads/499bc6ec6994f5ed8cef6c3a4efa5fbb.jpg')},
+    'bleedgreenz':    {displayName:'Bleedgreen wes',    avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/b3338675f635c2c1f42b469621d38ec6')},
+    'BarbieBry':      {displayName:'Lamarvelous Flock', avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/c1c03ad4aabca1013a119f17661d23fb')},
+    'ifeellikemontez':{displayName:'MontezBykeeeee',    avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/0a937d29c073d8893dfd7b4e365e4363')},
+    'SPCTIGERS':      {displayName:'Team SPCTIGERS',    avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/e7af4deab0289b4f5505646424895246')},
+  },
+  MinuteMaid: {
+    'tredagoat082410':{displayName:'Cold plays hot corner',      avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/4f4090e5e9c3941414db40a871e3e909')},
+    'xtepps':         {displayName:'Team xtepps',                avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/725aaca491cef7045d2090c9cfa4c025')},
+    'dweeebzz':       {displayName:'HOLD EM!',                   avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/8eb8f8bf999945d523f2c4033f70473e')},
+    'meedzs':         {displayName:'Team meedzs',                avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/13eea83d867b32106862ac0b2b3d3c40')},
+    'bleedgreenz':    {displayName:'Team bleedgreenz',           avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/b3338675f635c2c1f42b469621d38ec6')},
+    'ifeellikemontez':{displayName:"Montezuma's Negras",         avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/0a937d29c073d8893dfd7b4e365e4363')},
+    'BarbieBry':      {displayName:'DemChickensAshtonImLotion',  avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/c1c03ad4aabca1013a119f17661d23fb')},
+    'TheAmberErica':  {displayName:'Team TheAmberErica',         avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/0a8202bcaec9acdd00beaec067cc75b4')},
+  }
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let activeLeague = 'CFL';
+let isCommissioner = false;
+let drawnResults = []; // from Supabase
+let allResults = [];   // full pre-drawn lottery (commissioner only)
+let animating = false;
+let countdownInterval = null;
+let realtimeChannel = null;
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  await loadResults();
+  subscribeRealtime();
+  render();
+}
+
+// ── SUPABASE ──────────────────────────────────────────────────────────────────
+async function loadResults() {
+  const { data, error } = await sb
+    .from('lottery_results')
+    .select('*')
+    .eq('league', activeLeague)
+    .order('pick_slot', { ascending: false });
+  if (!error) drawnResults = data || [];
+}
+
+async function saveResult(result) {
+  const { error } = await sb.from('lottery_results').upsert({
+    league: activeLeague,
+    pick_slot: result.pick,
+    seed: result.seed,
+    team_name: result.team,
+    username: result.username,
+    odds: result.odds,
+    traded_to: result.tradedTo || null,
+    traded_to_display: result.tradedToDisplay || null,
+    avatar_url: result.avatarUrl || null,
+  }, { onConflict: 'league,pick_slot' });
+  if (error) console.error('Save error:', error);
+}
+
+function subscribeRealtime() {
+  if (realtimeChannel) sb.removeChannel(realtimeChannel);
+  realtimeChannel = sb
+    .channel(`lottery_${activeLeague}`)
+    .on('postgres_changes', {
+      event: '*', schema: 'public', table: 'lottery_results',
+      filter: `league=eq.${activeLeague}`
+    }, async () => {
+      await loadResults();
+      render();
+    })
+    .subscribe();
+}
+
+// ── LEAGUE SWITCH ─────────────────────────────────────────────────────────────
+async function switchLeague(league) {
+  activeLeague = league;
+  allResults = [];
+  document.getElementById('tab-CFL').classList.toggle('active', league === 'CFL');
+  document.getElementById('tab-MinuteMaid').classList.toggle('active', league === 'MinuteMaid');
+  document.getElementById('main-content').innerHTML = '<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading...</div></div>';
+  await loadResults();
+  subscribeRealtime();
+  render();
+}
+
+// ── LOTTERY LOGIC ─────────────────────────────────────────────────────────────
+function runFullLottery() {
+  let pool = [1,2,3,4,5,6,7,8];
+  allResults = [];
+  const config = LEAGUE_CONFIG[activeLeague];
+  for (let slot = 1; slot <= 8; slot++) {
+    const eligible = pool.filter(s => (ODDS_TABLE[s][slot] || 0) > 0);
+    const w = pool.map(s => ODDS_TABLE[s][slot] || 0);
+    const total = w.reduce((a,b) => a+b, 0);
+    let winner = eligible[eligible.length - 1];
+    if (total > 0) {
+      let r = Math.random() * total;
+      for (let i=0; i<pool.length; i++) { r -= w[i]; if (r <= 0) { winner = pool[i]; break; } }
+      if ((ODDS_TABLE[winner][slot] || 0) === 0) winner = eligible[Math.floor(Math.random() * eligible.length)];
+    }
+    const odds = ODDS_TABLE[winner][slot] || 0;
+    const seedConfig = config.seeds.find(s => s.seed === winner);
+    const username = seedConfig ? seedConfig.username : '';
+    const tradedTo = seedConfig ? seedConfig.tradedTo : null;
+    const td = TEAM_DATA[activeLeague][username] || { displayName: username, avatarUrl: null };
+    let tradedToDisplay = null;
+    if (tradedTo) {
+      const tdTo = TEAM_DATA[activeLeague][tradedTo];
+      tradedToDisplay = tdTo ? tdTo.displayName : tradedTo;
+    }
+    allResults.push({ pick: slot, seed: winner, team: td.displayName, username, avatarUrl: td.avatarUrl, odds, tradedTo, tradedToDisplay });
+    pool = pool.filter(s => s !== winner);
+  }
+}
+
+// ── COUNTDOWN ─────────────────────────────────────────────────────────────────
+function getNextPickInfo() {
+  const drawnSlots = drawnResults.map(r => r.pick_slot);
+  const remaining = SCHEDULE.filter(s => !drawnSlots.includes(s.slot));
+  if (remaining.length === 0) return null;
+  // Next is highest slot not yet drawn
+  return remaining.sort((a,b) => b.slot - a.slot)[0];
+}
+
+function getPickDrawTime(dateStr) {
+  // 5:30pm ET = 21:30 UTC (EST) or 22:30 UTC (EDT)
+  // April is EDT so 5:30pm EDT = 21:30 UTC
+  return new Date(`${dateStr}T21:30:00Z`);
+}
+
+function startCountdown(targetDate) {
+  if (countdownInterval) clearInterval(countdownInterval);
+  updateCountdown(targetDate);
+  countdownInterval = setInterval(() => updateCountdown(targetDate), 1000);
+}
+
+function updateCountdown(targetDate) {
+  const now = new Date();
+  const diff = targetDate - now;
+  const el = document.getElementById('countdown-timer');
+  if (!el) return;
+  if (diff <= 0) {
+    clearInterval(countdownInterval);
+    el.innerHTML = '<div class="countdown-num" style="color:var(--teal2);font-size:28px;letter-spacing:2px;">DRAW TIME!</div>';
+    return;
+  }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  el.innerHTML = (d > 0 ? `
+    <div class="countdown-unit"><div class="countdown-num">${d}</div><div class="countdown-unit-label">Days</div></div>
+    <div class="countdown-sep">:</div>` : '') + `
+    <div class="countdown-unit"><div class="countdown-num">${String(h).padStart(2,'0')}</div><div class="countdown-unit-label">Hours</div></div>
+    <div class="countdown-sep">:</div>
+    <div class="countdown-unit"><div class="countdown-num">${String(m).padStart(2,'0')}</div><div class="countdown-unit-label">Min</div></div>
+    <div class="countdown-sep">:</div>
+    <div class="countdown-unit"><div class="countdown-num">${String(s).padStart(2,'0')}</div><div class="countdown-unit-label">Sec</div></div>`;
+}
+
+// ── RENDER ─────────────────────────────────────────────────────────────────────
+function render() {
+  const content = document.getElementById('main-content');
+  const drawnSlots = drawnResults.map(r => r.pick_slot);
+  const allDone = drawnSlots.length >= 8;
+  const nextPick = getNextPickInfo();
+
+  let html = '';
+
+  // Live badge
+  html += '<div style="text-align:center;">';
+  if (!allDone) html += '<div class="live-badge" style="display:inline-flex;"><div class="live-dot"></div>LIVE · 2026 ROOKIE LOTTERY</div>';
+  html += '</div>';
+
+  // Schedule strip
+  html += '<div class="schedule-strip">';
+  SCHEDULE.forEach(s => {
+    const done = drawnSlots.includes(s.slot);
+    const isToday = nextPick && nextPick.slot === s.slot;
+    const cls = done ? 'done' : isToday ? 'today' : 'upcoming';
+    html += `<div class="schedule-day ${cls}">
+      <div class="schedule-day-date">${s.label}</div>
+      <div class="schedule-day-pick">1.0${s.slot}</div>
+      <div class="schedule-day-check">${done ? '✓' : isToday ? '●' : ''}</div>
+    </div>`;
+  });
+  html += '</div>';
+
+  // Countdown or complete
+  if (allDone) {
+    html += `<div class="complete-banner"><h2>LOTTERY COMPLETE</h2><p>All 8 picks have been drawn. Good luck this season.</p></div>`;
+  } else if (nextPick) {
+    const drawTime = getPickDrawTime(nextPick.date);
+    const suffix = nextPick.slot === 1 ? 'ST' : nextPick.slot === 2 ? 'ND' : nextPick.slot === 3 ? 'RD' : 'TH';
+    html += `<div class="countdown-wrap">
+      <div class="countdown-label">Next Pick Reveal</div>
+      <div class="countdown-pick">PICK 1.0${nextPick.slot} · ${nextPick.label} at 5:30 PM ET</div>
+      <div class="countdown-timer" id="countdown-timer"></div>
+    </div>`;
+    setTimeout(() => startCountdown(drawTime), 0);
+  }
+
+  // Commissioner panel
+  if (isCommissioner && !allDone) {
+    const nextSlot = nextPick ? nextPick.slot : null;
+    const alreadyDrawn = nextSlot ? drawnSlots.includes(nextSlot) : true;
+    const suffix = nextSlot ? (nextSlot === 1 ? 'ST' : nextSlot === 2 ? 'ND' : nextSlot === 3 ? 'RD' : 'TH') : '';
+
+    // Pre-run lottery if needed
+    if (allResults.length === 0) runFullLottery();
+
+    html += `<div class="commissioner-panel">
+      <div class="commissioner-badge"><div class="commissioner-badge-dot"></div>Commissioner Mode</div>`;
+
+    if (nextSlot && !alreadyDrawn) {
+      html += `<button class="btn-draw" id="draw-btn" onclick="drawPick(${nextSlot})">
+        <span>DRAW PICK 1.0${nextSlot}</span>
+      </button>`;
+    } else if (alreadyDrawn && nextSlot) {
+      html += `<div style="font-size:13px;color:var(--muted);text-align:center;font-family:'Barlow',sans-serif;letter-spacing:1px;padding:8px 0;">Pick 1.0${nextSlot} already drawn today.</div>`;
+    }
+    html += '</div>';
+  }
+
+  // Reveal zone (show today's pick or last drawn)
+  const lastDrawn = drawnResults[0];
+  if (lastDrawn) {
+    const td = TEAM_DATA[activeLeague][lastDrawn.username] || { displayName: lastDrawn.team_name, avatarUrl: null };
+    const avatarUrl = td.avatarUrl || lastDrawn.avatar_url;
+    html += `<div class="reveal-zone">
+      <div class="revealed-state" style="display:flex;">
+        ${avatarUrl
+          ? `<img class="reveal-avatar" crossorigin="anonymous" src="${avatarUrl}" onerror="this.style.display='none'">`
+          : `<div class="reveal-avatar-ph">${(lastDrawn.team_name||'?')[0]}</div>`}
+        <div class="reveal-pick-label">PICK 1.0${lastDrawn.pick_slot} · MOST RECENT</div>
+        <div class="reveal-team-name">${lastDrawn.team_name.toUpperCase()}</div>
+        ${lastDrawn.traded_to ? `<div class="reveal-traded">Pick rights traded to · <strong>${(lastDrawn.traded_to_display||lastDrawn.traded_to).toUpperCase()}</strong></div>` : ''}
+        <div class="reveal-odds">${parseFloat(lastDrawn.odds).toFixed(1)}% odds to land this pick</div>
+      </div>
+      <div class="confetti-burst" id="confetti-burst"></div>
+    </div>`;
+  } else {
+    html += `<div class="reveal-zone">
+      <div class="waiting-state">
+        <div class="trophy-icon">🏆</div>
+        <div class="waiting-text">Awaiting first pick reveal</div>
+      </div>
+    </div>`;
+  }
+
+  // Results log
+  if (drawnResults.length > 0) {
+    html += '<div class="results-section"><h3>Results So Far</h3><div class="results-list">';
+    drawnResults.forEach(r => {
+      const td = TEAM_DATA[activeLeague][r.username] || { displayName: r.team_name, avatarUrl: null };
+      const avatarUrl = td.avatarUrl || r.avatar_url;
+      const drawnDate = r.drawn_at ? new Date(r.drawn_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+      html += `<div class="result-row">
+        <div class="result-pick-num">${r.pick_slot}</div>
+        <div class="result-divider"></div>
+        ${avatarUrl
+          ? `<img class="result-avatar" crossorigin="anonymous" src="${avatarUrl}" onerror="this.style.display='none'">`
+          : `<div class="result-avatar-ph">${(r.team_name||'?')[0]}</div>`}
+        <div class="result-info">
+          <div class="result-team">${r.team_name.toUpperCase()}</div>
+          ${r.traded_to ? `<div class="result-traded-line">⇄ Traded to ${r.traded_to_display||r.traded_to}</div>` : ''}
+        </div>
+        <div class="result-meta">
+          Seed ${r.seed}<br>
+          <span class="odds-highlight">${parseFloat(r.odds).toFixed(1)}%</span><br>
+          <span class="result-date">${drawnDate}</span>
+        </div>
+      </div>`;
+    });
+    html += '</div></div>';
+  }
+
+  content.innerHTML = html;
+
+  // Update commissioner toggle
+  const toggle = document.getElementById('commissioner-toggle');
+  if (toggle) toggle.style.display = isCommissioner ? 'none' : 'block';
+}
+
+// ── DRAW PICK ─────────────────────────────────────────────────────────────────
+async function drawPick(slot) {
+  if (animating) return;
+  animating = true;
+  const btn = document.getElementById('draw-btn');
+  if (btn) btn.disabled = true;
+
+  // Find pre-drawn result for this slot
+  const result = allResults.find(r => r.pick === slot);
+  if (!result) { animating = false; return; }
+
+  // Spinning animation in reveal zone
+  const revealZone = document.querySelector('.reveal-zone');
+  if (revealZone) {
+    revealZone.innerHTML = `
+      <div class="waiting-state">
+        <div class="spinning-name" id="spin-text">●</div>
+        <div class="waiting-text">Drawing...</div>
+      </div>
+      <div class="confetti-burst" id="confetti-burst"></div>`;
+  }
+
+  const names = LEAGUE_CONFIG[activeLeague].seeds
+    .filter(s => !drawnResults.find(r => r.seed === s.seed))
+    .map(s => (TEAM_DATA[activeLeague][s.username] || { displayName: s.username }).displayName);
+
+  let spins = 0;
+  const totalSpins = 22 + Math.floor(Math.random() * 10);
+  await new Promise(resolve => {
+    const iv = setInterval(() => {
+      const el = document.getElementById('spin-text');
+      if (el) el.textContent = names[Math.floor(Math.random() * names.length)].toUpperCase();
+      spins++;
+      if (spins >= totalSpins) { clearInterval(iv); resolve(); }
+    }, 75);
+  });
+
+  // Save to Supabase (realtime will trigger re-render for all viewers)
+  await saveResult(result);
+  animating = false;
+  // Realtime subscription will call render() for everyone including commissioner
+}
+
+// ── PIN ───────────────────────────────────────────────────────────────────────
+function showPinModal() {
+  document.getElementById('pin-overlay').style.display = 'flex';
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-error').textContent = '';
+  setTimeout(() => document.getElementById('pin-input').focus(), 100);
+}
+
+function submitPin() {
+  const val = document.getElementById('pin-input').value;
+  if (val === COMMISSIONER_PIN) {
+    isCommissioner = true;
+    document.getElementById('pin-overlay').style.display = 'none';
+    render();
+  } else {
+    document.getElementById('pin-error').textContent = 'Incorrect PIN. Try again.';
+    document.getElementById('pin-input').value = '';
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('pin-overlay').style.display !== 'none') submitPin();
+});
+
+function getSuffix(n){if(n===1)return'ST';if(n===2)return'ND';if(n===3)return'RD';return'TH';}
+
+// ── START ─────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

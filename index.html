@@ -24,6 +24,7 @@
   @keyframes waveMove1{from{transform:translateX(0)}to{transform:translateX(-50%)}}
   @keyframes waveMove2{from{transform:translateX(-50%)}to{transform:translateX(0)}}
   @keyframes waveMove3{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
   .glow-orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;}
   .orb-orange{width:500px;height:300px;background:rgba(232,98,26,0.12);top:30%;left:50%;transform:translateX(-50%);}
   .orb-teal{width:400px;height:400px;background:rgba(0,168,156,0.08);bottom:-100px;left:-100px;}
@@ -210,6 +211,22 @@
 
   <!-- LEAGUE SELECT -->
   <div id="league-select">
+
+    <!-- LIVE DRAFT CARD -->
+    <a href="/live-draft" style="display:flex;align-items:center;gap:12px;background:rgba(10,21,32,0.9);border:1px solid rgba(192,24,26,0.5);border-left:4px solid var(--red);border-radius:4px;padding:16px 20px;margin-bottom:10px;text-decoration:none;transition:all 0.25s;backdrop-filter:blur(10px);position:relative;overflow:hidden;" onmouseover="this.style.borderColor='var(--orange)';this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='rgba(192,24,26,0.5)';this.style.transform='translateX(0)'">
+      <div style="display:flex;align-items:center;gap:6px;position:absolute;top:10px;right:12px;background:rgba(192,24,26,0.15);border:1px solid rgba(192,24,26,0.4);border-radius:2px;padding:2px 7px;">
+        <div style="width:5px;height:5px;border-radius:50%;background:#ff4040;animation:livePulse 1s infinite;"></div>
+        <span style="font-size:10px;letter-spacing:2px;color:#ff6060;font-family:'Barlow',sans-serif;text-transform:uppercase;">LIVE</span>
+      </div>
+      <span style="font-size:24px;">🏆</span>
+      <div>
+        <div style="font-family:'Anton',sans-serif;font-size:22px;letter-spacing:3px;color:var(--chrome2);">LIVE DRAFT</div>
+        <div style="font-size:12px;color:var(--muted);letter-spacing:2px;font-family:'Barlow',sans-serif;font-weight:300;">Official 2026 Rookie Lottery · Apr 18–24</div>
+      </div>
+      <span style="margin-left:auto;font-size:22px;color:var(--orange2);opacity:0.6;">›</span>
+    </a>
+
+    <!-- TEAM PROFILES CARD -->
     <a href="/team-profile" style="display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(10,21,32,0.85);border:1px solid var(--border-teal);border-left:4px solid var(--teal);border-radius:4px;padding:14px 20px;margin-bottom:14px;text-decoration:none;transition:all 0.25s;backdrop-filter:blur(10px);" onmouseover="this.style.borderColor='var(--teal2)';this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='var(--border-teal)';this.style.transform='translateX(0)'">
       <span style="font-size:20px;">👥</span>
       <div>
@@ -218,7 +235,9 @@
       </div>
       <span style="margin-left:auto;font-size:22px;color:var(--teal2);opacity:0.6;">›</span>
     </a>
-    <div class="league-select-title">Select Your League</div>
+
+    <!-- SIMULATOR SECTION -->
+    <div class="league-select-title">Lottery Simulator</div>
     <div class="league-cards">
       <div class="league-card" id="card-CFL" onclick="selectLeague('CFL')">
         <div class="league-card-name">CFL</div>
