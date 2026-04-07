@@ -429,6 +429,7 @@ async function fetchPlayer(playerId) {
 // ── RENDER TEAMS ──────────────────────────────────────────────────────────────
 function switchLeague(league) {
   activeLeague = league;
+  tradeCache = {}; // clear cache on league switch to prevent stale roster ID mapping
   document.querySelectorAll('.league-tab').forEach((t,i) => {
     t.classList.toggle('active', ['CFL','MinuteMaid'][i] === league);
   });
@@ -671,7 +672,7 @@ async function loadTradesTab(league, username) {
   }
 
   // ── Build 2025 trade cards ──────────────────────────────────────────────────
-  const myTrades2025 = tradeCache[cacheKey].filter(t => t.roster_ids && t.roster_ids.includes(rosterId));
+  const myTrades2025 = tradeCache[cacheKey].filter(t => t.roster_ids && t.roster_ids.map(Number).includes(rosterId));
   myTrades2025.sort((a,b) => b.created - a.created);
 
   let html = '';
@@ -681,10 +682,10 @@ async function loadTradesTab(league, username) {
     myTrades2025.forEach(trade => {
       const otherRosterIds = trade.roster_ids.filter(r => r !== rosterId);
       const date = formatDate(trade.created);
-      const myAdds = trade.adds ? Object.entries(trade.adds).filter(([,rid]) => rid === rosterId) : [];
-      const myDrops = trade.drops ? Object.entries(trade.drops).filter(([,rid]) => rid === rosterId) : [];
-      const picksIn = (trade.draft_picks||[]).filter(p => p.owner_id === rosterId);
-      const picksOut = (trade.draft_picks||[]).filter(p => p.previous_owner_id === rosterId && p.owner_id !== rosterId);
+      const myAdds = trade.adds ? Object.entries(trade.adds).filter(([,rid]) => parseInt(rid) === rosterId) : [];
+      const myDrops = trade.drops ? Object.entries(trade.drops).filter(([,rid]) => parseInt(rid) === rosterId) : [];
+      const picksIn = (trade.draft_picks||[]).filter(p => parseInt(p.owner_id) === rosterId);
+      const picksOut = (trade.draft_picks||[]).filter(p => parseInt(p.previous_owner_id) === rosterId && parseInt(p.owner_id) !== rosterId);
 
       html += `<div class="trade-card">
         <div class="trade-date">${date}</div>
