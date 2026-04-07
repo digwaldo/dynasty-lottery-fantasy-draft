@@ -94,19 +94,118 @@
   .modal-body::-webkit-scrollbar-thumb{background:var(--border-teal);border-radius:2px;}
 
   /* TRADE LIST */
-  .trade-card{background:rgba(255,255,255,0.03);border:1px solid var(--border-teal);border-left:3px solid var(--teal);border-radius:3px;padding:12px 14px;margin-bottom:10px;}
+  .trade-card{background:rgba(255,255,255,0.03);border:1px solid var(--border-teal);border-left:3px solid var(--teal);border-radius:4px;padding:12px 14px;margin-bottom:12px;}
   .trade-date{font-size:11px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;margin-bottom:8px;}
-  .trade-parties{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+  .trade-parties{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
   .trade-team-badge{display:flex;align-items:center;gap:6px;background:rgba(0,168,156,0.08);border:1px solid var(--border-teal);border-radius:3px;padding:4px 8px;}
   .trade-team-badge img{width:22px;height:22px;border-radius:50%;object-fit:cover;}
-  .trade-team-badge-ph{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);font-family:'Barlow',sans-serif;}
   .trade-team-badge span{font-family:'Teko',sans-serif;font-size:14px;letter-spacing:1px;color:var(--chrome);}
   .trade-vs{font-size:11px;color:var(--muted);font-family:'Barlow',sans-serif;}
-  .trade-section-label{font-size:10px;letter-spacing:2px;color:var(--orange2);text-transform:uppercase;font-family:'Barlow',sans-serif;margin:6px 0 3px;}
-  .trade-items{display:flex;flex-wrap:wrap;gap:4px;}
-  .trade-item{font-size:12px;font-family:'Barlow',sans-serif;color:var(--text);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:2px;padding:2px 7px;}
-  .trade-item.pick{color:var(--sunset);border-color:rgba(245,166,35,0.3);background:rgba(245,166,35,0.05);}
+  .trade-section-label{font-size:10px;letter-spacing:2px;color:var(--orange2);text-transform:uppercase;font-family:'Barlow',sans-serif;margin:8px 0 6px;}
   .empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-family:'Barlow',sans-serif;font-size:14px;letter-spacing:1px;}
+
+  /* ── PLAYER TRADING CARDS ── */
+  .trade-cards-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;}
+
+  .player-card{
+    width:72px;flex-shrink:0;
+    border-radius:6px;overflow:hidden;
+    position:relative;cursor:default;
+    box-shadow:0 3px 12px rgba(0,0,0,0.6);
+    background:linear-gradient(160deg,#1a2a3a,#0d1520);
+    border:1px solid rgba(255,255,255,0.12);
+    transition:transform 0.2s,box-shadow 0.2s;
+  }
+  .player-card:hover{transform:translateY(-3px) rotate(-1deg);box-shadow:0 6px 20px rgba(0,168,156,0.3);}
+
+  /* Holographic shimmer */
+  .player-card::before{
+    content:'';position:absolute;inset:0;z-index:3;border-radius:6px;
+    background:linear-gradient(135deg,
+      transparent 20%,
+      rgba(255,255,255,0.06) 40%,
+      rgba(0,200,188,0.08) 50%,
+      rgba(255,255,255,0.04) 60%,
+      transparent 80%
+    );
+    pointer-events:none;
+  }
+
+  .player-card-photo{
+    width:100%;height:60px;
+    background:linear-gradient(180deg,#1e3a5c 0%,#0d2040 60%,#080f1a 100%);
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;position:relative;overflow:hidden;
+  }
+  .player-card-photo::after{
+    content:'';position:absolute;bottom:0;left:0;right:0;height:20px;
+    background:linear-gradient(transparent,rgba(8,15,26,0.9));
+  }
+  .player-card-photo img{width:100%;height:100%;object-fit:cover;object-position:top;}
+
+  .player-card-body{
+    padding:4px 5px 5px;
+    background:linear-gradient(180deg,#0d1520,#060e18);
+    position:relative;z-index:2;
+  }
+  .player-card-pos{
+    font-family:'Anton',sans-serif;font-size:8px;letter-spacing:2px;
+    margin-bottom:1px;text-transform:uppercase;
+  }
+  .player-card-pos.QB{color:#e5c440;}
+  .player-card-pos.RB{color:#4ae0a0;}
+  .player-card-pos.WR{color:#4ab0ff;}
+  .player-card-pos.TE{color:#ff8c4a;}
+  .player-card-pos.K{color:#c084fc;}
+  .player-card-pos.DEF{color:#f87171;}
+  .player-card-pos.OTHER{color:var(--muted);}
+  .player-card-name{
+    font-family:'Anton',sans-serif;font-size:9px;letter-spacing:0.5px;
+    color:var(--chrome2);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .player-card-team{font-family:'Barlow',sans-serif;font-size:8px;color:var(--muted);margin-top:1px;}
+
+  /* Position color stripe at top */
+  .player-card-stripe{height:3px;width:100%;}
+  .player-card-stripe.QB{background:linear-gradient(90deg,#e5c440,#f0d060);}
+  .player-card-stripe.RB{background:linear-gradient(90deg,#4ae0a0,#00C8BC);}
+  .player-card-stripe.WR{background:linear-gradient(90deg,#4ab0ff,#0090ff);}
+  .player-card-stripe.TE{background:linear-gradient(90deg,#ff8c4a,#E8621A);}
+  .player-card-stripe.K{background:linear-gradient(90deg,#c084fc,#9040e0);}
+  .player-card-stripe.DEF{background:linear-gradient(90deg,#f87171,#C0181A);}
+  .player-card-stripe.OTHER{background:var(--border-teal);}
+
+  /* ── DRAFT PICK CARDS ── */
+  .pick-card{
+    width:72px;flex-shrink:0;border-radius:6px;overflow:hidden;
+    position:relative;cursor:default;
+    box-shadow:0 3px 12px rgba(0,0,0,0.5);
+    border:1px solid rgba(245,166,35,0.4);
+    transition:transform 0.2s,box-shadow 0.2s;
+  }
+  .pick-card:hover{transform:translateY(-3px) rotate(1deg);box-shadow:0 6px 20px rgba(245,166,35,0.25);}
+  .pick-card-top{
+    height:44px;
+    background:linear-gradient(160deg,#2a1a00,#1a0f00);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    position:relative;overflow:hidden;
+  }
+  .pick-card-top::before{
+    content:'';position:absolute;inset:0;
+    background:radial-gradient(ellipse at 50% 0%,rgba(245,166,35,0.2),transparent 70%);
+  }
+  .pick-card-trophy{font-size:18px;line-height:1;position:relative;z-index:1;}
+  .pick-card-round-big{
+    font-family:'Anton',sans-serif;font-size:11px;letter-spacing:2px;
+    color:var(--gold);position:relative;z-index:1;margin-top:2px;
+  }
+  .pick-card-body{
+    padding:4px 5px 5px;
+    background:linear-gradient(180deg,#1a1000,#0e0a00);
+  }
+  .pick-card-season{font-family:'Anton',sans-serif;font-size:14px;color:var(--sunset);letter-spacing:1px;line-height:1;}
+  .pick-card-via{font-family:'Barlow',sans-serif;font-size:8px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pick-card-stripe{height:3px;background:linear-gradient(90deg,var(--gold),var(--orange));width:100%;}
 
   /* DRAFT LIST */
   .draft-pick-row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:3px;padding:10px 12px;margin-bottom:6px;}
@@ -512,6 +611,53 @@ async function loadTradesTab(league, username) {
     return p.full_name || `${p.first_name||''} ${p.last_name||''}`.trim() || id;
   }
 
+  function playerCard(id) {
+    const p = playerCache[id];
+    // NFL team abbrev or DEF
+    if (!p || id.length <= 3) {
+      // It's a DST/team abbreviation
+      return `<div class="player-card">
+        <div class="player-card-stripe DEF"></div>
+        <div class="player-card-photo">🛡️</div>
+        <div class="player-card-body">
+          <div class="player-card-pos DEF">DEF</div>
+          <div class="player-card-name">${id}</div>
+          <div class="player-card-team">Defense</div>
+        </div>
+      </div>`;
+    }
+    const name = p.full_name || `${p.first_name||''} ${p.last_name||''}`.trim() || id;
+    const pos = p.position || 'OTHER';
+    const nflTeam = p.team || '';
+    const lastName = (p.last_name || name.split(' ').pop() || '').toUpperCase();
+    const posEmoji = {QB:'🏈',RB:'🏃',WR:'⚡',TE:'💪',K:'🦵',DEF:'🛡️'}[pos] || '🏈';
+    const validPos = ['QB','RB','WR','TE','K','DEF'].includes(pos) ? pos : 'OTHER';
+    return `<div class="player-card">
+      <div class="player-card-stripe ${validPos}"></div>
+      <div class="player-card-photo">${posEmoji}</div>
+      <div class="player-card-body">
+        <div class="player-card-pos ${validPos}">${pos}</div>
+        <div class="player-card-name">${lastName}</div>
+        <div class="player-card-team">${nflTeam}</div>
+      </div>
+    </div>`;
+  }
+
+  function pickCard(season, round, via) {
+    const roundLabel = round === 1 ? '1ST' : round === 2 ? '2ND' : round === 3 ? '3RD' : `${round}TH`;
+    return `<div class="pick-card">
+      <div class="pick-card-stripe"></div>
+      <div class="pick-card-top">
+        <div class="pick-card-trophy">🏆</div>
+        <div class="pick-card-round-big">${roundLabel} RD</div>
+      </div>
+      <div class="pick-card-body">
+        <div class="pick-card-season">${season}</div>
+        <div class="pick-card-via">${via || 'Own pick'}</div>
+      </div>
+    </div>`;
+  }
+
   function teamBadge(uname) {
     const td = getTeam(league, uname);
     const avHtml = td.avatarUrl
@@ -544,15 +690,15 @@ async function loadTradesTab(league, username) {
           ${otherRosterIds.map(r => teamBadge(getRosterUsername(league, r))).join('')}
         </div>`;
       if (myAdds.length || picksIn.length) {
-        html += `<div class="trade-section-label">Received</div><div class="trade-items">`;
-        myAdds.forEach(([pid]) => html += `<span class="trade-item">${playerName(pid)}</span>`);
-        picksIn.forEach(p => html += `<span class="trade-item pick">${p.season} Rd ${p.round}${p.roster_id !== rosterId ? ` (via ${getRosterUsername(league,p.roster_id)})` : ''}</span>`);
+        html += `<div class="trade-section-label">Received</div><div class="trade-cards-row">`;
+        myAdds.forEach(([pid]) => html += playerCard(pid));
+        picksIn.forEach(p => html += pickCard(p.season, p.round, p.roster_id !== rosterId ? `via ${getRosterUsername(league,p.roster_id)}` : 'Own pick'));
         html += `</div>`;
       }
       if (myDrops.length || picksOut.length) {
-        html += `<div class="trade-section-label">Sent</div><div class="trade-items">`;
-        myDrops.forEach(([pid]) => html += `<span class="trade-item">${playerName(pid)}</span>`);
-        picksOut.forEach(p => html += `<span class="trade-item pick">${p.season} Rd ${p.round}</span>`);
+        html += `<div class="trade-section-label">Sent</div><div class="trade-cards-row">`;
+        myDrops.forEach(([pid]) => html += playerCard(pid));
+        picksOut.forEach(p => html += pickCard(p.season, p.round, 'Own pick'));
         html += `</div>`;
       }
       html += `</div>`;
@@ -577,15 +723,15 @@ async function loadTradesTab(league, username) {
           }).join('')}
         </div>`;
       if ((t.received||[]).length || (t.picksIn||[]).length) {
-        html += `<div class="trade-section-label">Received</div><div class="trade-items">`;
-        (t.received||[]).forEach(pid => html += `<span class="trade-item">${playerName(pid)}</span>`);
-        (t.picksIn||[]).forEach(p => html += `<span class="trade-item pick">${p.s} Rd ${p.r}${p.via ? ` (${p.via})` : ''}</span>`);
+        html += `<div class="trade-section-label">Received</div><div class="trade-cards-row">`;
+        (t.received||[]).forEach(pid => html += playerCard(pid));
+        (t.picksIn||[]).forEach(p => html += pickCard(p.s, p.r, p.via || 'Own pick'));
         html += `</div>`;
       }
       if ((t.sent||[]).length || (t.picksOut||[]).length) {
-        html += `<div class="trade-section-label">Sent</div><div class="trade-items">`;
-        (t.sent||[]).forEach(pid => html += `<span class="trade-item">${playerName(pid)}</span>`);
-        (t.picksOut||[]).forEach(p => html += `<span class="trade-item pick">${p.s} Rd ${p.r}${p.via ? ` (${p.via})` : ''}</span>`);
+        html += `<div class="trade-section-label">Sent</div><div class="trade-cards-row">`;
+        (t.sent||[]).forEach(pid => html += playerCard(pid));
+        (t.picksOut||[]).forEach(p => html += pickCard(p.s, p.r, p.via || 'Own pick'));
         html += `</div>`;
       }
       html += `</div>`;
