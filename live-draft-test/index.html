@@ -335,7 +335,7 @@ async function loadResults() {
 
 async function saveResult(result) {
   const { error } = await sb.from('lottery_results').upsert({
-    league: activeLeague,
+    league: activeLeague + '_test',   // isolated from real draw data
     pick_slot: result.pick,
     seed: result.seed,
     team_name: result.team,
@@ -510,18 +510,22 @@ function render() {
     } else if (alreadyDrawn && nextSlot) {
       html += `<div style="font-size:13px;color:var(--muted);text-align:center;font-family:'Barlow',sans-serif;letter-spacing:1px;padding:8px 0;">Pick 1.0${nextSlot} already drawn today.</div>`;
     }
-    // Test mode: show all undrawn picks as buttons
+    // Test mode: show ALL undrawn picks as draw buttons
     if (TEST_MODE) {
-      const undrawn = SCHEDULE.filter(s => !drawnSlots.includes(s.slot) && s.slot !== nextSlot);
-      if (undrawn.length > 0) {
-        html += `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-orange);">`;
-        html += `<div style="font-size:10px;letter-spacing:3px;color:var(--orange2);font-family:'Barlow',sans-serif;margin-bottom:8px;text-transform:uppercase;">Test Mode · Draw Any Pick</div>`;
+      const undrawn = SCHEDULE.filter(s => !drawnSlots.includes(s.slot));
+      html += `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-orange);">`;
+      html += `<div style="font-size:10px;letter-spacing:3px;color:var(--orange2);font-family:'Barlow',sans-serif;margin-bottom:8px;text-transform:uppercase;">⚗ Test Mode · Draw Any Pick</div>`;
+      if (undrawn.length === 0) {
+        html += `<div style="font-size:12px;color:var(--teal2);font-family:'Barlow',sans-serif;letter-spacing:1px;">All 8 picks drawn! Reset to start over.</div>`;
+      } else {
         html += `<div style="display:flex;flex-wrap:wrap;gap:6px;">`;
-        undrawn.forEach(s => {
+        // Show in reverse order (highest slot = pick 8 first, lowest = pick 1 last)
+        [...undrawn].sort((a,b) => b.slot - a.slot).forEach(s => {
           html += `<button onclick="drawPick(${s.slot})" style="padding:7px 14px;background:transparent;border:1px solid var(--border-orange);border-radius:3px;color:var(--orange2);font-family:'Anton',sans-serif;font-size:14px;letter-spacing:2px;cursor:pointer;">1.0${s.slot}</button>`;
         });
-        html += `</div></div>`;
+        html += `</div>`;
       }
+      html += `</div>`;
     }
     // Test mode reset button
     if (TEST_MODE && drawnResults.length > 0) {
@@ -596,12 +600,18 @@ function render() {
 async function drawPick(slot) {
   if (animating) return;
   animating = true;
-  const btn = document.getElementById('draw-btn');
-  if (btn) btn.disabled = true;
+
+  // Ensure lottery is pre-run
+  if (allResults.length === 0) runFullLottery();
 
   // Find pre-drawn result for this slot
   const result = allResults.find(r => r.pick === slot);
-  if (!result) { animating = false; return; }
+  if (!result) {
+    console.error('No result found for slot', slot, '- allResults:', allResults);
+    animating = false;
+    render();
+    return;
+  }
 
   // Spinning animation in reveal zone
   const revealZone = document.querySelector('.reveal-zone');
@@ -629,10 +639,14 @@ async function drawPick(slot) {
     }, 75);
   });
 
-  // Save to Supabase (realtime will trigger re-render for all viewers)
+  // Save to Supabase
   await saveResult(result);
+
+  // Immediately reload + render for the commissioner (don't wait for realtime)
+  await loadResults();
   animating = false;
-  // Realtime subscription will call render() for everyone including commissioner
+  render();
+  // Realtime subscription handles all other viewers
 }
 
 // ── PIN ───────────────────────────────────────────────────────────────────────
