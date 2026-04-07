@@ -328,6 +328,7 @@ async function loadResults() {
     .from('lottery_results')
     .select('*')
     .eq('league', activeLeague)
+    .eq('revealed', true)
     .order('drawn_at', { ascending: false });
   if (error) { console.error('Load error:', error); return; }
   drawnResults = data || [];
@@ -345,6 +346,7 @@ async function saveResult(result) {
     traded_to_display: result.tradedToDisplay || null,
     avatar_url: result.avatarUrl || null,
     drawn_at: new Date().toISOString(),
+    revealed: true,  // live picks are immediately revealed when drawn
   }, { onConflict: 'league,pick_slot' }).select();
   if (error) {
     console.error('Save error:', error);
