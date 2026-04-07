@@ -328,7 +328,7 @@ async function loadResults() {
     .from('lottery_results')
     .select('*')
     .eq('league', activeLeague)
-    .order('pick_slot', { ascending: false });
+    .order('drawn_at', { ascending: false });
   if (error) { console.error('Load error:', error); return; }
   drawnResults = data || [];
 }
@@ -382,11 +382,28 @@ async function switchLeague(league) {
 
 // ── LOTTERY LOGIC ─────────────────────────────────────────────────────────────
 function runFullLottery() {
-  let pool = [1,2,3,4,5,6,7,8];
-  allResults = [];
+  // Carry over already-drawn DB results — never reassign their seeds
+  const alreadyDrawnSeeds = drawnResults.map(r => Number(r.seed));
+  const alreadyDrawnSlots = drawnResults.map(r => Number(r.pick_slot));
+
+  allResults = drawnResults.map(r => ({
+    pick: Number(r.pick_slot),
+    seed: Number(r.seed),
+    team: r.team_name,
+    username: r.username,
+    avatarUrl: r.avatar_url,
+    odds: r.odds,
+    tradedTo: r.traded_to || null,
+    tradedToDisplay: r.traded_to_display || null,
+  }));
+
+  let pool = [1,2,3,4,5,6,7,8].filter(s => !alreadyDrawnSeeds.includes(s));
   const config = LEAGUE_CONFIG[activeLeague];
+
   for (let slot = 1; slot <= 8; slot++) {
+    if (alreadyDrawnSlots.includes(slot)) continue;
     const eligible = pool.filter(s => (ODDS_TABLE[s][slot] || 0) > 0);
+    if (eligible.length === 0) continue;
     const w = pool.map(s => ODDS_TABLE[s][slot] || 0);
     const total = w.reduce((a,b) => a+b, 0);
     let winner = eligible[eligible.length - 1];
@@ -395,17 +412,12 @@ function runFullLottery() {
       for (let i=0; i<pool.length; i++) { r -= w[i]; if (r <= 0) { winner = pool[i]; break; } }
       if ((ODDS_TABLE[winner][slot] || 0) === 0) winner = eligible[Math.floor(Math.random() * eligible.length)];
     }
-    const odds = ODDS_TABLE[winner][slot] || 0;
     const seedConfig = config.seeds.find(s => s.seed === winner);
     const username = seedConfig ? seedConfig.username : '';
     const tradedTo = seedConfig ? seedConfig.tradedTo : null;
     const td = TEAM_DATA[activeLeague][username] || { displayName: username, avatarUrl: null };
-    let tradedToDisplay = null;
-    if (tradedTo) {
-      const tdTo = TEAM_DATA[activeLeague][tradedTo];
-      tradedToDisplay = tdTo ? tdTo.displayName : tradedTo;
-    }
-    allResults.push({ pick: slot, seed: winner, team: td.displayName, username, avatarUrl: td.avatarUrl, odds, tradedTo, tradedToDisplay });
+    const tradedToDisplay = tradedTo ? ((TEAM_DATA[activeLeague][tradedTo] || {}).displayName || tradedTo) : null;
+    allResults.push({ pick: slot, seed: winner, team: td.displayName, username, avatarUrl: td.avatarUrl, odds: ODDS_TABLE[winner][slot] || 0, tradedTo, tradedToDisplay });
     pool = pool.filter(s => s !== winner);
   }
 }
@@ -604,6 +616,9 @@ async function drawPick(slot) {
   animating = true;
   const btn = document.getElementById('draw-btn');
   if (btn) btn.disabled = true;
+
+  // Re-sync lottery with current DB state before drawing
+  runFullLottery();
 
   // Find pre-drawn result for this slot
   const result = allResults.find(r => r.pick === slot);

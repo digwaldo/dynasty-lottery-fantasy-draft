@@ -188,10 +188,10 @@
 </div>
 
 <!-- NAV -->
-<div style="position:relative;z-index:10;padding:8px 16px;">
-  <a href="/" class="nav-back">&#8249; Lottery Home</a>
-  <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(245,166,35,0.12);border:1px solid rgba(245,166,35,0.4);border-radius:2px;padding:3px 10px;margin-left:10px;font-size:10px;letter-spacing:3px;color:var(--sunset);font-family:'Barlow',sans-serif;text-transform:uppercase;">&#9888; TEST MODE</span>
-  <button id="commissioner-toggle" onclick="showPinModal()" style="float:right;padding:6px 14px;background:transparent;border:1px solid var(--border-teal);border-radius:3px;color:var(--teal2);font-family:'Teko',sans-serif;font-size:14px;letter-spacing:2px;cursor:pointer;">Commissioner Login</button>
+<div style="position:relative;z-index:10;padding:8px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+  <a href="/" class="nav-back" style="margin-right:4px;">&#8249; Home</a>
+  <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(245,166,35,0.12);border:1px solid rgba(245,166,35,0.4);border-radius:2px;padding:3px 10px;font-size:10px;letter-spacing:3px;color:var(--sunset);font-family:'Barlow',sans-serif;text-transform:uppercase;">&#9888; TEST MODE</span>
+  <button id="commissioner-toggle" onclick="showPinModal()" style="margin-left:auto;padding:8px 18px;background:rgba(0,168,156,0.12);border:1px solid var(--teal);border-radius:3px;color:var(--teal2);font-family:'Anton',sans-serif;font-size:14px;letter-spacing:2px;cursor:pointer;">&#128274; COMMISSIONER</button>
 </div>
 
 <div class="container">
@@ -355,7 +355,7 @@ async function loadResults() {
     .from('lottery_results')
     .select('*')
     .eq('league', testKey())
-    .order('pick_slot', { ascending: false });
+    .order('drawn_at', { ascending: false });
   if (error) { showError('Load error: ' + error.message); return; }
   drawnResults = data || [];
 }
@@ -425,13 +425,35 @@ async function switchLeague(league) {
 
 // ── LOTTERY ───────────────────────────────────────────────────────────────────
 function runFullLottery() {
-  let pool = [1,2,3,4,5,6,7,8];
-  allResults = [];
+  // Start with seeds already drawn from DB so we never duplicate
+  const alreadyDrawnSeeds = drawnResults.map(r => Number(r.seed));
+  const alreadyDrawnSlots = drawnResults.map(r => Number(r.pick_slot));
+
+  // Carry over existing DB results into allResults first
+  allResults = drawnResults.map(r => ({
+    pick: Number(r.pick_slot),
+    seed: Number(r.seed),
+    team: r.team_name,
+    username: r.username,
+    avatarUrl: r.avatar_url,
+    odds: r.odds,
+    tradedTo: r.traded_to || null,
+    tradedToDisplay: r.traded_to_display || null,
+  }));
+
+  // Only draw remaining undrawn slots
+  let pool = [1,2,3,4,5,6,7,8].filter(s => !alreadyDrawnSeeds.includes(s));
   const config = LEAGUE_CONFIG[activeLeague];
+
   for (let slot = 1; slot <= 8; slot++) {
+    // Skip slots already drawn from DB
+    if (alreadyDrawnSlots.includes(slot)) continue;
+
+    const eligible = pool.filter(s => (ODDS_TABLE[s][slot] || 0) > 0);
+    if (eligible.length === 0) continue;
+
     const w = pool.map(s => ODDS_TABLE[s][slot] || 0);
     const total = w.reduce((a,b) => a+b, 0);
-    const eligible = pool.filter(s => (ODDS_TABLE[s][slot] || 0) > 0);
     let winner = eligible[eligible.length - 1];
     if (total > 0) {
       let r = Math.random() * total;
@@ -446,7 +468,7 @@ function runFullLottery() {
     allResults.push({ pick: slot, seed: winner, team: td.displayName, username, avatarUrl: td.avatarUrl, odds: ODDS_TABLE[winner][slot] || 0, tradedTo, tradedToDisplay });
     pool = pool.filter(s => s !== winner);
   }
-  console.log('[TEST] Lottery pre-drawn:', allResults.map(r => 'Slot '+r.pick+'='+r.username));
+  console.log('[TEST] Lottery state:', allResults.map(r => 'Slot '+r.pick+'='+r.username+(drawnResults.find(d=>Number(d.pick_slot)===r.pick)?' (DB)':' (pre-drawn)')));
 }
 
 // ── RENDER ─────────────────────────────────────────────────────────────────────
@@ -473,7 +495,7 @@ function renderAll() {
     if (!isCommissioner || allDone) {
       commEl.style.display = 'none';
     } else {
-      if (allResults.length === 0) runFullLottery();
+      runFullLottery(); // sync with current DB state
       const undrawn = SCHEDULE.filter(s => !drawnSlots.includes(s.slot)).sort((a,b) => b.slot - a.slot);
       let html = '<div class="commissioner-panel">' +
         '<div class="commissioner-badge"><div class="commissioner-badge-dot"></div>Commissioner &middot; Test Mode</div>';
@@ -505,7 +527,7 @@ function renderAll() {
     if (drawnResults.length === 0) {
       revealEl.innerHTML = '<div class="waiting-state"><div class="trophy-icon">&#127942;</div><div class="waiting-text">Awaiting first pick reveal</div></div>';
     } else {
-      const r = drawnResults[0]; // ordered pick_slot DESC so highest drawn slot first
+      const r = drawnResults[0]; // ordered drawn_at DESC so most recently drawn shows first
       const td = TEAM_DATA[activeLeague][r.username] || { displayName: r.team_name, avatarUrl: null };
       const avatarUrl = td.avatarUrl || r.avatar_url;
       revealEl.innerHTML = '<div class="revealed-state" style="display:flex;">' +
@@ -559,8 +581,8 @@ async function drawPick(slot) {
   animating = true;
   showError('');
 
-  // Ensure lottery pre-run
-  if (allResults.length === 0) runFullLottery();
+  // Always re-sync lottery with current DB state before drawing
+  runFullLottery();
 
   const result = allResults.find(r => r.pick === slot);
   if (!result) {
