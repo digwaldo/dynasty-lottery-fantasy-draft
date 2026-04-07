@@ -407,54 +407,99 @@ async function switchTab(tab) {
   else loadHardwareTab(activeLeague, activeTeam);
 }
 
+// ── 2024 CFL TRADE HISTORY (hardcoded — all completed trades) ─────────────────
+const TRADES_2024_CFL = {
+  "cinccity": [
+    {date:"Aug 27, 2024",season:"2024",week:1,partners:["ifeellikemontez (via stzy)"],received:["5045","5937","9999"],sent:["8151"],picksIn:[],picksOut:[]},
+    {date:"Aug 26, 2024",season:"2024",week:1,partners:["FrankE324 (via Zeekoo)"],received:["11605"],sent:["11629"],picksIn:[{s:"2025",r:4,via:"FrankE324's pick"}],picksOut:[]},
+    {date:"Sep 13, 2024",season:"2024",week:7,partners:["BizyBonez"],received:["11651","4034"],sent:[],picksIn:[],picksOut:[{s:"2025",r:2},{s:"2025",r:4},{s:"2026",r:3}]},
+    {date:"Sep 12, 2024",season:"2024",week:7,partners:["dweeebzz"],received:[],sent:["11576"],picksIn:[{s:"2025",r:3,via:"bleedgreenz's pick"},{s:"2025",r:3,via:"dweeebzz's pick"},{s:"2025",r:4,via:"dweeebzz's pick"}],picksOut:[]},
+    {date:"Oct 27, 2024",season:"2024",week:10,partners:["bleedgreenz"],received:["11589","8136"],sent:["11655","9224"],picksIn:[{s:"2025",r:1,via:"bleedgreenz's pick"},{s:"2027",r:1,via:"bleedgreenz's pick"}],picksOut:[{s:"2025",r:3},{s:"2025",r:4,via:"FrankE324's pick"},{s:"2025",r:4,via:"dweeebzz's pick"}]},
+    {date:"Oct 27, 2024",season:"2024",week:10,partners:["jwilly301"],received:["4993","7543"],sent:["11564","5022"],picksIn:[{s:"2025",r:1,via:"jwilly301's pick"}],picksOut:[]},
+  ],
+  "bleedgreenz": [
+    {date:"Aug 27, 2024",season:"2024",week:1,partners:["jwilly301"],received:["5850"],sent:["4018"],picksIn:[],picksOut:[{s:"2025",r:2},{s:"2026",r:3}]},
+    {date:"Aug 26, 2024",season:"2024",week:1,partners:["dweeebzz"],received:["8134","8230"],sent:["1166"],picksIn:[],picksOut:[{s:"2025",r:3}]},
+    {date:"Aug 23, 2024",season:"2024",week:1,partners:["jwilly301"],received:["4144","5906","8117"],sent:["4144","5906","8117"],picksIn:[],picksOut:[]},
+    {date:"Sep 27, 2024",season:"2024",week:6,partners:["BizyBonez"],received:["11562"],sent:["19"],picksIn:[],picksOut:[{s:"2026",r:1}]},
+    {date:"Oct 13, 2024",season:"2024",week:8,partners:["dweeebzz"],received:["7049"],sent:["6130"],picksIn:[],picksOut:[{s:"2025",r:4},{s:"2026",r:2}]},
+    {date:"Oct 20, 2024",season:"2024",week:9,partners:["BizyBonez"],received:["19"],sent:["11562"],picksIn:[{s:"2027",r:4,via:"bleedgreenz's pick"}],picksOut:[]},
+    {date:"Oct 27, 2024",season:"2024",week:10,partners:["cinccity"],received:["11655","9224"],sent:["11589","8136"],picksIn:[{s:"2025",r:3,via:"cinccity's pick"}],picksOut:[{s:"2025",r:1},{s:"2027",r:1},{s:"2025",r:4,via:"FrankE324's pick"},{s:"2025",r:4,via:"dweeebzz's pick"}]},
+    {date:"Dec 15, 2024",season:"2024",week:17,partners:["jwilly301"],received:[],sent:["8160"],picksIn:[],picksOut:[{s:"2025",r:3,via:"cinccity's pick"}]},
+  ],
+  "FrankE324": [
+    {date:"Aug 26, 2024",season:"2024",week:1,partners:["cinccity"],received:["11629"],sent:["11605"],picksIn:[],picksOut:[{s:"2025",r:4}],note:"Traded by prev. owner Zeekoo"},
+    {date:"Aug 23, 2024",season:"2024",week:1,partners:["jwilly301"],received:["10222","5970","6797"],sent:["7543","8144"],picksIn:[],picksOut:[],note:"Traded by prev. owner Zeekoo"},
+    {date:"Sep 13, 2024",season:"2024",week:2,partners:["RipCamilton03"],received:["2028","5248"],sent:["8150"],picksIn:[{s:"2025",r:1,via:"RipCamilton03's pick"}],picksOut:[],note:"Traded by prev. owner Zeekoo"},
+  ],
+  "Kushwopp": [
+    {date:"Sep 27, 2024",season:"2024",week:5,partners:["RipCamilton03"],received:["8146"],sent:["11626","6801"],picksIn:[],picksOut:[]},
+    {date:"Nov 09, 2024",season:"2024",week:11,partners:["BizyBonez"],received:["11583"],sent:[],picksIn:[],picksOut:[{s:"2025",r:3}]},
+    {date:"Nov 23, 2024",season:"2024",week:12,partners:["RipCamilton03"],received:["11626","11650"],sent:["6783"],picksIn:[],picksOut:[{s:"2026",r:2}]},
+  ],
+  "dweeebzz": [
+    {date:"Aug 26, 2024",season:"2024",week:1,partners:["bleedgreenz"],received:["1166"],sent:["8134","8230"],picksIn:[{s:"2025",r:3}],picksOut:[]},
+    {date:"Aug 23, 2024",season:"2024",week:1,partners:["FrankE324 (via Zeekoo)"],received:["7543","8144"],sent:["10222","5970","6797"],picksIn:[],picksOut:[]},
+    {date:"Sep 27, 2024",season:"2024",week:6,partners:["RipCamilton03"],received:["8143"],sent:["7049"],picksIn:[],picksOut:[{s:"2026",r:1}]},
+    {date:"Sep 12, 2024",season:"2024",week:7,partners:["cinccity"],received:["11576"],sent:[],picksIn:[],picksOut:[{s:"2025",r:3},{s:"2025",r:4}]},
+    {date:"Oct 13, 2024",season:"2024",week:8,partners:["bleedgreenz"],received:["6130"],sent:["7049"],picksIn:[{s:"2025",r:4},{s:"2026",r:2}],picksOut:[]},
+  ],
+  "jwilly301": [
+    {date:"Aug 27, 2024",season:"2024",week:1,partners:["bleedgreenz"],received:["4018"],sent:["5850"],picksIn:[{s:"2025",r:2},{s:"2026",r:3}],picksOut:[]},
+    {date:"Aug 23, 2024",season:"2024",week:1,partners:["FrankE324 (via Zeekoo)"],received:["7543","8144"],sent:["10222","5970","6797"],picksIn:[],picksOut:[]},
+    {date:"Aug 23, 2024",season:"2024",week:1,partners:["bleedgreenz"],received:["4144","5906","8117"],sent:["4144","5906","8117"],picksIn:[],picksOut:[]},
+    {date:"Oct 27, 2024",season:"2024",week:10,partners:["cinccity"],received:["11564","5022"],sent:["4993","7543"],picksIn:[],picksOut:[{s:"2025",r:1}]},
+    {date:"Dec 14, 2024",season:"2024",week:15,partners:["RipCamilton03"],received:["6801"],sent:["8144"],picksIn:[{s:"2025",r:2,via:"jwilly301's pick"}],picksOut:[]},
+    {date:"Dec 15, 2024",season:"2024",week:17,partners:["bleedgreenz"],received:["8160"],sent:[],picksIn:[{s:"2025",r:3,via:"cinccity's pick"}],picksOut:[]},
+  ],
+  "BizyBonez": [
+    {date:"Sep 13, 2024",season:"2024",week:7,partners:["cinccity"],received:[],sent:["11651","4034"],picksIn:[{s:"2025",r:2},{s:"2025",r:4},{s:"2026",r:3}],picksOut:[]},
+    {date:"Sep 27, 2024",season:"2024",week:6,partners:["bleedgreenz"],received:["19"],sent:["11562"],picksIn:[{s:"2026",r:1}],picksOut:[]},
+    {date:"Oct 20, 2024",season:"2024",week:9,partners:["bleedgreenz"],received:["11562"],sent:["19"],picksIn:[],picksOut:[{s:"2027",r:4,via:"bleedgreenz's pick"}]},
+    {date:"Nov 09, 2024",season:"2024",week:11,partners:["Kushwopp"],received:[],sent:["11583"],picksIn:[{s:"2025",r:3,via:"Kushwopp's pick"}],picksOut:[]},
+  ],
+  "ifeellikemontez": [
+    {date:"Aug 27, 2024",season:"2024",week:1,partners:["cinccity"],received:["8151"],sent:["5045","5937","9999"],picksIn:[],picksOut:[],note:"Traded by prev. owner stzy"},
+  ],
+  "RipCamilton03": [
+    {date:"Sep 13, 2024",season:"2024",week:2,partners:["FrankE324 (via Zeekoo)"],received:["8150"],sent:["2028","5248"],picksIn:[],picksOut:[{s:"2025",r:1}]},
+    {date:"Sep 27, 2024",season:"2024",week:5,partners:["Kushwopp"],received:["11626","6801"],sent:["8146"],picksIn:[],picksOut:[]},
+    {date:"Sep 27, 2024",season:"2024",week:6,partners:["dweeebzz"],received:["7049"],sent:["8143"],picksIn:[{s:"2026",r:1}],picksOut:[]},
+    {date:"Nov 23, 2024",season:"2024",week:12,partners:["Kushwopp"],received:["6783"],sent:["11626","11650"],picksIn:[{s:"2026",r:2}],picksOut:[]},
+    {date:"Dec 14, 2024",season:"2024",week:15,partners:["jwilly301"],received:["8144"],sent:["6801"],picksIn:[],picksOut:[{s:"2025",r:2,via:"jwilly301's pick"}]},
+  ],
+  "BarbieBry": [],
+  "TheAmberErica": [],
+  "SPCTIGERS": [],
+};
+
 // ── TRADES TAB ────────────────────────────────────────────────────────────────
 async function loadTradesTab(league, username) {
   const body = document.getElementById('modal-body');
   body.innerHTML = '<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading trades...</div></div>';
 
-  // Find roster_id for this username
   const rosterMap = ROSTER_MAP[league];
   const rosterId = parseInt(Object.keys(rosterMap).find(k => rosterMap[k] === username));
-
-  // Fetch transactions weeks 1-18
   const leagueId = LEAGUE_IDS[league];
   const cacheKey = `${league}_trades`;
 
+  // Fetch 2025 live trades
   if (!tradeCache[cacheKey]) {
-    const weeks = Array.from({length:18}, (_,i) => i+1);
     const allTrades = [];
-    for (const week of weeks) {
+    for (let week = 1; week <= 18; week++) {
       try {
         const res = await fetch(API(`league/${leagueId}/transactions/${week}`));
         if (!res.ok) break;
         const txns = await res.json();
         if (!txns || txns.length === 0) continue;
-        const trades = txns.filter(t => t.type === 'trade');
-        allTrades.push(...trades);
+        allTrades.push(...txns.filter(t => t.type === 'trade' && t.status === 'complete'));
       } catch { break; }
     }
     tradeCache[cacheKey] = allTrades;
   }
 
-  // Filter to trades involving this roster
-  const myTrades = tradeCache[cacheKey].filter(t =>
-    t.roster_ids && t.roster_ids.includes(rosterId)
-  );
-
-  if (myTrades.length === 0) {
-    body.innerHTML = '<div class="empty-state">No trades found for this team.</div>';
-    return;
-  }
-
-  // Fetch player names (try cache first)
-  const playerIds = new Set();
-  myTrades.forEach(t => {
-    if (t.adds) Object.keys(t.adds).forEach(id => { if (isNaN(id) === false || id.length > 2) playerIds.add(id); });
-    if (t.drops) Object.keys(t.drops).forEach(id => { if (isNaN(id) === false || id.length > 2) playerIds.add(id); });
-  });
-
   // Load players if not cached
-  if (Object.keys(playerCache).length === 0 && playerIds.size > 0) {
+  if (Object.keys(playerCache).length === 0) {
     try {
       const res = await fetch(API('players/nfl'));
       if (res.ok) { const data = await res.json(); Object.assign(playerCache, data); }
@@ -467,58 +512,95 @@ async function loadTradesTab(league, username) {
     return p.full_name || `${p.first_name||''} ${p.last_name||''}`.trim() || id;
   }
 
-  function teamBadge(rId) {
-    const uname = getRosterUsername(league, rId);
-    const td = getTeam(league, uname); // already proxied
+  function teamBadge(uname) {
+    const td = getTeam(league, uname);
     const avHtml = td.avatarUrl
-      ? `<img crossorigin="anonymous" src="${td.avatarUrl}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none';this.nextSibling&&(this.nextSibling.style.display='flex')">`
-      : `<div style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);font-family:'Barlow',sans-serif;">${(td.displayName||'?')[0]}</div>`;
-    return `<div class="trade-team-badge">${avHtml}<span>${td.displayName}</span></div>`;
+      ? `<img crossorigin="anonymous" src="${td.avatarUrl}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">`
+      : `<div style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);font-family:'Barlow',sans-serif;">${(td.displayName||uname)[0]}</div>`;
+    return `<div class="trade-team-badge">${avHtml}<span>${td.displayName || uname}</span></div>`;
   }
 
-  // Sort newest first
-  myTrades.sort((a,b) => b.created - a.created);
+  // ── Build 2025 trade cards ──────────────────────────────────────────────────
+  const myTrades2025 = tradeCache[cacheKey].filter(t => t.roster_ids && t.roster_ids.includes(rosterId));
+  myTrades2025.sort((a,b) => b.created - a.created);
 
   let html = '';
-  myTrades.forEach(trade => {
-    const otherRosterIds = trade.roster_ids.filter(r => r !== rosterId);
-    const date = formatDate(trade.created);
 
-    // What this team received (adds to their roster)
-    const myAdds = trade.adds ? Object.entries(trade.adds).filter(([,rid]) => rid === rosterId) : [];
-    const myDrops = trade.drops ? Object.entries(trade.drops).filter(([,rid]) => rid === rosterId) : [];
-    // Picks going to this team
-    const picksIn = trade.draft_picks ? trade.draft_picks.filter(p => p.owner_id === rosterId) : [];
-    // Picks leaving this team
-    const picksOut = trade.draft_picks ? trade.draft_picks.filter(p => p.previous_owner_id === rosterId && p.owner_id !== rosterId) : [];
+  if (myTrades2025.length > 0) {
+    html += '<div class="draft-year-label">2025 Season</div>';
+    myTrades2025.forEach(trade => {
+      const otherRosterIds = trade.roster_ids.filter(r => r !== rosterId);
+      const date = formatDate(trade.created);
+      const myAdds = trade.adds ? Object.entries(trade.adds).filter(([,rid]) => rid === rosterId) : [];
+      const myDrops = trade.drops ? Object.entries(trade.drops).filter(([,rid]) => rid === rosterId) : [];
+      const picksIn = (trade.draft_picks||[]).filter(p => p.owner_id === rosterId);
+      const picksOut = (trade.draft_picks||[]).filter(p => p.previous_owner_id === rosterId && p.owner_id !== rosterId);
 
-    html += `<div class="trade-card">
-      <div class="trade-date">${date}</div>
-      <div class="trade-parties">
-        ${teamBadge(rosterId)}
-        <span class="trade-vs">⇄</span>
-        ${otherRosterIds.map(r => teamBadge(r)).join('')}
-      </div>`;
-
-    if (myAdds.length || picksIn.length) {
-      html += `<div class="trade-section-label">Received</div><div class="trade-items">`;
-      myAdds.forEach(([pid]) => html += `<span class="trade-item">${playerName(pid)}</span>`);
-      picksIn.forEach(p => html += `<span class="trade-item pick">${p.season} Rd ${p.round} (via ${getRosterUsername(league, p.roster_id)})</span>`);
+      html += `<div class="trade-card">
+        <div class="trade-date">${date}</div>
+        <div class="trade-parties">
+          ${teamBadge(username)}
+          <span class="trade-vs">⇄</span>
+          ${otherRosterIds.map(r => teamBadge(getRosterUsername(league, r))).join('')}
+        </div>`;
+      if (myAdds.length || picksIn.length) {
+        html += `<div class="trade-section-label">Received</div><div class="trade-items">`;
+        myAdds.forEach(([pid]) => html += `<span class="trade-item">${playerName(pid)}</span>`);
+        picksIn.forEach(p => html += `<span class="trade-item pick">${p.season} Rd ${p.round}${p.roster_id !== rosterId ? ` (via ${getRosterUsername(league,p.roster_id)})` : ''}</span>`);
+        html += `</div>`;
+      }
+      if (myDrops.length || picksOut.length) {
+        html += `<div class="trade-section-label">Sent</div><div class="trade-items">`;
+        myDrops.forEach(([pid]) => html += `<span class="trade-item">${playerName(pid)}</span>`);
+        picksOut.forEach(p => html += `<span class="trade-item pick">${p.season} Rd ${p.round}</span>`);
+        html += `</div>`;
+      }
       html += `</div>`;
-    }
-    if (myDrops.length || picksOut.length) {
-      html += `<div class="trade-section-label">Sent</div><div class="trade-items">`;
-      myDrops.forEach(([pid]) => html += `<span class="trade-item">${playerName(pid)}</span>`);
-      picksOut.forEach(p => html += `<span class="trade-item pick">${p.season} Rd ${p.round} (${getRosterUsername(league, p.roster_id)}'s pick)</span>`);
+    });
+  }
+
+  // ── Build 2024 trade cards (CFL only, hardcoded) ───────────────────────────
+  const trades2024 = (league === 'CFL' && TRADES_2024_CFL[username]) || [];
+  if (trades2024.length > 0) {
+    html += '<div class="draft-year-label">2024 Season</div>';
+    trades2024.forEach(t => {
+      html += `<div class="trade-card">
+        <div class="trade-date">${t.date} · Week ${t.week}</div>
+        ${t.note ? `<div style="font-size:10px;color:var(--sunset);font-family:'Barlow',sans-serif;letter-spacing:1px;margin-bottom:6px;">⚑ ${t.note}</div>` : ''}
+        <div class="trade-parties">
+          ${teamBadge(username)}
+          <span class="trade-vs">⇄</span>
+          ${t.partners.map(p => {
+            // Strip the "(via X)" suffix for badge lookup
+            const baseUsername = p.split(' (')[0];
+            return teamBadge(baseUsername);
+          }).join('')}
+        </div>`;
+      if ((t.received||[]).length || (t.picksIn||[]).length) {
+        html += `<div class="trade-section-label">Received</div><div class="trade-items">`;
+        (t.received||[]).forEach(pid => html += `<span class="trade-item">${playerName(pid)}</span>`);
+        (t.picksIn||[]).forEach(p => html += `<span class="trade-item pick">${p.s} Rd ${p.r}${p.via ? ` (${p.via})` : ''}</span>`);
+        html += `</div>`;
+      }
+      if ((t.sent||[]).length || (t.picksOut||[]).length) {
+        html += `<div class="trade-section-label">Sent</div><div class="trade-items">`;
+        (t.sent||[]).forEach(pid => html += `<span class="trade-item">${playerName(pid)}</span>`);
+        (t.picksOut||[]).forEach(p => html += `<span class="trade-item pick">${p.s} Rd ${p.r}${p.via ? ` (${p.via})` : ''}</span>`);
+        html += `</div>`;
+      }
       html += `</div>`;
-    }
-    html += `</div>`;
-  });
+    });
+  }
+
+  if (!html) {
+    body.innerHTML = '<div class="empty-state">No trades found for this team.</div>';
+    return;
+  }
 
   body.innerHTML = html;
 }
 
-// ── DRAFT TAB ─────────────────────────────────────────────────────────────────
+
 async function loadDraftTab(league, username) {
   const body = document.getElementById('modal-body');
   body.innerHTML = '<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading draft history...</div></div>';
