@@ -221,6 +221,7 @@
 const SUPABASE_URL = 'https://vnpsxpofnquntnydcklu.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucHN4cG9mbnF1bnRueWRja2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODQ5MzgsImV4cCI6MjA4OTg2MDkzOH0.ergWPNr6dWBAYQP2S03f5_wOtH2QA03TxaBpOSC9Bj8';
 const COMMISSIONER_PIN = '00136860';
+const TEST_MODE = false; // set to true to draw any pick regardless of date (commissioner only)
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -328,11 +329,12 @@ async function loadResults() {
     .select('*')
     .eq('league', activeLeague)
     .order('pick_slot', { ascending: false });
-  if (!error) drawnResults = data || [];
+  if (error) { console.error('Load error:', error); return; }
+  drawnResults = data || [];
 }
 
 async function saveResult(result) {
-  const { error } = await sb.from('lottery_results').upsert({
+  const { data, error } = await sb.from('lottery_results').upsert({
     league: activeLeague,
     pick_slot: result.pick,
     seed: result.seed,
@@ -342,14 +344,20 @@ async function saveResult(result) {
     traded_to: result.tradedTo || null,
     traded_to_display: result.tradedToDisplay || null,
     avatar_url: result.avatarUrl || null,
-  }, { onConflict: 'league,pick_slot' });
-  if (error) console.error('Save error:', error);
+    drawn_at: new Date().toISOString(),
+  }, { onConflict: 'league,pick_slot' }).select();
+  if (error) {
+    console.error('Save error:', error);
+    alert('Error saving pick: ' + error.message);
+    return false;
+  }
+  return true;
 }
 
 function subscribeRealtime() {
   if (realtimeChannel) sb.removeChannel(realtimeChannel);
   realtimeChannel = sb
-    .channel(`lottery_${activeLeague}`)
+    .channel(`live_${activeLeague}_${Date.now()}`)
     .on('postgres_changes', {
       event: '*', schema: 'public', table: 'lottery_results',
       filter: `league=eq.${activeLeague}`
@@ -508,6 +516,25 @@ function render() {
     } else if (alreadyDrawn && nextSlot) {
       html += `<div style="font-size:13px;color:var(--muted);text-align:center;font-family:'Barlow',sans-serif;letter-spacing:1px;padding:8px 0;">Pick 1.0${nextSlot} already drawn today.</div>`;
     }
+    // Test mode: show all undrawn picks as buttons
+    if (TEST_MODE) {
+      const undrawn = SCHEDULE.filter(s => !drawnSlots.includes(s.slot) && s.slot !== nextSlot);
+      if (undrawn.length > 0) {
+        html += `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-orange);">`;
+        html += `<div style="font-size:10px;letter-spacing:3px;color:var(--orange2);font-family:'Barlow',sans-serif;margin-bottom:8px;text-transform:uppercase;">Test Mode · Draw Any Pick</div>`;
+        html += `<div style="display:flex;flex-wrap:wrap;gap:6px;">`;
+        undrawn.forEach(s => {
+          html += `<button onclick="drawPick(${s.slot})" style="padding:7px 14px;background:transparent;border:1px solid var(--border-orange);border-radius:3px;color:var(--orange2);font-family:'Anton',sans-serif;font-size:14px;letter-spacing:2px;cursor:pointer;">1.0${s.slot}</button>`;
+        });
+        html += `</div></div>`;
+      }
+    }
+    // Test mode reset button
+    if (TEST_MODE && drawnResults.length > 0) {
+      html += `<div style="margin-top:10px;text-align:center;">
+        <button onclick="resetTestData()" style="padding:6px 16px;background:transparent;border:1px solid rgba(192,24,26,0.4);border-radius:3px;color:#e06060;font-family:'Teko',sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;">✕ Reset Test Data</button>
+      </div>`;
+    }
     html += '</div>';
   }
 
@@ -608,10 +635,15 @@ async function drawPick(slot) {
     }, 75);
   });
 
-  // Save to Supabase (realtime will trigger re-render for all viewers)
-  await saveResult(result);
+  // Save to Supabase
+  const saved = await saveResult(result);
+  if (!saved) { animating = false; return; }
+
+  // Immediately reload + render for commissioner
+  await loadResults();
   animating = false;
-  // Realtime subscription will call render() for everyone including commissioner
+  render();
+  // Realtime subscription handles all other viewers
 }
 
 // ── PIN ───────────────────────────────────────────────────────────────────────
@@ -637,6 +669,15 @@ function submitPin() {
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('pin-overlay').style.display !== 'none') submitPin();
 });
+
+async function resetTestData() {
+  if (!TEST_MODE) return;
+  const { error } = await sb.from('lottery_results').delete().eq('league', activeLeague);
+  if (error) { console.error('Reset error:', error); return; }
+  drawnResults = [];
+  allResults = [];
+  render();
+}
 
 function getSuffix(n){if(n===1)return'ST';if(n===2)return'ND';if(n===3)return'RD';return'TH';}
 
