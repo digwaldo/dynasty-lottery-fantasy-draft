@@ -1,4 +1,4 @@
-// Vercel serverless function — proxies Sleeper API + avatar images to avoid CORS/iOS issues
+// Vercel serverless function — proxies Sleeper API + avatar images
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET');
@@ -8,31 +8,40 @@ module.exports = async function handler(req, res) {
   // ── AVATAR IMAGE PROXY ──────────────────────────────────────────────────────
   if (avatar) {
     try {
-      // avatar param is just the hash or full path
       const isUpload = avatar.startsWith('uploads/');
       const url = isUpload
         ? `https://sleepercdn.com/${avatar}`
         : `https://sleepercdn.com/avatars/thumbs/${avatar}`;
-
       const imgRes = await fetch(url);
       if (!imgRes.ok) return res.status(imgRes.status).end();
-
       const buffer = await imgRes.arrayBuffer();
       const contentType = imgRes.headers.get('content-type') || 'image/jpeg';
-
       res.setHeader('Content-Type', contentType);
       res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate');
-      res.setHeader('Access-Control-Allow-Origin', '*');
       return res.status(200).send(Buffer.from(buffer));
     } catch (err) {
       return res.status(500).end();
     }
   }
 
-  // ── API PROXY ───────────────────────────────────────────────────────────────
-  if (!endpoint) {
-    return res.status(400).json({ error: 'Missing endpoint or avatar param' });
+  // ── PLAYER HEADSHOT PROXY ────────────────────────────────────────────────────
+  const { player_img } = req.query;
+  if (player_img) {
+    try {
+      const url = `https://sleepercdn.com/content/nfl/players/thumb/${player_img}.jpg`;
+      const imgRes = await fetch(url);
+      if (!imgRes.ok) return res.status(imgRes.status).end();
+      const buffer = await imgRes.arrayBuffer();
+      res.setHeader('Content-Type', 'image/jpeg');
+      res.setHeader('Cache-Control', 's-maxage=604800, stale-while-revalidate'); // 7 days
+      return res.status(200).send(Buffer.from(buffer));
+    } catch (err) {
+      return res.status(500).end();
+    }
   }
+
+  // ── SLEEPER API PROXY ───────────────────────────────────────────────────────
+  if (!endpoint) return res.status(400).json({ error: 'Missing endpoint or avatar param' });
 
   const allowed = [
     /^league\/\d+\/users$/,
