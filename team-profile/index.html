@@ -670,6 +670,56 @@ const TRADES_2025_CFL = {
 };
 
 // ── TRADES TAB ────────────────────────────────────────────────────────────────
+function playerHeadshotUrl(id) {
+  return '/api/sleeper?player_img=' + encodeURIComponent(id);
+}
+
+function playerCard(id) {
+  const p = playerCache[id];
+  if (!p || (isNaN(Number(id)) && id.length <= 3)) {
+    return '<div class="player-card"><div class="player-card-stripe DEF"></div>' +
+      '<div class="player-card-photo" style="font-size:22px;">&#x1F6E1;</div>' +
+      '<div class="player-card-body"><div class="player-card-pos DEF">DST</div>' +
+      '<div class="player-card-name">' + id + '</div>' +
+      '<div class="player-card-team">Defense</div></div></div>';
+  }
+  const name = p.full_name || ((p.first_name||'') + ' ' + (p.last_name||'')).trim() || id;
+  const pos = p.position || 'OTHER';
+  const nflTeam = p.team || '';
+  const lastName = (p.last_name || name.split(' ').pop() || '').toUpperCase();
+  const validPos = ['QB','RB','WR','TE','K','DEF'].includes(pos) ? pos : 'OTHER';
+  const headshotUrl = playerHeadshotUrl(id);
+  const posEmojis = {QB:'&#x1F3C8;',RB:'&#x1F3C3;',WR:'&#x26A1;',TE:'&#x1F4AA;',K:'&#x1F9B5;',DEF:'&#x1F6E1;'};
+  const posEmoji = posEmojis[pos] || '&#x1F3C8;';
+  return '<div class="player-card">' +
+    '<div class="player-card-stripe ' + validPos + '"></div>' +
+    '<div class="player-card-photo">' +
+      '<img src="' + headshotUrl + '" crossorigin="anonymous" ' +
+        'style="width:100%;height:100%;object-fit:cover;object-position:top center;" ' +
+        'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+      '<div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:20px;">' + posEmoji + '</div>' +
+    '</div>' +
+    '<div class="player-card-body">' +
+      '<div class="player-card-pos ' + validPos + '">' + pos + '</div>' +
+      '<div class="player-card-name">' + lastName + '</div>' +
+      '<div class="player-card-team">' + nflTeam + '</div>' +
+    '</div></div>';
+}
+
+function pickCard(season, round, via) {
+  const roundLabel = round === 1 ? '1ST' : round === 2 ? '2ND' : round === 3 ? '3RD' : round + 'TH';
+  return '<div class="pick-card">' +
+    '<div class="pick-card-stripe"></div>' +
+    '<div class="pick-card-top">' +
+      '<div class="pick-card-trophy">&#x1F3C6;</div>' +
+      '<div class="pick-card-round-big">' + roundLabel + ' RD</div>' +
+    '</div>' +
+    '<div class="pick-card-body">' +
+      '<div class="pick-card-season">' + season + '</div>' +
+      '<div class="pick-card-via">' + (via || 'Own pick') + '</div>' +
+    '</div></div>';
+}
+
 async function loadTradesTab(league, username) {
   const body = document.getElementById('modal-body');
   body.innerHTML = '<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading trades...</div></div>';
