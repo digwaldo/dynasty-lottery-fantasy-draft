@@ -169,62 +169,92 @@
   <svg class="wave-layer wave2" viewBox="0 0 1440 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
     <path d="M0,60 C90,120 180,20 360,70 C540,120 630,10 720,60 C810,110 990,20 1080,70 C1170,120 1350,30 1440,60 L1440,180 L0,180 Z" fill="#007a74" opacity="0.2"/>
   </svg>
-  <svg class="wave-layer wave3" viewBox="0 0 1440 160" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-    <path d="M0,40 C200,100 400,0 600,50 C800,100 1000,0 1200,50 C1300,75 1370,30 1440,50 L1440,160 L0,160 Z" fill="#00C8BC" opacity="0.12"/>
-  </svg>
   <div class="glow-orb orb-orange"></div>
   <div class="glow-orb orb-teal"></div>
-  <div class="glow-orb orb-teal2"></div>
 </div>
 <div class="frame-line-top"></div>
 <div class="frame-line-bottom"></div>
 
-<!-- PIN MODAL -->
-<div class="pin-overlay" id="pin-overlay" style="display:none;">
-  <div class="pin-box">
-    <div class="pin-title">COMMISSIONER</div>
-    <div class="pin-sub">Enter your PIN to draw picks</div>
-    <input class="pin-input" id="pin-input" type="password" maxlength="8" placeholder="••••••••">
-    <div class="pin-error" id="pin-error"></div>
-    <button class="btn-pin" onclick="submitPin()">ENTER</button>
+<!-- PIN OVERLAY -->
+<div id="pin-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;align-items:center;justify-content:center;">
+  <div style="background:#0d1a2b;border:1px solid var(--border-teal);border-top:3px solid var(--teal);border-radius:8px;padding:32px;text-align:center;width:300px;">
+    <div style="font-family:'Anton',sans-serif;font-size:20px;letter-spacing:4px;color:var(--chrome2);margin-bottom:20px;">COMMISSIONER PIN</div>
+    <input id="pin-input" type="password" maxlength="8"
+      style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border-teal);border-radius:3px;color:var(--chrome2);font-family:'Anton',sans-serif;font-size:24px;letter-spacing:8px;text-align:center;outline:none;"
+      placeholder="••••••••">
+    <div id="pin-error" style="color:#ff6060;font-size:12px;font-family:'Barlow',sans-serif;letter-spacing:1px;margin-top:8px;min-height:16px;"></div>
+    <button onclick="submitPin()" style="margin-top:16px;width:100%;padding:12px;background:var(--teal-dark);border:1px solid var(--teal);border-radius:3px;color:var(--chrome2);font-family:'Anton',sans-serif;font-size:16px;letter-spacing:3px;cursor:pointer;">ENTER</button>
   </div>
 </div>
 
-<div class="container">
-  <a href="/" class="nav-back">‹ Lottery Home</a>
-  <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(245,166,35,0.12);border:1px solid rgba(245,166,35,0.4);border-radius:2px;padding:3px 10px;margin-left:10px;font-size:10px;letter-spacing:3px;color:var(--sunset);font-family:'Barlow',sans-serif;text-transform:uppercase;">⚠ TEST MODE</div>
+<!-- NAV -->
+<div style="position:relative;z-index:10;padding:8px 16px;">
+  <a href="/" class="nav-back">&#8249; Lottery Home</a>
+  <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(245,166,35,0.12);border:1px solid rgba(245,166,35,0.4);border-radius:2px;padding:3px 10px;margin-left:10px;font-size:10px;letter-spacing:3px;color:var(--sunset);font-family:'Barlow',sans-serif;text-transform:uppercase;">&#9888; TEST MODE</span>
+  <button id="commissioner-toggle" onclick="showPinModal()" style="float:right;padding:6px 14px;background:transparent;border:1px solid var(--border-teal);border-radius:3px;color:var(--teal2);font-family:'Teko',sans-serif;font-size:14px;letter-spacing:2px;cursor:pointer;">Commissioner Login</button>
+</div>
 
+<div class="container">
   <header>
     <div class="commissioner-line">Commissioner cinccity</div>
     <h1>LIVE DRAFT</h1>
     <div class="header-sub">
       <div class="header-sub-line"></div>
-      <span>Test Mode · Not Official</span>
+      <span>Test Mode &middot; Not Official</span>
       <div class="header-sub-line right"></div>
     </div>
     <div class="header-border"></div>
   </header>
 
+  <!-- League tabs -->
   <div class="league-tabs">
     <div class="league-tab active" id="tab-CFL" onclick="switchLeague('CFL')">CFL</div>
     <div class="league-tab" id="tab-MinuteMaid" onclick="switchLeague('MinuteMaid')">MinuteMaid</div>
   </div>
 
-  <div id="main-content">
-    <div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading...</div></div>
+  <!-- Status bar -->
+  <div id="status-bar"></div>
+
+  <!-- Commissioner panel -->
+  <div id="commissioner-panel" style="display:none;"></div>
+
+  <!-- Reveal zone -->
+  <div id="reveal-zone" class="reveal-zone">
+    <div class="waiting-state">
+      <div class="trophy-icon">&#127942;</div>
+      <div class="waiting-text">Awaiting first pick reveal</div>
+    </div>
   </div>
 
-  <a class="btn-commissioner-toggle" onclick="showPinModal()" id="commissioner-toggle">🔐 Commissioner Login</a>
+  <!-- Error display -->
+  <div id="error-bar" style="display:none;background:rgba(192,24,26,0.15);border:1px solid rgba(192,24,26,0.5);border-radius:3px;padding:10px 14px;margin-bottom:12px;font-family:'Barlow',sans-serif;font-size:13px;color:#ff8080;letter-spacing:1px;"></div>
+
+  <!-- Results board -->
+  <div id="results-board"></div>
+</div>
+
+<!-- Spinner overlay -->
+<div id="spin-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,21,32,0.95);z-index:300;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
+  <div style="font-size:11px;letter-spacing:4px;color:var(--orange2);font-family:'Barlow',sans-serif;text-transform:uppercase;" id="spin-label">Drawing Pick...</div>
+  <div id="spin-text" style="font-family:'Anton',sans-serif;font-size:clamp(32px,10vw,64px);letter-spacing:2px;color:var(--chrome2);text-align:center;padding:0 20px;min-height:80px;display:flex;align-items:center;justify-content:center;">&#9679;</div>
+  <div style="font-size:12px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:2px;">Selecting winner...</div>
 </div>
 
 <script>
-// ── CONFIG ────────────────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://vnpsxpofnquntnydcklu.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucHN4cG9mbnF1bnRueWRja2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODQ5MzgsImV4cCI6MjA4OTg2MDkzOH0.ergWPNr6dWBAYQP2S03f5_wOtH2QA03TxaBpOSC9Bj8';
-const COMMISSIONER_PIN = '00136860';
-const TEST_MODE = true; // TEST MODE — draw any pick, reset anytime
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const COMMISSIONER_PIN = '00136860';
+
+function proxyAvatar(url) {
+  if (!url) return null;
+  if (url.includes('sleepercdn.com/uploads/')) return `/api/sleeper?avatar=${encodeURIComponent(url.split('sleepercdn.com/')[1])}`;
+  if (url.includes('sleepercdn.com/avatars/thumbs/')) return `/api/sleeper?avatar=${encodeURIComponent(url.split('/thumbs/')[1])}`;
+  return url;
+}
+
 
 // Draft schedule: pick_slot -> date (ET 5:30pm)
 // Pick slot 8 = Apr 18, slot 7 = Apr 19, ..., slot 1 = Apr 25 (both 1.01 & 1.02 on last day)
@@ -307,35 +337,33 @@ const TEAM_DATA = {
   }
 };
 
+
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let activeLeague = 'CFL';
 let isCommissioner = false;
-let drawnResults = []; // from Supabase
-let allResults = [];   // full pre-drawn lottery (commissioner only)
+let drawnResults = [];
+let allResults = [];
 let animating = false;
-let countdownInterval = null;
 let realtimeChannel = null;
 
-// ── INIT ──────────────────────────────────────────────────────────────────────
-async function init() {
-  await loadResults();
-  subscribeRealtime();
-  render();
-}
+// Test namespace — picks saved here, never touches real draw data
+function testKey() { return activeLeague + '_test'; }
 
 // ── SUPABASE ──────────────────────────────────────────────────────────────────
 async function loadResults() {
   const { data, error } = await sb
     .from('lottery_results')
     .select('*')
-    .eq('league', activeLeague + '_test')
+    .eq('league', testKey())
     .order('pick_slot', { ascending: false });
-  if (!error) drawnResults = data || [];
+  if (error) { showError('Load error: ' + error.message); return; }
+  drawnResults = data || [];
 }
 
 async function saveResult(result) {
-  const { error } = await sb.from('lottery_results').upsert({
-    league: activeLeague + '_test',   // isolated from real draw data
+  showError(''); // clear any previous error
+  const payload = {
+    league: testKey(),
     pick_slot: result.pick,
     seed: result.seed,
     team_name: result.team,
@@ -344,22 +372,44 @@ async function saveResult(result) {
     traded_to: result.tradedTo || null,
     traded_to_display: result.tradedToDisplay || null,
     avatar_url: result.avatarUrl || null,
-  }, { onConflict: 'league,pick_slot' });
-  if (error) console.error('Save error:', error);
+    drawn_at: new Date().toISOString(),
+  };
+  console.log('[TEST] Saving to Supabase:', payload);
+  const { data, error } = await sb
+    .from('lottery_results')
+    .upsert(payload, { onConflict: 'league,pick_slot' })
+    .select();
+  if (error) {
+    console.error('[TEST] Save error:', error);
+    showError('Save failed: ' + error.message + ' — Check Supabase console');
+    return false;
+  }
+  console.log('[TEST] Save success:', data);
+  return true;
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-bar');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
 }
 
 function subscribeRealtime() {
   if (realtimeChannel) sb.removeChannel(realtimeChannel);
   realtimeChannel = sb
-    .channel(`lottery_${activeLeague}`)
+    .channel('test_' + activeLeague + '_' + Date.now())
     .on('postgres_changes', {
       event: '*', schema: 'public', table: 'lottery_results',
-      filter: `league=eq.${activeLeague}_test`
-    }, async () => {
+      filter: 'league=eq.' + testKey()
+    }, async (payload) => {
+      console.log('[TEST] Realtime update received:', payload);
       await loadResults();
-      render();
+      renderAll();
     })
-    .subscribe();
+    .subscribe((status) => {
+      console.log('[TEST] Realtime status:', status);
+    });
 }
 
 // ── LEAGUE SWITCH ─────────────────────────────────────────────────────────────
@@ -368,283 +418,202 @@ async function switchLeague(league) {
   allResults = [];
   document.getElementById('tab-CFL').classList.toggle('active', league === 'CFL');
   document.getElementById('tab-MinuteMaid').classList.toggle('active', league === 'MinuteMaid');
-  document.getElementById('main-content').innerHTML = '<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading...</div></div>';
   await loadResults();
   subscribeRealtime();
-  render();
+  renderAll();
 }
 
-// ── LOTTERY LOGIC ─────────────────────────────────────────────────────────────
+// ── LOTTERY ───────────────────────────────────────────────────────────────────
 function runFullLottery() {
   let pool = [1,2,3,4,5,6,7,8];
   allResults = [];
   const config = LEAGUE_CONFIG[activeLeague];
   for (let slot = 1; slot <= 8; slot++) {
-    const eligible = pool.filter(s => (ODDS_TABLE[s][slot] || 0) > 0);
     const w = pool.map(s => ODDS_TABLE[s][slot] || 0);
     const total = w.reduce((a,b) => a+b, 0);
+    const eligible = pool.filter(s => (ODDS_TABLE[s][slot] || 0) > 0);
     let winner = eligible[eligible.length - 1];
     if (total > 0) {
       let r = Math.random() * total;
       for (let i=0; i<pool.length; i++) { r -= w[i]; if (r <= 0) { winner = pool[i]; break; } }
       if ((ODDS_TABLE[winner][slot] || 0) === 0) winner = eligible[Math.floor(Math.random() * eligible.length)];
     }
-    const odds = ODDS_TABLE[winner][slot] || 0;
     const seedConfig = config.seeds.find(s => s.seed === winner);
     const username = seedConfig ? seedConfig.username : '';
     const tradedTo = seedConfig ? seedConfig.tradedTo : null;
     const td = TEAM_DATA[activeLeague][username] || { displayName: username, avatarUrl: null };
-    let tradedToDisplay = null;
-    if (tradedTo) {
-      const tdTo = TEAM_DATA[activeLeague][tradedTo];
-      tradedToDisplay = tdTo ? tdTo.displayName : tradedTo;
-    }
-    allResults.push({ pick: slot, seed: winner, team: td.displayName, username, avatarUrl: td.avatarUrl, odds, tradedTo, tradedToDisplay });
+    const tradedToDisplay = tradedTo ? ((TEAM_DATA[activeLeague][tradedTo] || {}).displayName || tradedTo) : null;
+    allResults.push({ pick: slot, seed: winner, team: td.displayName, username, avatarUrl: td.avatarUrl, odds: ODDS_TABLE[winner][slot] || 0, tradedTo, tradedToDisplay });
     pool = pool.filter(s => s !== winner);
   }
-}
-
-// ── COUNTDOWN ─────────────────────────────────────────────────────────────────
-function getNextPickInfo() {
-  const drawnSlots = drawnResults.map(r => r.pick_slot);
-  const remaining = SCHEDULE.filter(s => !drawnSlots.includes(s.slot));
-  if (remaining.length === 0) return null;
-  // Next is highest slot not yet drawn
-  return remaining.sort((a,b) => b.slot - a.slot)[0];
-}
-
-function getPickDrawTime(dateStr) {
-  // 5:30pm ET = 21:30 UTC (EST) or 22:30 UTC (EDT)
-  // April is EDT so 5:30pm EDT = 21:30 UTC
-  return new Date(`${dateStr}T21:30:00Z`);
-}
-
-function startCountdown(targetDate) {
-  if (countdownInterval) clearInterval(countdownInterval);
-  updateCountdown(targetDate);
-  countdownInterval = setInterval(() => updateCountdown(targetDate), 1000);
-}
-
-function updateCountdown(targetDate) {
-  const now = new Date();
-  const diff = targetDate - now;
-  const el = document.getElementById('countdown-timer');
-  if (!el) return;
-  if (diff <= 0) {
-    clearInterval(countdownInterval);
-    el.innerHTML = '<div class="countdown-num" style="color:var(--teal2);font-size:28px;letter-spacing:2px;">DRAW TIME!</div>';
-    return;
-  }
-  const d = Math.floor(diff / 86400000);
-  const h = Math.floor((diff % 86400000) / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  const s = Math.floor((diff % 60000) / 1000);
-  el.innerHTML = (d > 0 ? `
-    <div class="countdown-unit"><div class="countdown-num">${d}</div><div class="countdown-unit-label">Days</div></div>
-    <div class="countdown-sep">:</div>` : '') + `
-    <div class="countdown-unit"><div class="countdown-num">${String(h).padStart(2,'0')}</div><div class="countdown-unit-label">Hours</div></div>
-    <div class="countdown-sep">:</div>
-    <div class="countdown-unit"><div class="countdown-num">${String(m).padStart(2,'0')}</div><div class="countdown-unit-label">Min</div></div>
-    <div class="countdown-sep">:</div>
-    <div class="countdown-unit"><div class="countdown-num">${String(s).padStart(2,'0')}</div><div class="countdown-unit-label">Sec</div></div>`;
+  console.log('[TEST] Lottery pre-drawn:', allResults.map(r => 'Slot '+r.pick+'='+r.username));
 }
 
 // ── RENDER ─────────────────────────────────────────────────────────────────────
-function render() {
-  const content = document.getElementById('main-content');
-  const drawnSlots = drawnResults.map(r => r.pick_slot);
+function renderAll() {
+  const drawnSlots = drawnResults.map(r => Number(r.pick_slot));
   const allDone = drawnSlots.length >= 8;
-  const nextPick = getNextPickInfo();
 
-  let html = '';
-
-  // Live badge
-  html += '<div style="text-align:center;">';
-  if (!allDone) html += '<div class="live-badge" style="display:inline-flex;"><div class="live-dot"></div>LIVE · 2026 ROOKIE LOTTERY</div>';
-  html += '</div>';
-
-  // Schedule strip
-  html += '<div class="schedule-strip">';
-  SCHEDULE.forEach(s => {
-    const done = drawnSlots.includes(s.slot);
-    const isToday = nextPick && nextPick.slot === s.slot;
-    const cls = done ? 'done' : isToday ? 'today' : 'upcoming';
-    html += `<div class="schedule-day ${cls}">
-      <div class="schedule-day-date">${s.label}</div>
-      <div class="schedule-day-pick">1.0${s.slot}</div>
-      <div class="schedule-day-check">${done ? '✓' : isToday ? '●' : ''}</div>
-    </div>`;
-  });
-  html += '</div>';
-
-  // Test mode status — no countdown
-  if (allDone) {
-    html += `<div class="complete-banner"><h2>TEST COMPLETE</h2><p>All 8 picks drawn in test. Reset below to run again.</p></div>`;
-  } else {
+  // Status bar
+  const statusEl = document.getElementById('status-bar');
+  if (statusEl) {
     const remaining = 8 - drawnSlots.length;
-    html += `<div class="countdown-wrap" style="border-top-color:var(--sunset);">
-      <div class="countdown-label" style="color:var(--sunset);">⚗ Test Mode · No Real Data</div>
-      <div class="countdown-pick" style="color:var(--chrome);">${remaining} pick${remaining !== 1 ? 's' : ''} remaining · Draw in any order</div>
-      <div style="font-size:11px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;margin-top:6px;">
-        Saves to <strong style="color:var(--sunset);">${activeLeague}_test</strong> · Live draft uses <strong style="color:var(--teal2);">${activeLeague}</strong>
-      </div>
-    </div>`;
+    statusEl.innerHTML = allDone
+      ? '<div class="complete-banner"><h2>TEST COMPLETE</h2><p>All 8 picks drawn. Reset to run again.</p></div>'
+      : '<div class="countdown-wrap" style="border-top-color:var(--sunset);margin-bottom:14px;">' +
+        '<div class="countdown-label" style="color:var(--sunset);">&#9879; TEST MODE &middot; Data saved to <strong>' + testKey() + '</strong></div>' +
+        '<div class="countdown-pick" style="color:var(--chrome);">' + remaining + ' pick' + (remaining!==1?'s':'') + ' remaining</div>' +
+        '<div style="font-size:11px;color:var(--muted);font-family:Barlow,sans-serif;margin-top:4px;">Live draft uses <strong style=\"color:var(--teal2)\">' + activeLeague + '</strong> &middot; Test uses <strong style=\"color:var(--sunset)\">' + testKey() + '</strong></div>' +
+        '</div>';
   }
 
-  // Commissioner panel — TEST MODE: no date gating, show all picks freely
-  if (isCommissioner && !allDone) {
-    // Ensure lottery is pre-run
-    if (allResults.length === 0) runFullLottery();
-
-    const undrawn = SCHEDULE.filter(s => !drawnSlots.includes(s.slot))
-      .sort((a,b) => b.slot - a.slot); // highest pick number first (pick 8 → pick 1)
-
-    html += `<div class="commissioner-panel">
-      <div class="commissioner-badge"><div class="commissioner-badge-dot"></div>Commissioner · Test Mode</div>
-      <div style="font-size:10px;letter-spacing:2px;color:var(--sunset);font-family:'Barlow',sans-serif;margin-bottom:10px;text-transform:uppercase;">
-        Draw any pick · Results isolated to ${activeLeague}_test
-      </div>`;
-
-    if (undrawn.length > 0) {
-      html += `<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">`;
-      undrawn.forEach(s => {
-        html += `<button onclick="drawPick(${s.slot})" class="btn-draw" style="flex:0 0 auto;width:auto;padding:12px 20px;font-size:16px;letter-spacing:3px;">
-          DRAW 1.0${s.slot}
-        </button>`;
-      });
-      html += `</div>`;
+  // Commissioner panel
+  const commEl = document.getElementById('commissioner-panel');
+  if (commEl) {
+    if (!isCommissioner || allDone) {
+      commEl.style.display = 'none';
+    } else {
+      if (allResults.length === 0) runFullLottery();
+      const undrawn = SCHEDULE.filter(s => !drawnSlots.includes(s.slot)).sort((a,b) => b.slot - a.slot);
+      let html = '<div class="commissioner-panel">' +
+        '<div class="commissioner-badge"><div class="commissioner-badge-dot"></div>Commissioner &middot; Test Mode</div>';
+      if (undrawn.length > 0) {
+        html += '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:10px;">';
+        undrawn.forEach(s => {
+          html += '<button onclick="drawPick(' + s.slot + ')" class="btn-draw" style="flex:0 0 auto;width:auto;padding:12px 20px;font-size:16px;letter-spacing:3px;">DRAW 1.0' + s.slot + '</button>';
+        });
+        html += '</div>';
+      }
+      if (drawnResults.length > 0) {
+        html += '<div style="text-align:center;">' +
+          '<button onclick="resetTestData()" style="padding:6px 18px;background:transparent;border:1px solid rgba(192,24,26,0.4);border-radius:3px;color:#e06060;font-family:Teko,sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;">&#10005; Reset ' + activeLeague + ' Test Data</button>' +
+          '</div>';
+      }
+      html += '</div>';
+      commEl.innerHTML = html;
+      commEl.style.display = 'block';
     }
-
-    if (drawnResults.length > 0) {
-      html += `<div style="margin-top:12px;text-align:center;">
-        <button onclick="resetTestData()" style="padding:6px 16px;background:transparent;border:1px solid rgba(192,24,26,0.4);border-radius:3px;color:#e06060;font-family:'Teko',sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;">✕ Reset ${activeLeague} Test Data</button>
-      </div>`;
-    }
-    html += '</div>';
   }
 
-  // If not logged in as commissioner, show login prompt
-  if (!isCommissioner && !allDone) {
-    html += `<div style="text-align:center;padding:16px;">
-      <div style="font-size:11px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:2px;margin-bottom:8px;">Commissioner login required to draw picks</div>
-    </div>`;
-  }
-
-  // Reveal zone (show today's pick or last drawn)
-  const lastDrawn = drawnResults[0];
-  if (lastDrawn) {
-    const td = TEAM_DATA[activeLeague][lastDrawn.username] || { displayName: lastDrawn.team_name, avatarUrl: null };
-    const avatarUrl = td.avatarUrl || lastDrawn.avatar_url;
-    html += `<div class="reveal-zone">
-      <div class="revealed-state" style="display:flex;">
-        ${avatarUrl
-          ? `<img class="reveal-avatar" crossorigin="anonymous" src="${avatarUrl}" onerror="this.style.display='none'">`
-          : `<div class="reveal-avatar-ph">${(lastDrawn.team_name||'?')[0]}</div>`}
-        <div class="reveal-pick-label">PICK 1.0${lastDrawn.pick_slot} · MOST RECENT</div>
-        <div class="reveal-team-name">${lastDrawn.team_name.toUpperCase()}</div>
-        ${lastDrawn.traded_to ? `<div class="reveal-traded">Pick rights traded to · <strong>${(lastDrawn.traded_to_display||lastDrawn.traded_to).toUpperCase()}</strong></div>` : ''}
-        <div class="reveal-odds">${parseFloat(lastDrawn.odds).toFixed(1)}% odds to land this pick</div>
-      </div>
-      <div class="confetti-burst" id="confetti-burst"></div>
-    </div>`;
-  } else {
-    html += `<div class="reveal-zone">
-      <div class="waiting-state">
-        <div class="trophy-icon">🏆</div>
-        <div class="waiting-text">Awaiting first pick reveal</div>
-      </div>
-    </div>`;
-  }
-
-  // Results log
-  if (drawnResults.length > 0) {
-    html += '<div class="results-section"><h3>Results So Far</h3><div class="results-list">';
-    drawnResults.forEach(r => {
-      const td = TEAM_DATA[activeLeague][r.username] || { displayName: r.team_name, avatarUrl: null };
-      const avatarUrl = td.avatarUrl || r.avatar_url;
-      const drawnDate = r.drawn_at ? new Date(r.drawn_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
-      html += `<div class="result-row">
-        <div class="result-pick-num">${r.pick_slot}</div>
-        <div class="result-divider"></div>
-        ${avatarUrl
-          ? `<img class="result-avatar" crossorigin="anonymous" src="${avatarUrl}" onerror="this.style.display='none'">`
-          : `<div class="result-avatar-ph">${(r.team_name||'?')[0]}</div>`}
-        <div class="result-info">
-          <div class="result-team">${r.team_name.toUpperCase()}</div>
-          ${r.traded_to ? `<div class="result-traded-line">⇄ Traded to ${r.traded_to_display||r.traded_to}</div>` : ''}
-        </div>
-        <div class="result-meta">
-          Seed ${r.seed}<br>
-          <span class="odds-highlight">${parseFloat(r.odds).toFixed(1)}%</span><br>
-          <span class="result-date">${drawnDate}</span>
-        </div>
-      </div>`;
-    });
-    html += '</div></div>';
-  }
-
-  content.innerHTML = html;
-
-  // Update commissioner toggle
+  // Toggle button
   const toggle = document.getElementById('commissioner-toggle');
   if (toggle) toggle.style.display = isCommissioner ? 'none' : 'block';
+
+  // Reveal zone — show most recently drawn pick
+  const revealEl = document.getElementById('reveal-zone');
+  if (revealEl) {
+    if (drawnResults.length === 0) {
+      revealEl.innerHTML = '<div class="waiting-state"><div class="trophy-icon">&#127942;</div><div class="waiting-text">Awaiting first pick reveal</div></div>';
+    } else {
+      const r = drawnResults[0]; // ordered pick_slot DESC so highest drawn slot first
+      const td = TEAM_DATA[activeLeague][r.username] || { displayName: r.team_name, avatarUrl: null };
+      const avatarUrl = td.avatarUrl || r.avatar_url;
+      revealEl.innerHTML = '<div class="revealed-state" style="display:flex;">' +
+        (avatarUrl ? '<img class="reveal-avatar" crossorigin="anonymous" src="' + avatarUrl + '" onerror="this.style.display=\'none\'">' : '<div class="reveal-avatar-ph">' + (r.team_name||'?')[0] + '</div>') +
+        '<div class="reveal-pick-label">PICK 1.0' + r.pick_slot + ' &middot; MOST RECENT</div>' +
+        '<div class="reveal-team-name">' + (r.team_name||'').toUpperCase() + '</div>' +
+        (r.traded_to ? '<div class="reveal-traded">Pick traded to &middot; <strong>' + ((r.traded_to_display||r.traded_to)||'').toUpperCase() + '</strong></div>' : '') +
+        '<div class="reveal-odds">' + parseFloat(r.odds||0).toFixed(1) + '% odds</div>' +
+        '</div>';
+    }
+  }
+
+  // Results board — all drawn picks as cards
+  const boardEl = document.getElementById('results-board');
+  if (boardEl) {
+    if (drawnResults.length === 0) { boardEl.innerHTML = ''; return; }
+    let html = '<div class="results-section"><h3>Draft Board</h3><div class="results-list">';
+    // Show all 8 slots, filled or empty
+    for (let slot = 8; slot >= 1; slot--) {
+      const r = drawnResults.find(x => Number(x.pick_slot) === slot);
+      if (r) {
+        const td = TEAM_DATA[activeLeague][r.username] || { displayName: r.team_name, avatarUrl: null };
+        const avatarUrl = td.avatarUrl || r.avatar_url;
+        html += '<div class="result-row">' +
+          '<div class="result-pick-num">' + slot + '</div>' +
+          '<div class="result-divider"></div>' +
+          (avatarUrl ? '<img class="result-avatar" crossorigin="anonymous" src="' + avatarUrl + '" onerror="this.style.display=\'none\'">' : '<div class="result-avatar-ph">' + (r.team_name||'?')[0] + '</div>') +
+          '<div class="result-info">' +
+            '<div class="result-team">' + (r.team_name||'').toUpperCase() + '</div>' +
+            (r.traded_to ? '<div class="result-traded-line">&#8644; Traded to ' + (r.traded_to_display||r.traded_to) + '</div>' : '') +
+          '</div>' +
+          '<div class="result-meta">Seed ' + r.seed + '<br><span class="odds-highlight">' + parseFloat(r.odds||0).toFixed(1) + '%</span></div>' +
+          '</div>';
+      } else {
+        html += '<div class="result-row" style="opacity:0.3;">' +
+          '<div class="result-pick-num">' + slot + '</div>' +
+          '<div class="result-divider"></div>' +
+          '<div class="result-avatar-ph">?</div>' +
+          '<div class="result-info"><div class="result-team" style="color:var(--muted);">NOT YET DRAWN</div></div>' +
+          '</div>';
+      }
+    }
+    html += '</div></div>';
+    boardEl.innerHTML = html;
+  }
 }
 
 // ── DRAW PICK ─────────────────────────────────────────────────────────────────
 async function drawPick(slot) {
-  if (animating) return;
+  if (animating) { console.log('[TEST] Already animating, ignoring'); return; }
   animating = true;
+  showError('');
 
-  // Ensure lottery is pre-run
+  // Ensure lottery pre-run
   if (allResults.length === 0) runFullLottery();
 
-  // Find pre-drawn result for this slot
   const result = allResults.find(r => r.pick === slot);
   if (!result) {
-    console.error('No result found for slot', slot, '- allResults:', allResults);
+    showError('Error: no pre-drawn result for slot ' + slot);
     animating = false;
-    render();
     return;
   }
 
-  // Show spinning animation in the main content area
-  const mainContent = document.getElementById('main-content');
-  const spinDiv = document.createElement('div');
-  spinDiv.id = 'draw-spinner-overlay';
-  spinDiv.style.cssText = 'position:fixed;inset:0;background:rgba(10,21,32,0.92);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
-  spinDiv.innerHTML = `
-    <div style="font-size:11px;letter-spacing:4px;color:var(--orange2);font-family:'Barlow',sans-serif;text-transform:uppercase;">Drawing Pick 1.0${slot}</div>
-    <div id="spin-text" style="font-family:'Anton',sans-serif;font-size:clamp(28px,8vw,52px);letter-spacing:2px;color:var(--chrome2);text-align:center;padding:0 20px;">●</div>
-    <div style="font-size:12px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:2px;">Selecting winner...</div>`;
-  document.body.appendChild(spinDiv);
+  console.log('[TEST] Drawing slot', slot, '->', result.username);
 
+  // Show spinner
+  const spinOverlay = document.getElementById('spin-overlay');
+  const spinLabel = document.getElementById('spin-label');
+  const spinText = document.getElementById('spin-text');
+  if (spinLabel) spinLabel.textContent = 'Drawing Pick 1.0' + slot;
+  if (spinText) spinText.textContent = '●';
+  if (spinOverlay) spinOverlay.style.display = 'flex';
+
+  // Spin through team names
   const names = LEAGUE_CONFIG[activeLeague].seeds
-    .filter(s => !drawnResults.find(r => r.seed === s.seed))
-    .map(s => (TEAM_DATA[activeLeague][s.username] || { displayName: s.username }).displayName);
+    .filter(s => !drawnResults.find(r => Number(r.pick_slot) === s.seed)) // avoid already drawn
+    .map(s => (TEAM_DATA[activeLeague][s.username] || { displayName: s.username }).displayName.toUpperCase());
+
+  if (names.length === 0) names.push('...');
 
   let spins = 0;
-  const totalSpins = 18 + Math.floor(Math.random() * 8);
+  const totalSpins = 20 + Math.floor(Math.random() * 8);
   await new Promise(resolve => {
     const iv = setInterval(() => {
-      const el = document.getElementById('spin-text');
-      if (el) el.textContent = names[Math.floor(Math.random() * names.length)].toUpperCase();
+      if (spinText) spinText.textContent = names[Math.floor(Math.random() * names.length)];
       spins++;
       if (spins >= totalSpins) { clearInterval(iv); resolve(); }
     }, 80);
   });
 
-  // Remove spinner
-  const overlay = document.getElementById('draw-spinner-overlay');
-  if (overlay) overlay.remove();
+  // Land on winner
+  if (spinText) spinText.textContent = result.team.toUpperCase();
+  await new Promise(r => setTimeout(r, 800));
+
+  // Hide spinner
+  if (spinOverlay) spinOverlay.style.display = 'none';
 
   // Save to Supabase
-  await saveResult(result);
+  const saved = await saveResult(result);
+  if (!saved) {
+    animating = false;
+    return;
+  }
 
-  // Immediately reload + render for the commissioner (don't wait for realtime)
+  // Reload from DB and re-render
   await loadResults();
   animating = false;
-  render();
-  // Realtime subscription handles all other viewers
+  renderAll();
 }
 
 // ── PIN ───────────────────────────────────────────────────────────────────────
@@ -660,9 +629,9 @@ function submitPin() {
   if (val === COMMISSIONER_PIN) {
     isCommissioner = true;
     document.getElementById('pin-overlay').style.display = 'none';
-    render();
+    renderAll();
   } else {
-    document.getElementById('pin-error').textContent = 'Incorrect PIN. Try again.';
+    document.getElementById('pin-error').textContent = 'Incorrect PIN';
     document.getElementById('pin-input').value = '';
   }
 }
@@ -671,18 +640,25 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('pin-overlay').style.display !== 'none') submitPin();
 });
 
+// ── RESET ─────────────────────────────────────────────────────────────────────
 async function resetTestData() {
-  if (!TEST_MODE) return;
-  const { error } = await sb.from('lottery_results').delete().eq('league', activeLeague + '_test');
-  if (error) { console.error('Reset error:', error); return; }
+  if (!confirm('Reset all ' + testKey() + ' test data?')) return;
+  const { error } = await sb.from('lottery_results').delete().eq('league', testKey());
+  if (error) { showError('Reset failed: ' + error.message); return; }
   drawnResults = [];
   allResults = [];
-  render();
+  renderAll();
 }
 
-function getSuffix(n){if(n===1)return'ST';if(n===2)return'ND';if(n===3)return'RD';return'TH';}
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  console.log('[TEST] Initializing - league:', activeLeague, 'key:', testKey());
+  await loadResults();
+  console.log('[TEST] Loaded', drawnResults.length, 'existing results');
+  subscribeRealtime();
+  renderAll();
+}
 
-// ── START ─────────────────────────────────────────────────────────────────────
 init();
 </script>
 </body>
