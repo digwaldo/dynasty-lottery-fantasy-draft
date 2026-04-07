@@ -477,63 +477,57 @@ function render() {
   });
   html += '</div>';
 
-  // Countdown or complete
+  // Test mode status — no countdown
   if (allDone) {
-    html += `<div class="complete-banner"><h2>LOTTERY COMPLETE</h2><p>All 8 picks have been drawn. Good luck this season.</p></div>`;
-  } else if (nextPick) {
-    const drawTime = getPickDrawTime(nextPick.date);
-    const suffix = nextPick.slot === 1 ? 'ST' : nextPick.slot === 2 ? 'ND' : nextPick.slot === 3 ? 'RD' : 'TH';
-    html += `<div class="countdown-wrap">
-      <div class="countdown-label">Next Pick Reveal</div>
-      <div class="countdown-pick">PICK 1.0${nextPick.slot} · ${nextPick.label} at 5:30 PM ET</div>
-      <div class="countdown-timer" id="countdown-timer"></div>
+    html += `<div class="complete-banner"><h2>TEST COMPLETE</h2><p>All 8 picks drawn in test. Reset below to run again.</p></div>`;
+  } else {
+    const remaining = 8 - drawnSlots.length;
+    html += `<div class="countdown-wrap" style="border-top-color:var(--sunset);">
+      <div class="countdown-label" style="color:var(--sunset);">⚗ Test Mode · No Real Data</div>
+      <div class="countdown-pick" style="color:var(--chrome);">${remaining} pick${remaining !== 1 ? 's' : ''} remaining · Draw in any order</div>
+      <div style="font-size:11px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;margin-top:6px;">
+        Saves to <strong style="color:var(--sunset);">${activeLeague}_test</strong> · Live draft uses <strong style="color:var(--teal2);">${activeLeague}</strong>
+      </div>
     </div>`;
-    setTimeout(() => startCountdown(drawTime), 0);
   }
 
-  // Commissioner panel
+  // Commissioner panel — TEST MODE: no date gating, show all picks freely
   if (isCommissioner && !allDone) {
-    const nextSlot = nextPick ? nextPick.slot : null;
-    const alreadyDrawn = nextSlot ? drawnSlots.includes(nextSlot) : true;
-    const suffix = nextSlot ? (nextSlot === 1 ? 'ST' : nextSlot === 2 ? 'ND' : nextSlot === 3 ? 'RD' : 'TH') : '';
-
-    // Pre-run lottery if needed
+    // Ensure lottery is pre-run
     if (allResults.length === 0) runFullLottery();
 
-    html += `<div class="commissioner-panel">
-      <div class="commissioner-badge"><div class="commissioner-badge-dot"></div>Commissioner Mode</div>`;
+    const undrawn = SCHEDULE.filter(s => !drawnSlots.includes(s.slot))
+      .sort((a,b) => b.slot - a.slot); // highest pick number first (pick 8 → pick 1)
 
-    if (nextSlot && !alreadyDrawn) {
-      html += `<button class="btn-draw" id="draw-btn" onclick="drawPick(${nextSlot})">
-        <span>DRAW PICK 1.0${nextSlot}</span>
-      </button>`;
-    } else if (alreadyDrawn && nextSlot) {
-      html += `<div style="font-size:13px;color:var(--muted);text-align:center;font-family:'Barlow',sans-serif;letter-spacing:1px;padding:8px 0;">Pick 1.0${nextSlot} already drawn today.</div>`;
-    }
-    // Test mode: show ALL undrawn picks as draw buttons
-    if (TEST_MODE) {
-      const undrawn = SCHEDULE.filter(s => !drawnSlots.includes(s.slot));
-      html += `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-orange);">`;
-      html += `<div style="font-size:10px;letter-spacing:3px;color:var(--orange2);font-family:'Barlow',sans-serif;margin-bottom:8px;text-transform:uppercase;">⚗ Test Mode · Draw Any Pick</div>`;
-      if (undrawn.length === 0) {
-        html += `<div style="font-size:12px;color:var(--teal2);font-family:'Barlow',sans-serif;letter-spacing:1px;">All 8 picks drawn! Reset to start over.</div>`;
-      } else {
-        html += `<div style="display:flex;flex-wrap:wrap;gap:6px;">`;
-        // Show in reverse order (highest slot = pick 8 first, lowest = pick 1 last)
-        [...undrawn].sort((a,b) => b.slot - a.slot).forEach(s => {
-          html += `<button onclick="drawPick(${s.slot})" style="padding:7px 14px;background:transparent;border:1px solid var(--border-orange);border-radius:3px;color:var(--orange2);font-family:'Anton',sans-serif;font-size:14px;letter-spacing:2px;cursor:pointer;">1.0${s.slot}</button>`;
-        });
-        html += `</div>`;
-      }
+    html += `<div class="commissioner-panel">
+      <div class="commissioner-badge"><div class="commissioner-badge-dot"></div>Commissioner · Test Mode</div>
+      <div style="font-size:10px;letter-spacing:2px;color:var(--sunset);font-family:'Barlow',sans-serif;margin-bottom:10px;text-transform:uppercase;">
+        Draw any pick · Results isolated to ${activeLeague}_test
+      </div>`;
+
+    if (undrawn.length > 0) {
+      html += `<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">`;
+      undrawn.forEach(s => {
+        html += `<button onclick="drawPick(${s.slot})" class="btn-draw" style="flex:0 0 auto;width:auto;padding:12px 20px;font-size:16px;letter-spacing:3px;">
+          DRAW 1.0${s.slot}
+        </button>`;
+      });
       html += `</div>`;
     }
-    // Test mode reset button
-    if (TEST_MODE && drawnResults.length > 0) {
-      html += `<div style="margin-top:10px;text-align:center;">
-        <button onclick="resetTestData()" style="padding:6px 16px;background:transparent;border:1px solid rgba(192,24,26,0.4);border-radius:3px;color:#e06060;font-family:'Teko',sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;">✕ Reset Test Data</button>
+
+    if (drawnResults.length > 0) {
+      html += `<div style="margin-top:12px;text-align:center;">
+        <button onclick="resetTestData()" style="padding:6px 16px;background:transparent;border:1px solid rgba(192,24,26,0.4);border-radius:3px;color:#e06060;font-family:'Teko',sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;">✕ Reset ${activeLeague} Test Data</button>
       </div>`;
     }
     html += '</div>';
+  }
+
+  // If not logged in as commissioner, show login prompt
+  if (!isCommissioner && !allDone) {
+    html += `<div style="text-align:center;padding:16px;">
+      <div style="font-size:11px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:2px;margin-bottom:8px;">Commissioner login required to draw picks</div>
+    </div>`;
   }
 
   // Reveal zone (show today's pick or last drawn)
@@ -613,31 +607,35 @@ async function drawPick(slot) {
     return;
   }
 
-  // Spinning animation in reveal zone
-  const revealZone = document.querySelector('.reveal-zone');
-  if (revealZone) {
-    revealZone.innerHTML = `
-      <div class="waiting-state">
-        <div class="spinning-name" id="spin-text">●</div>
-        <div class="waiting-text">Drawing...</div>
-      </div>
-      <div class="confetti-burst" id="confetti-burst"></div>`;
-  }
+  // Show spinning animation in the main content area
+  const mainContent = document.getElementById('main-content');
+  const spinDiv = document.createElement('div');
+  spinDiv.id = 'draw-spinner-overlay';
+  spinDiv.style.cssText = 'position:fixed;inset:0;background:rgba(10,21,32,0.92);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
+  spinDiv.innerHTML = `
+    <div style="font-size:11px;letter-spacing:4px;color:var(--orange2);font-family:'Barlow',sans-serif;text-transform:uppercase;">Drawing Pick 1.0${slot}</div>
+    <div id="spin-text" style="font-family:'Anton',sans-serif;font-size:clamp(28px,8vw,52px);letter-spacing:2px;color:var(--chrome2);text-align:center;padding:0 20px;">●</div>
+    <div style="font-size:12px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:2px;">Selecting winner...</div>`;
+  document.body.appendChild(spinDiv);
 
   const names = LEAGUE_CONFIG[activeLeague].seeds
     .filter(s => !drawnResults.find(r => r.seed === s.seed))
     .map(s => (TEAM_DATA[activeLeague][s.username] || { displayName: s.username }).displayName);
 
   let spins = 0;
-  const totalSpins = 22 + Math.floor(Math.random() * 10);
+  const totalSpins = 18 + Math.floor(Math.random() * 8);
   await new Promise(resolve => {
     const iv = setInterval(() => {
       const el = document.getElementById('spin-text');
       if (el) el.textContent = names[Math.floor(Math.random() * names.length)].toUpperCase();
       spins++;
       if (spins >= totalSpins) { clearInterval(iv); resolve(); }
-    }, 75);
+    }, 80);
   });
+
+  // Remove spinner
+  const overlay = document.getElementById('draw-spinner-overlay');
+  if (overlay) overlay.remove();
 
   // Save to Supabase
   await saveResult(result);
