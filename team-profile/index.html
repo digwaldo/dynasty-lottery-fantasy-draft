@@ -331,8 +331,8 @@ function proxyAvatar(url) {
 }
 
 const LEAGUE_IDS = {
-  CFL: '1180148979499503616',       // 2025 season
-  MinuteMaid: '1183625470453231616' // 2025 season
+  CFL: '1325949536840974336',        // 2026 season (live)
+  MinuteMaid: '1325971620531015680'  // 2026 season (live)
 };
 
 // Hardcoded roster_id -> username mapping
@@ -675,14 +675,14 @@ async function loadTradesTab(league, username) {
   const rosterMap = ROSTER_MAP[league];
   const rosterId = parseInt(Object.keys(rosterMap).find(k => rosterMap[k] === username));
   const leagueId = LEAGUE_IDS[league];
-  const cacheKey = `${league}_trades`;
+  const cacheKey = league + '_trades';
 
-  // Fetch 2025 live trades
+  // Fetch 2026 live trades
   if (!tradeCache[cacheKey]) {
     const allTrades = [];
     for (let week = 1; week <= 18; week++) {
       try {
-        const res = await fetch(API(`league/${leagueId}/transactions/${week}`));
+        const res = await fetch(API('league/' + leagueId + '/transactions/' + week));
         if (!res.ok) break;
         const txns = await res.json();
         if (!txns || txns.length === 0) continue;
@@ -700,119 +700,22 @@ async function loadTradesTab(league, username) {
     } catch {}
   }
 
-  function playerName(id) {
-    const p = playerCache[id];
-    if (!p) return id;
-    return p.full_name || `${p.first_name||''} ${p.last_name||''}`.trim() || id;
-  }
-
-  function playerHeadshotUrl(id) {
-    return `/api/sleeper?player_img=${encodeURIComponent(id)}`;
-  }
-
-  function playerCard(id) {
-    const p = playerCache[id];
-    if (!p || (isNaN(Number(id)) && id.length <= 3)) {
-      return '<div class="player-card"><div class="player-card-stripe DEF"></div>' +
-        '<div class="player-card-photo" style="font-size:22px;">&#x1F6E1;</div>' +
-        '<div class="player-card-body"><div class="player-card-pos DEF">DST</div>' +
-        '<div class="player-card-name">' + id + '</div>' +
-        '<div class="player-card-team">Defense</div></div></div>';
-    }
-    const name = p.full_name || ((p.first_name||'') + ' ' + (p.last_name||'')).trim() || id;
-    const pos = p.position || 'OTHER';
-    const nflTeam = p.team || '';
-    const lastName = (p.last_name || name.split(' ').pop() || '').toUpperCase();
-    const validPos = ['QB','RB','WR','TE','K','DEF'].includes(pos) ? pos : 'OTHER';
-    const headshotUrl = playerHeadshotUrl(id);
-    const posEmojis = {QB:'&#x1F3C8;',RB:'&#x1F3C3;',WR:'&#x26A1;',TE:'&#x1F4AA;',K:'&#x1F9B5;',DEF:'&#x1F6E1;'};
-    const posEmoji = posEmojis[pos] || '&#x1F3C8;';
-    return '<div class="player-card">' +
-      '<div class="player-card-stripe ' + validPos + '"></div>' +
-      '<div class="player-card-photo">' +
-        '<img src="' + headshotUrl + '" crossorigin="anonymous" ' +
-          'style="width:100%;height:100%;object-fit:cover;object-position:top center;" ' +
-          'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
-        '<div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:20px;">' + posEmoji + '</div>' +
-      '</div>' +
-      '<div class="player-card-body">' +
-        '<div class="player-card-pos ' + validPos + '">' + pos + '</div>' +
-        '<div class="player-card-name">' + lastName + '</div>' +
-        '<div class="player-card-team">' + nflTeam + '</div>' +
-      '</div></div>';
-  }
-
-  function pickCard(season, round, via) {
-    const roundLabel = round === 1 ? '1ST' : round === 2 ? '2ND' : round === 3 ? '3RD' : `${round}TH`;
-    return `<div class="pick-card">
-      <div class="pick-card-stripe"></div>
-      <div class="pick-card-top">
-        <div class="pick-card-trophy">🏆</div>
-        <div class="pick-card-round-big">${roundLabel} RD</div>
-      </div>
-      <div class="pick-card-body">
-        <div class="pick-card-season">${season}</div>
-        <div class="pick-card-via">${via || 'Own pick'}</div>
-      </div>
-    </div>`;
-  }
-
   function teamBadge(uname) {
     const td = getTeam(league, uname);
     const avHtml = td.avatarUrl
-      ? `<img crossorigin="anonymous" src="${td.avatarUrl}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">`
-      : `<div style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);font-family:'Barlow',sans-serif;">${(td.displayName||uname)[0]}</div>`;
-    return `<div class="trade-team-badge">${avHtml}<span>${td.displayName || uname}</span></div>`;
+      ? '<img crossorigin="anonymous" src="' + td.avatarUrl + '" style="width:22px;height:22px;border-radius:50%;object-fit:cover;" onerror="this.style.display=\'none\'">'
+      : '<div style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);font-family:\'Barlow\',sans-serif;">' + ((td.displayName||uname)[0]) + '</div>';
+    return '<div class="trade-team-badge">' + avHtml + '<span>' + (td.displayName || uname) + '</span></div>';
   }
 
-  // ── Build 2025 trade cards ──────────────────────────────────────────────────
-  const myTrades2025 = tradeCache[cacheKey].filter(t => t.roster_ids && t.roster_ids.map(Number).includes(rosterId));
-  myTrades2025.sort((a,b) => b.created - a.created);
-
-  let html = '';
-
-  if (myTrades2025.length > 0) {
-    html += '<div class="draft-year-label">2026 Season</div>';
-    myTrades2025.forEach(trade => {
-      const otherRosterIds = trade.roster_ids.filter(r => r !== rosterId);
-      const date = formatDate(trade.created);
-      const myAdds = trade.adds ? Object.entries(trade.adds).filter(([,rid]) => parseInt(rid) === rosterId) : [];
-      const myDrops = trade.drops ? Object.entries(trade.drops).filter(([,rid]) => parseInt(rid) === rosterId) : [];
-      const picksIn = (trade.draft_picks||[]).filter(p => parseInt(p.owner_id) === rosterId);
-      const picksOut = (trade.draft_picks||[]).filter(p => parseInt(p.previous_owner_id) === rosterId && parseInt(p.owner_id) !== rosterId);
-
-      html += `<div class="trade-card">
-        <div class="trade-date">${date}</div>
-        <div class="trade-parties">
-          ${teamBadge(username)}
-          <span class="trade-vs">⇄</span>
-          ${otherRosterIds.map(r => teamBadge(getRosterUsername(league, r))).join('')}
-        </div>`;
-      if (myAdds.length || picksIn.length) {
-        html += `<div class="trade-section-label">Received</div><div class="trade-cards-row">`;
-        myAdds.forEach(([pid]) => html += playerCard(pid));
-        picksIn.forEach(p => html += pickCard(p.season, p.round, p.roster_id !== rosterId ? `via ${getRosterUsername(league,p.roster_id)}` : 'Own pick'));
-        html += `</div>`;
-      }
-      if (myDrops.length || picksOut.length) {
-        html += `<div class="trade-section-label">Sent</div><div class="trade-cards-row">`;
-        myDrops.forEach(([pid]) => html += playerCard(pid));
-        picksOut.forEach(p => html += pickCard(p.season, p.round, 'Own pick'));
-        html += `</div>`;
-      }
-      html += `</div>`;
-    });
-  }
-
-  // ── Build 2025 trade cards (CFL only, hardcoded) ───────────────────────────
-  const trades2025 = (league === 'CFL' && TRADES_2025_CFL[username]) || [];
-  if (trades2025.length > 0) {
-    html += '<div class="draft-year-label">2025 Season</div>';
-    trades2025.forEach(t => {
+  function renderHardcodedTrades(trades, seasonLabel) {
+    let html = '<div class="draft-year-label">' + seasonLabel + '</div>';
+    trades.forEach(t => {
       html += '<div class="trade-card">' +
         '<div class="trade-date">' + t.date + ' · Week ' + t.week + '</div>' +
         (t.note ? '<div style="font-size:10px;color:var(--sunset);font-family:\'Barlow\',sans-serif;letter-spacing:1px;margin-bottom:6px;">⚑ ' + t.note + '</div>' : '') +
-        '<div class="trade-parties">' + teamBadge(username) + '<span class="trade-vs">⇄</span>' + t.partners.map(p => teamBadge(p.split(' (')[0])).join('') + '</div>';
+        '<div class="trade-parties">' + teamBadge(username) + '<span class="trade-vs">⇄</span>' +
+        (t.partners||[]).map(p => teamBadge(p.split(' (')[0])).join('') + '</div>';
       if ((t.received||[]).length || (t.picksIn||[]).length) {
         html += '<div class="trade-section-label">Received</div><div class="trade-cards-row">';
         (t.received||[]).forEach(pid => { html += playerCard(pid); });
@@ -827,40 +730,55 @@ async function loadTradesTab(league, username) {
       }
       html += '</div>';
     });
+    return html;
   }
 
-  // ── Build 2024 trade cards (CFL only, hardcoded) ───────────────────────────
-  const trades2024 = (league === 'CFL' && TRADES_2024_CFL[username]) || [];
-  if (trades2024.length > 0) {
-    html += '<div class="draft-year-label">2024 Season</div>';
-    trades2024.forEach(t => {
-      html += `<div class="trade-card">
-        <div class="trade-date">${t.date} · Week ${t.week}</div>
-        ${t.note ? `<div style="font-size:10px;color:var(--sunset);font-family:'Barlow',sans-serif;letter-spacing:1px;margin-bottom:6px;">⚑ ${t.note}</div>` : ''}
-        <div class="trade-parties">
-          ${teamBadge(username)}
-          <span class="trade-vs">⇄</span>
-          ${t.partners.map(p => {
-            // Strip the "(via X)" suffix for badge lookup
-            const baseUsername = p.split(' (')[0];
-            return teamBadge(baseUsername);
-          }).join('')}
-        </div>`;
-      if ((t.received||[]).length || (t.picksIn||[]).length) {
-        html += `<div class="trade-section-label">Received</div><div class="trade-cards-row">`;
-        (t.received||[]).forEach(pid => html += playerCard(pid));
-        (t.picksIn||[]).forEach(p => html += pickCard(p.s, p.r, p.via || 'Own pick'));
-        html += `</div>`;
+  let html = '';
+
+  // ── 2026 LIVE trades ─────────────────────────────────────────────────────────
+  const myTrades2026 = tradeCache[cacheKey].filter(t =>
+    t.roster_ids && t.roster_ids.map(Number).includes(rosterId)
+  );
+  myTrades2026.sort((a,b) => b.created - a.created);
+
+  if (myTrades2026.length > 0) {
+    html += '<div class="draft-year-label">2026 Season</div>';
+    myTrades2026.forEach(trade => {
+      const otherRosterIds = trade.roster_ids.filter(r => Number(r) !== rosterId);
+      const date = formatDate(trade.created);
+      const myAdds = trade.adds ? Object.entries(trade.adds).filter(([,rid]) => parseInt(rid) === rosterId) : [];
+      const myDrops = trade.drops ? Object.entries(trade.drops).filter(([,rid]) => parseInt(rid) === rosterId) : [];
+      const picksIn = (trade.draft_picks||[]).filter(p => parseInt(p.owner_id) === rosterId);
+      const picksOut = (trade.draft_picks||[]).filter(p => parseInt(p.previous_owner_id) === rosterId && parseInt(p.owner_id) !== rosterId);
+
+      html += '<div class="trade-card">' +
+        '<div class="trade-date">' + date + '</div>' +
+        '<div class="trade-parties">' + teamBadge(username) + '<span class="trade-vs">⇄</span>' +
+        otherRosterIds.map(r => teamBadge(getRosterUsername(league, r))).join('') + '</div>';
+
+      if (myAdds.length || picksIn.length) {
+        html += '<div class="trade-section-label">Received</div><div class="trade-cards-row">';
+        myAdds.forEach(([pid]) => { html += playerCard(pid); });
+        picksIn.forEach(p => { html += pickCard(p.season, p.round, p.roster_id !== rosterId ? 'via ' + getRosterUsername(league, p.roster_id) : 'Own pick'); });
+        html += '</div>';
       }
-      if ((t.sent||[]).length || (t.picksOut||[]).length) {
-        html += `<div class="trade-section-label">Sent</div><div class="trade-cards-row">`;
-        (t.sent||[]).forEach(pid => html += playerCard(pid));
-        (t.picksOut||[]).forEach(p => html += pickCard(p.s, p.r, p.via || 'Own pick'));
-        html += `</div>`;
+      if (myDrops.length || picksOut.length) {
+        html += '<div class="trade-section-label">Sent</div><div class="trade-cards-row">';
+        myDrops.forEach(([pid]) => { html += playerCard(pid); });
+        picksOut.forEach(p => { html += pickCard(p.season, p.round, 'Own pick'); });
+        html += '</div>';
       }
-      html += `</div>`;
+      html += '</div>';
     });
   }
+
+  // ── 2025 SEASON (hardcoded) ───────────────────────────────────────────────────
+  const trades2025 = (league === 'CFL' && TRADES_2025_CFL[username]) || [];
+  if (trades2025.length > 0) html += renderHardcodedTrades(trades2025, '2025 Season');
+
+  // ── 2024 SEASON (hardcoded) ───────────────────────────────────────────────────
+  const trades2024 = (league === 'CFL' && TRADES_2024_CFL[username]) || [];
+  if (trades2024.length > 0) html += renderHardcodedTrades(trades2024, '2024 Season');
 
   if (!html) {
     body.innerHTML = '<div class="empty-state">No trades found for this team.</div>';
