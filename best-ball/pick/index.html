@@ -12,112 +12,119 @@
   --red:#C0181A;--teal:#00A89C;--teal2:#00C8BC;--teal-dark:#005f5a;
   --navy:#0d1a2b;--navy2:#0a1520;--chrome:#d0d8e0;--chrome2:#f0f4f8;
   --text:#f0ede8;--muted:#7a9ab0;--gold:#F5A623;
-  --border-teal:rgba(0,168,156,0.35);--border-orange:rgba(232,98,26,0.5);
-  --green:#22c55e;
+  --border-teal:rgba(0,168,156,0.35);--green:#22c55e;--red2:#ef4444;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--navy2);color:var(--text);font-family:'Teko',sans-serif;min-height:100vh;}
-.bg-layer{position:fixed;inset:0;z-index:0;}
-.bg-base{position:absolute;inset:0;background:linear-gradient(180deg,#060e18 0%,#0a1520 100%);}
+.bg-layer{position:fixed;inset:0;z-index:0;background:linear-gradient(180deg,#060e18,#0a1520);}
 .frame-line{position:fixed;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--orange),var(--teal));z-index:100;}
 .frame-line-top{top:0;}.frame-line-bottom{bottom:0;}
+.layout{position:relative;z-index:2;display:grid;grid-template-columns:1fr 290px;min-height:100vh;}
+@media(max-width:680px){.layout{grid-template-columns:1fr;}.roster-sidebar{position:fixed;bottom:0;left:0;right:0;height:auto;max-height:42vh;overflow-y:auto;border-top:2px solid var(--teal);border-radius:0;z-index:50;}}
 
-/* LAYOUT: sticky roster on right, picks on left */
-.layout{position:relative;z-index:2;display:grid;grid-template-columns:1fr 280px;gap:0;min-height:100vh;}
-@media(max-width:700px){.layout{grid-template-columns:1fr;}.roster-sidebar{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;border-top:2px solid var(--teal);border-radius:0;max-height:45vh;overflow-y:auto;z-index:50;}}
-
-/* LEFT PANEL */
-.pick-panel{padding:16px 20px 100px;border-right:1px solid rgba(255,255,255,0.05);}
-.pick-header{padding:10px 0 16px;}
-.pick-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
-.nav-back{color:var(--muted);font-family:'Barlow',sans-serif;font-size:12px;letter-spacing:2px;text-decoration:none;text-transform:uppercase;}
+/* LEFT */
+.pick-panel{padding:14px 18px 100px;border-right:1px solid rgba(255,255,255,0.05);overflow-y:auto;max-height:100vh;position:sticky;top:0;}
+.nav-back{color:var(--muted);font-family:'Barlow',sans-serif;font-size:12px;letter-spacing:2px;text-decoration:none;}
 .nav-back:hover{color:var(--teal2);}
-.pick-title{font-family:'Anton',sans-serif;font-size:26px;letter-spacing:2px;color:var(--chrome2);}
-.pick-subtitle{font-size:12px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:2px;margin-top:2px;}
+.pick-title{font-family:'Anton',sans-serif;font-size:22px;letter-spacing:2px;color:var(--chrome2);margin:10px 0 2px;}
+.contest-label{font-size:11px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:2px;margin-bottom:14px;}
 
-/* POSITION TABS */
-.pos-tabs{display:flex;gap:4px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px;-ms-overflow-style:none;scrollbar-width:none;}
+/* BUDGET BAR */
+.budget-bar{background:rgba(10,21,32,0.9);border:1px solid var(--border-teal);border-radius:4px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:14px;}
+.budget-label{font-size:10px;letter-spacing:3px;color:var(--muted);font-family:'Barlow',sans-serif;text-transform:uppercase;}
+.budget-coins{font-family:'Anton',sans-serif;font-size:24px;letter-spacing:1px;}
+.budget-coins.ok{color:var(--gold);}
+.budget-coins.warning{color:var(--orange2);}
+.budget-coins.over{color:var(--red2);}
+.budget-track{flex:1;height:6px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;}
+.budget-fill{height:100%;border-radius:3px;transition:width 0.3s,background 0.3s;}
+
+/* POS TABS */
+.pos-tabs{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;}
 .pos-tabs::-webkit-scrollbar{display:none;}
-.pos-tab{flex-shrink:0;padding:7px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:3px;font-family:'Anton',sans-serif;font-size:13px;letter-spacing:2px;color:var(--muted);cursor:pointer;transition:all 0.15s;position:relative;}
+.pos-tab{flex-shrink:0;padding:6px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:3px;font-family:'Anton',sans-serif;font-size:13px;letter-spacing:2px;color:var(--muted);cursor:pointer;transition:all 0.15s;position:relative;}
 .pos-tab.active{border-color:var(--teal);color:var(--teal2);background:rgba(0,168,156,0.1);}
-.pos-tab:hover{color:var(--text);}
-.pos-tab .slot-count{position:absolute;top:-4px;right:-4px;background:var(--teal);color:#fff;font-size:8px;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow',sans-serif;font-weight:600;}
-.pos-tab .slot-count.full{background:var(--green);}
+.pos-tab .badge{position:absolute;top:-5px;right:-5px;background:var(--teal);color:#fff;font-size:8px;width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow',sans-serif;font-weight:600;}
+.pos-tab .badge.full{background:var(--green);}
 
 /* SEARCH */
-.search-wrap{position:relative;margin-bottom:12px;}
-.search-input{width:100%;padding:10px 12px 10px 36px;background:rgba(255,255,255,0.05);border:1px solid var(--border-teal);border-radius:3px;color:var(--chrome2);font-family:'Barlow',sans-serif;font-size:14px;outline:none;}
+.search-wrap{position:relative;margin-bottom:10px;}
+.search-input{width:100%;padding:9px 12px 9px 34px;background:rgba(255,255,255,0.05);border:1px solid var(--border-teal);border-radius:3px;color:var(--chrome2);font-family:'Barlow',sans-serif;font-size:14px;outline:none;}
 .search-input:focus{border-color:var(--teal2);}
-.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;}
 
 /* PLAYER LIST */
-.player-list{display:flex;flex-direction:column;gap:4px;}
-.player-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:3px;cursor:pointer;transition:all 0.15s;}
-.player-row:hover{background:rgba(0,168,156,0.06);border-color:var(--border-teal);}
-.player-row.selected{background:rgba(0,168,156,0.1);border-color:var(--teal);pointer-events:none;}
-.player-row.full{opacity:0.35;pointer-events:none;}
-.player-headshot{width:36px;height:36px;border-radius:50%;object-fit:cover;background:rgba(255,255,255,0.06);flex-shrink:0;}
+.player-list{display:flex;flex-direction:column;gap:3px;}
+.player-row{display:flex;align-items:center;gap:10px;padding:9px 11px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:3px;cursor:pointer;transition:all 0.12s;}
+.player-row:hover{background:rgba(0,168,156,0.07);border-color:var(--border-teal);}
+.player-row.selected{background:rgba(0,168,156,0.1);border-color:var(--teal);pointer-events:none;opacity:0.7;}
+.player-row.cant-afford{opacity:0.3;pointer-events:none;}
+.player-row.slots-full{opacity:0.25;pointer-events:none;}
+.player-headshot{width:34px;height:34px;border-radius:50%;object-fit:cover;background:rgba(255,255,255,0.06);flex-shrink:0;}
+.player-name{font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;color:var(--chrome2);}
+.player-meta{font-size:10px;color:var(--muted);letter-spacing:1px;}
 .player-info{flex:1;min-width:0;}
-.player-name{font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;color:var(--chrome2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.player-meta{font-size:11px;color:var(--muted);letter-spacing:1px;margin-top:1px;}
-.player-pos-badge{font-family:'Anton',sans-serif;font-size:10px;padding:2px 6px;border-radius:2px;flex-shrink:0;}
-.QB .player-pos-badge{background:rgba(229,196,64,0.15);color:#e5c440;}
-.RB .player-pos-badge{background:rgba(74,224,160,0.15);color:#4ae0a0;}
-.WR .player-pos-badge{background:rgba(74,176,255,0.15);color:#4ab0ff;}
-.TE .player-pos-badge{background:rgba(255,140,74,0.15);color:#ff8c4a;}
-.DEF .player-pos-badge,.DST .player-pos-badge{background:rgba(248,113,113,0.15);color:#f87171;}
-.player-check{width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
+.salary-tag{font-family:'Anton',sans-serif;font-size:13px;color:var(--gold);flex-shrink:0;letter-spacing:1px;}
+.salary-tag::before{content:"🪙 ";font-size:10px;}
+.player-check{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;}
 .selected .player-check{background:var(--teal);border-color:var(--teal);color:#fff;}
 
 /* ROSTER SIDEBAR */
-.roster-sidebar{background:#0a1520;border-left:1px solid var(--border-teal);padding:16px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
-.roster-title{font-family:'Anton',sans-serif;font-size:16px;letter-spacing:3px;color:var(--chrome2);margin-bottom:4px;}
-.roster-slots-label{font-size:10px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:2px;margin-bottom:14px;}
-.roster-slot{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:3px;margin-bottom:5px;min-height:48px;position:relative;}
-.roster-slot.filled{background:rgba(0,168,156,0.06);border-color:var(--border-teal);}
-.slot-label{font-family:'Anton',sans-serif;font-size:10px;letter-spacing:2px;width:30px;flex-shrink:0;}
-.slot-label.QB{color:#e5c440;}.slot-label.RB{color:#4ae0a0;}.slot-label.WR{color:#4ab0ff;}
-.slot-label.TE{color:#ff8c4a;}.slot-label.FLEX{color:#c084fc;}.slot-label.DST{color:#f87171;}
-.slot-player-name{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;color:var(--chrome);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.slot-empty{font-family:'Barlow',sans-serif;font-size:11px;color:rgba(255,255,255,0.15);letter-spacing:1px;}
-.slot-remove{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,0.2);cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;}
+.roster-sidebar{background:#070f1a;border-left:1px solid var(--border-teal);padding:14px;display:flex;flex-direction:column;height:100vh;overflow-y:auto;position:sticky;top:0;}
+.roster-title{font-family:'Anton',sans-serif;font-size:15px;letter-spacing:3px;color:var(--chrome2);margin-bottom:3px;}
+.roster-sub{font-size:10px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;margin-bottom:12px;}
+
+.roster-slot{display:flex;align-items:center;gap:8px;padding:7px 9px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:3px;margin-bottom:4px;min-height:44px;cursor:pointer;}
+.roster-slot.filled{background:rgba(0,168,156,0.06);border-color:var(--border-teal);cursor:default;}
+.slot-label{font-family:'Anton',sans-serif;font-size:10px;letter-spacing:1px;width:28px;flex-shrink:0;}
+.QB .slot-label{color:#e5c440;}.RB .slot-label{color:#4ae0a0;}.WR .slot-label{color:#4ab0ff;}
+.TE .slot-label{color:#ff8c4a;}.FLEX .slot-label{color:#c084fc;}.DST .slot-label{color:#f87171;}
+.slot-player{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;color:var(--chrome);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.slot-salary{font-family:'Anton',sans-serif;font-size:11px;color:var(--gold);flex-shrink:0;}
+.slot-empty{font-family:'Barlow',sans-serif;font-size:11px;color:rgba(255,255,255,0.15);letter-spacing:1px;flex:1;}
+.slot-remove{background:none;border:none;color:rgba(255,255,255,0.15);cursor:pointer;font-size:13px;padding:1px 4px;line-height:1;flex-shrink:0;}
 .slot-remove:hover{color:var(--red);}
-.roster-spacer{flex:1;}
 
-/* SUBMIT */
-.submit-wrap{margin-top:12px;}
-.roster-progress{display:flex;justify-content:space-between;font-family:'Barlow',sans-serif;font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;}
-.roster-progress-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-bottom:12px;}
-.roster-progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal2));border-radius:2px;transition:width 0.3s;}
-.btn-submit{width:100%;padding:14px;background:linear-gradient(135deg,rgba(0,168,156,0.3),rgba(0,168,156,0.15));border:2px solid var(--teal);border-radius:4px;color:var(--teal2);font-family:'Anton',sans-serif;font-size:16px;letter-spacing:3px;cursor:pointer;transition:all 0.2s;}
-.btn-submit:disabled{opacity:0.35;cursor:not-allowed;border-color:rgba(255,255,255,0.1);color:var(--muted);}
+/* BUDGET SUMMARY */
+.budget-summary{background:rgba(0,0,0,0.3);border-radius:3px;padding:8px 10px;margin:8px 0;}
+.budget-row{display:flex;justify-content:space-between;font-family:'Barlow',sans-serif;font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:3px;}
+.budget-row.total{color:var(--chrome);font-weight:600;border-top:1px solid rgba(255,255,255,0.07);padding-top:4px;margin-top:4px;}
+.budget-remaining{font-family:'Anton',sans-serif;font-size:14px;}
+
+.progress-wrap{margin-top:4px;}
+.progress-label{display:flex;justify-content:space-between;font-family:'Barlow',sans-serif;font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;}
+.progress-bar{height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;margin-bottom:10px;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal2));border-radius:2px;transition:width 0.3s;}
+
+.btn-submit{width:100%;padding:13px;background:linear-gradient(135deg,rgba(0,168,156,0.3),rgba(0,168,156,0.12));border:2px solid var(--teal);border-radius:4px;color:var(--teal2);font-family:'Anton',sans-serif;font-size:15px;letter-spacing:3px;cursor:pointer;transition:all 0.2s;}
+.btn-submit:disabled{opacity:0.3;cursor:not-allowed;border-color:rgba(255,255,255,0.1);color:var(--muted);background:none;}
 .btn-submit:not(:disabled):hover{background:linear-gradient(135deg,rgba(0,168,156,0.45),rgba(0,168,156,0.25));}
+.over-budget-msg{font-size:10px;color:var(--red2);font-family:'Barlow',sans-serif;letter-spacing:1px;text-align:center;margin-top:4px;}
 
-/* IDENTITY MODAL */
+/* MODALS */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;display:none;align-items:center;justify-content:center;}
 .modal-overlay.open{display:flex;}
-.modal-box{background:#0d1a2b;border:1px solid var(--border-teal);border-top:3px solid var(--teal);border-radius:8px;padding:28px;width:340px;max-width:90vw;}
-.modal-title{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:3px;color:var(--chrome2);margin-bottom:6px;}
-.modal-sub{font-family:'Barlow',sans-serif;font-size:13px;color:var(--muted);letter-spacing:1px;margin-bottom:18px;line-height:1.5;}
-.modal-input{width:100%;padding:11px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border-teal);border-radius:3px;color:var(--chrome2);font-family:'Barlow',sans-serif;font-size:15px;outline:none;margin-bottom:8px;}
+.modal-box{background:#0d1a2b;border:1px solid var(--border-teal);border-top:3px solid var(--teal);border-radius:8px;padding:26px;width:320px;max-width:90vw;}
+.modal-title{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:3px;color:var(--chrome2);margin-bottom:6px;}
+.modal-sub{font-family:'Barlow',sans-serif;font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5;letter-spacing:0.5px;}
+.modal-input{width:100%;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border-teal);border-radius:3px;color:var(--chrome2);font-family:'Barlow',sans-serif;font-size:14px;outline:none;margin-bottom:7px;}
 .modal-input:focus{border-color:var(--teal2);}
-.modal-error{font-size:12px;color:#ff8080;font-family:'Barlow',sans-serif;letter-spacing:1px;min-height:16px;margin-bottom:10px;}
-.btn-modal{width:100%;padding:12px;background:rgba(0,168,156,0.15);border:1px solid var(--teal);border-radius:3px;color:var(--teal2);font-family:'Anton',sans-serif;font-size:16px;letter-spacing:3px;cursor:pointer;}
+.modal-error{font-size:11px;color:#ff8080;font-family:'Barlow',sans-serif;min-height:14px;margin-bottom:8px;}
+.btn-modal{width:100%;padding:11px;background:rgba(0,168,156,0.15);border:1px solid var(--teal);border-radius:3px;color:var(--teal2);font-family:'Anton',sans-serif;font-size:15px;letter-spacing:3px;cursor:pointer;}
 
-/* SUCCESS */
-.success-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:400;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+.success-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:400;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
 .success-overlay.open{display:flex;}
-.success-icon{font-size:64px;}
-.success-title{font-family:'Anton',sans-serif;font-size:32px;letter-spacing:4px;color:var(--teal2);}
-.success-sub{font-family:'Barlow',sans-serif;font-size:14px;color:var(--muted);letter-spacing:2px;text-align:center;}
-.btn-success{padding:12px 28px;background:rgba(0,168,156,0.15);border:1px solid var(--teal);border-radius:3px;color:var(--teal2);font-family:'Anton',sans-serif;font-size:16px;letter-spacing:3px;cursor:pointer;margin-top:8px;}
+.success-icon{font-size:56px;}
+.success-title{font-family:'Anton',sans-serif;font-size:28px;letter-spacing:4px;color:var(--teal2);}
+.success-sub{font-family:'Barlow',sans-serif;font-size:13px;color:var(--muted);letter-spacing:2px;text-align:center;line-height:1.6;}
+.btn-success{padding:11px 26px;background:rgba(0,168,156,0.15);border:1px solid var(--teal);border-radius:3px;color:var(--teal2);font-family:'Anton',sans-serif;font-size:15px;letter-spacing:3px;cursor:pointer;margin-top:6px;text-decoration:none;display:inline-block;}
 
-.spinner{width:32px;height:32px;border:3px solid var(--border-teal);border-top-color:var(--teal2);border-radius:50%;animation:spin 0.8s linear infinite;margin:40px auto;}
+.spinner{width:28px;height:28px;border:3px solid var(--border-teal);border-top-color:var(--teal2);border-radius:50%;animation:spin 0.8s linear infinite;margin:40px auto;}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
-<div class="bg-layer"><div class="bg-base"></div></div>
+<div class="bg-layer"></div>
 <div class="frame-line frame-line-top"></div>
 <div class="frame-line frame-line-bottom"></div>
 
@@ -125,31 +132,41 @@ body{background:var(--navy2);color:var(--text);font-family:'Teko',sans-serif;min
 <div class="modal-overlay" id="identity-modal">
   <div class="modal-box">
     <div class="modal-title">WHO ARE YOU?</div>
-    <div class="modal-sub">Enter your Sleeper username or display name to submit your entry.</div>
+    <div class="modal-sub">Enter your Sleeper username and display name to lock in your entry.</div>
     <input class="modal-input" id="username-input" placeholder="Sleeper username" maxlength="40">
     <input class="modal-input" id="displayname-input" placeholder="Display name (optional)">
     <div class="modal-error" id="modal-error"></div>
-    <button class="btn-modal" onclick="confirmIdentity()">CONFIRM →</button>
+    <button class="btn-modal" onclick="confirmIdentity()">LOCK IT IN →</button>
   </div>
 </div>
 
-<!-- SUCCESS OVERLAY -->
+<!-- SUCCESS -->
 <div class="success-overlay" id="success-overlay">
   <div class="success-icon">✅</div>
   <div class="success-title">YOU'RE IN!</div>
-  <div class="success-sub" id="success-sub">Roster submitted. Good luck!</div>
+  <div class="success-sub" id="success-sub">Roster locked. Good luck!</div>
   <a href="/best-ball" class="btn-success">VIEW LEADERBOARD →</a>
 </div>
 
 <div class="layout">
   <!-- LEFT: PLAYER PICKER -->
   <div class="pick-panel">
-    <div class="pick-header">
-      <div class="pick-nav">
-        <a href="/best-ball" class="nav-back">‹ Back</a>
+    <a href="/best-ball" class="nav-back">‹ Back to Contest</a>
+    <div class="pick-title">BUILD YOUR ROSTER</div>
+    <div class="contest-label" id="contest-label">Loading contest...</div>
+
+    <!-- Budget bar -->
+    <div class="budget-bar">
+      <div>
+        <div class="budget-label">Budget</div>
+        <div class="budget-coins ok" id="budget-display">🪙 50</div>
       </div>
-      <div class="pick-title">BUILD YOUR ROSTER</div>
-      <div class="pick-subtitle" id="contest-label">Loading...</div>
+      <div style="flex:1;">
+        <div class="budget-track"><div class="budget-fill" id="budget-fill" style="width:0%;background:var(--teal);"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:3px;font-family:'Barlow',sans-serif;font-size:9px;color:var(--muted);">
+          <span>SPENT</span><span id="budget-spent-label">0 / 50</span>
+        </div>
+      </div>
     </div>
 
     <div class="pos-tabs" id="pos-tabs"></div>
@@ -159,44 +176,63 @@ body{background:var(--navy2);color:var(--text);font-family:'Teko',sans-serif;min
       <input class="search-input" id="search-input" placeholder="Search players..." oninput="renderPlayers()">
     </div>
 
-    <div id="player-list">
-      <div class="spinner"></div>
-    </div>
+    <div id="player-list"><div class="spinner"></div></div>
   </div>
 
   <!-- RIGHT: ROSTER SIDEBAR -->
   <div class="roster-sidebar">
     <div class="roster-title">MY ROSTER</div>
-    <div class="roster-slots-label" id="slots-label">0 / 8 selected</div>
+    <div class="roster-sub" id="slots-label">0 / 8 selected</div>
     <div id="roster-slots"></div>
-    <div class="roster-spacer"></div>
-    <div class="submit-wrap">
-      <div class="roster-progress">
-        <span id="progress-text">Select 8 players</span>
-        <span id="progress-count">0/8</span>
-      </div>
-      <div class="roster-progress-bar"><div class="roster-progress-fill" id="progress-fill" style="width:0%"></div></div>
+
+    <div class="budget-summary">
+      <div class="budget-row"><span>Budget</span><span>🪙 50</span></div>
+      <div class="budget-row"><span>Spent</span><span id="sb-spent">0</span></div>
+      <div class="budget-row total"><span>Remaining</span><span class="budget-remaining" id="sb-remaining">50</span></div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label"><span id="progress-text">Select 8 players</span><span id="progress-count">0/8</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
       <button class="btn-submit" id="submit-btn" disabled onclick="handleSubmit()">SUBMIT ROSTER</button>
+      <div class="over-budget-msg" id="over-budget-msg"></div>
     </div>
   </div>
 </div>
 
 <script>
 const SUPABASE_URL = 'https://vnpsxpofnquntnydcklu.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucHN4cG9mbnF1bnRueWRja2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxMDQ1MDcsImV4cCI6MjA1ODY4MDUwN30.HaXTuMJmPHyANJRMCZSbTMquSNlHKJz5wFT8KVwNIiw';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucHN4cG9mbnF1bnRueWRja2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODQ5MzgsImV4cCI6MjA4OTg2MDkzOH0.ergWPNr6dWBAYQP2S03f5_wOtH2QA03TxaBpOSC9Bj8';
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Roster config: slot → allowed positions
+const BUDGET = 50;
+
+// Salary tiers based on search_rank (lower = better player = more expensive)
+function getSalary(player) {
+  const rank = player.search_rank || 9999;
+  const pos = player.position;
+  if (pos === 'DEF') return 3; // DST always 3
+  if (rank <= 10)  return 15;
+  if (rank <= 25)  return 13;
+  if (rank <= 50)  return 11;
+  if (rank <= 80)  return 9;
+  if (rank <= 120) return 7;
+  if (rank <= 180) return 5;
+  if (rank <= 280) return 4;
+  return 3;
+}
+
+// Roster config
 const ROSTER_CONFIG = [
-  { slot: 'QB',   pos: ['QB'],           label: 'QB' },
-  { slot: 'RB1',  pos: ['RB'],           label: 'RB' },
-  { slot: 'RB2',  pos: ['RB'],           label: 'RB' },
-  { slot: 'WR1',  pos: ['WR'],           label: 'WR' },
-  { slot: 'WR2',  pos: ['WR'],           label: 'WR' },
-  { slot: 'TE',   pos: ['TE'],           label: 'TE' },
-  { slot: 'FLEX', pos: ['RB','WR','TE'], label: 'FLEX' },
-  { slot: 'DST',  pos: ['DEF'],          label: 'DST' },
+  { slot:'QB',   positions:['QB'],           label:'QB' },
+  { slot:'RB1',  positions:['RB'],           label:'RB' },
+  { slot:'RB2',  positions:['RB'],           label:'RB' },
+  { slot:'WR1',  positions:['WR'],           label:'WR' },
+  { slot:'WR2',  positions:['WR'],           label:'WR' },
+  { slot:'TE',   positions:['TE'],           label:'TE' },
+  { slot:'FLEX', positions:['RB','WR','TE'], label:'FLEX' },
+  { slot:'DST',  positions:['DEF'],          label:'DST' },
 ];
 
 const POS_TABS = ['QB','RB','WR','TE','FLEX','DST'];
@@ -204,76 +240,113 @@ const POS_TABS = ['QB','RB','WR','TE','FLEX','DST'];
 let contestId = null;
 let contestData = null;
 let playerCache = {};
-let selectedPlayers = {}; // slotKey → player object
+let selectedPlayers = {};  // slotKey → player
 let activePos = 'QB';
 let submitting = false;
 
-// Parse contest ID from URL
 const params = new URLSearchParams(window.location.search);
 contestId = params.get('contest');
 
-// Slot counts per position tab
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function budgetSpent() {
+  return Object.values(selectedPlayers).filter(Boolean).reduce((s,p) => s + getSalary(p), 0);
+}
+
+function budgetRemaining() { return BUDGET - budgetSpent(); }
+
+function totalSelected() { return Object.values(selectedPlayers).filter(Boolean).length; }
+
 function getSlotCounts() {
   const counts = {};
-  ROSTER_CONFIG.forEach(s => {
-    const base = s.label;
-    if (!counts[base]) counts[base] = { total: 0, filled: 0 };
-    counts[base].total++;
-    if (selectedPlayers[s.slot]) counts[base].filled++;
+  ROSTER_CONFIG.forEach(cfg => {
+    const key = cfg.label;
+    if (!counts[key]) counts[key] = { total:0, filled:0 };
+    counts[key].total++;
+    if (selectedPlayers[cfg.slot]) counts[key].filled++;
   });
   return counts;
 }
 
-function totalSelected() { return Object.values(selectedPlayers).filter(Boolean).length; }
-
-// Find which slots are available for a given position
-function availableSlotFor(pos) {
+function availableSlotFor(positions) {
   for (const cfg of ROSTER_CONFIG) {
-    if (!selectedPlayers[cfg.slot] && cfg.pos.includes(pos)) return cfg.slot;
+    if (!selectedPlayers[cfg.slot] && positions.some(p => cfg.positions.includes(p))) return cfg.slot;
   }
   return null;
 }
 
-function isPlayerSelected(playerId) {
-  return Object.values(selectedPlayers).some(p => p && p.player_id === playerId);
+function isPlayerSelected(pid) {
+  return Object.values(selectedPlayers).some(p => p && p.player_id === pid);
+}
+
+function positionsForTab(tab) {
+  const map = { QB:['QB'], RB:['RB'], WR:['WR'], TE:['TE'], FLEX:['RB','WR','TE'], DST:['DEF'] };
+  return map[tab] || [tab];
 }
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
+function updateBudgetUI() {
+  const spent = budgetSpent();
+  const remaining = BUDGET - spent;
+  const pct = (spent / BUDGET) * 100;
+
+  const display = document.getElementById('budget-display');
+  const fill = document.getElementById('budget-fill');
+  const spentLabel = document.getElementById('budget-spent-label');
+  const sbSpent = document.getElementById('sb-spent');
+  const sbRemaining = document.getElementById('sb-remaining');
+  const overMsg = document.getElementById('over-budget-msg');
+
+  if (display) {
+    display.textContent = '🪙 ' + remaining + ' left';
+    display.className = 'budget-coins ' + (remaining < 0 ? 'over' : remaining < 5 ? 'warning' : 'ok');
+  }
+  if (fill) {
+    fill.style.width = Math.min(pct,100) + '%';
+    fill.style.background = remaining < 0 ? 'var(--red2)' : remaining < 5 ? 'var(--orange2)' : 'var(--teal)';
+  }
+  if (spentLabel) spentLabel.textContent = spent + ' / ' + BUDGET;
+  if (sbSpent) sbSpent.textContent = '🪙 ' + spent;
+  if (sbRemaining) {
+    sbRemaining.textContent = '🪙 ' + remaining;
+    sbRemaining.style.color = remaining < 0 ? 'var(--red2)' : remaining < 5 ? 'var(--orange2)' : 'var(--gold)';
+  }
+  if (overMsg) overMsg.textContent = remaining < 0 ? '⚠ Over budget by 🪙' + Math.abs(remaining) : '';
+}
+
 function renderPosTabs() {
   const counts = getSlotCounts();
-  const tabsEl = document.getElementById('pos-tabs');
-  const posMap = { FLEX: 'FLEX', DST: 'DST', QB:'QB', RB:'RB', WR:'WR', TE:'TE' };
-  tabsEl.innerHTML = POS_TABS.map(p => {
-    const c = counts[p] || { total: 1, filled: 0 };
+  document.getElementById('pos-tabs').innerHTML = POS_TABS.map(p => {
+    const c = counts[p] || { total:1, filled:0 };
     const full = c.filled >= c.total;
-    return `<div class="pos-tab ${activePos === p ? 'active' : ''}" onclick="switchPos('${p}')">
-      ${p}
-      <span class="slot-count ${full ? 'full' : ''}">${c.filled}/${c.total}</span>
+    return `<div class="pos-tab ${activePos===p?'active':''}" onclick="switchPos('${p}')">
+      ${p}<span class="badge ${full?'full':''}">${c.filled}/${c.total}</span>
     </div>`;
   }).join('');
 }
 
 function renderRosterSlots() {
-  const el = document.getElementById('roster-slots');
   const total = totalSelected();
+  const spent = budgetSpent();
   document.getElementById('slots-label').textContent = total + ' / 8 selected';
   document.getElementById('progress-text').textContent = total < 8 ? `Select ${8-total} more` : 'Roster complete!';
   document.getElementById('progress-count').textContent = total + '/8';
   document.getElementById('progress-fill').style.width = (total/8*100) + '%';
-  document.getElementById('submit-btn').disabled = total < 8 || submitting;
+  document.getElementById('submit-btn').disabled = total < 8 || spent > BUDGET || submitting;
+  updateBudgetUI();
 
-  el.innerHTML = ROSTER_CONFIG.map(cfg => {
+  document.getElementById('roster-slots').innerHTML = ROSTER_CONFIG.map(cfg => {
     const p = selectedPlayers[cfg.slot];
-    const slotClass = cfg.label === 'DST' ? 'DST' : cfg.label.replace(/\d/g, '');
+    const slotClass = cfg.slot.replace(/\d/,'');
     if (p) {
-      return `<div class="roster-slot filled">
-        <span class="slot-label ${slotClass}">${cfg.label.replace(/\d/,'')}</span>
-        <span class="slot-player-name">${p.last_name || p.full_name || p.player_name}</span>
+      return `<div class="roster-slot filled ${slotClass}">
+        <span class="slot-label">${cfg.label}</span>
+        <span class="slot-player">${p.last_name || p.full_name || p.player_name || p.player_id}</span>
+        <span class="slot-salary">🪙${getSalary(p)}</span>
         <button class="slot-remove" onclick="removePlayer('${cfg.slot}')">✕</button>
       </div>`;
     }
-    return `<div class="roster-slot" onclick="switchPos('${cfg.label.replace(/\d/,'')}')">
-      <span class="slot-label ${slotClass}">${cfg.label.replace(/\d/,'')}</span>
+    return `<div class="roster-slot ${slotClass}" onclick="switchPos('${cfg.label.replace(/\d/,'')}')">
+      <span class="slot-label">${cfg.label}</span>
       <span class="slot-empty">Select ${cfg.label.replace(/\d/,'')}...</span>
     </div>`;
   }).join('');
@@ -282,51 +355,45 @@ function renderRosterSlots() {
 function renderPlayers() {
   const el = document.getElementById('player-list');
   const search = document.getElementById('search-input').value.trim().toLowerCase();
-
-  // Filter players by active position
-  const posFilter = activePos === 'DST' ? ['DEF'] :
-                    activePos === 'FLEX' ? ['RB','WR','TE'] : [activePos];
+  const positions = positionsForTab(activePos);
+  const filterPos = activePos === 'DST' ? ['DEF'] : positions;
 
   let players = Object.values(playerCache).filter(p => {
-    if (!posFilter.includes(p.position)) return false;
-    if (p.status === 'Inactive' && !p.team) return false;
-    if (search && !`${p.full_name} ${p.team}`.toLowerCase().includes(search)) return false;
+    if (!filterPos.includes(p.position)) return false;
+    if (!p.team && p.position !== 'DEF') return false;
+    if (search && !`${p.full_name||''} ${p.team||''}`.toLowerCase().includes(search)) return false;
     return true;
   });
 
-  // Sort: active players with teams first, by adp
-  players.sort((a,b) => {
-    if (a.team && !b.team) return -1;
-    if (!a.team && b.team) return 1;
-    return (a.search_rank||9999) - (b.search_rank||9999);
-  });
+  players.sort((a,b) => (a.search_rank||9999)-(b.search_rank||9999));
+  players = players.slice(0, 100);
 
-  // Limit to top 80 for performance
-  players = players.slice(0, 80);
+  const remaining = budgetRemaining();
+  const slotAvailable = !!availableSlotFor(filterPos);
 
-  if (players.length === 0) {
-    el.innerHTML = `<div style="text-align:center;padding:30px;font-family:'Barlow',sans-serif;font-size:13px;color:var(--muted);">No players found</div>`;
+  if (!players.length) {
+    el.innerHTML = '<div style="text-align:center;padding:28px;font-family:Barlow,sans-serif;font-size:13px;color:var(--muted);">No players found</div>';
     return;
   }
 
-  const slotsFull = !availableSlotFor(activePos === 'DST' ? 'DEF' : activePos === 'FLEX' ? 'RB' : activePos);
-
-  el.innerHTML = `<div class="player-list">` + players.map(p => {
+  el.innerHTML = '<div class="player-list">' + players.map(p => {
     const pid = p.player_id;
+    const salary = getSalary(p);
     const isSelected = isPlayerSelected(pid);
-    const posClass = p.position === 'DEF' ? 'DEF' : p.position;
+    const cantAfford = !isSelected && salary > remaining;
+    const isFull = !isSelected && !slotAvailable;
     const imgSrc = `/api/sleeper?player_img=${pid}`;
-    return `<div class="player-row ${posClass} ${isSelected ? 'selected' : ''} ${!isSelected && slotsFull ? 'full' : ''}"
-      onclick="${isSelected ? '' : `addPlayer('${pid}')`}">
+    return `<div class="player-row ${isSelected?'selected':''} ${cantAfford&&!isSelected?'cant-afford':''} ${isFull&&!isSelected?'slots-full':''}"
+      onclick="${isSelected||cantAfford||isFull?'':'addPlayer(\'' + pid + '\')' }">
       <img class="player-headshot" src="${imgSrc}" onerror="this.src=''">
       <div class="player-info">
-        <div class="player-name">${p.full_name || pid}</div>
-        <div class="player-meta">${p.team || 'FA'} · ${p.position}</div>
+        <div class="player-name">${p.full_name||pid}</div>
+        <div class="player-meta">${p.team||'FA'} · ${p.position}</div>
       </div>
-      <span class="player-pos-badge">${p.position === 'DEF' ? 'DST' : p.position}</span>
-      <div class="player-check">${isSelected ? '✓' : ''}</div>
+      <div class="salary-tag">${salary}</div>
+      <div class="player-check">${isSelected?'✓':''}</div>
     </div>`;
-  }).join('') + `</div>`;
+  }).join('') + '</div>';
 }
 
 function switchPos(pos) {
@@ -339,19 +406,23 @@ function switchPos(pos) {
 function addPlayer(playerId) {
   const player = playerCache[playerId];
   if (!player) return;
-  const pos = player.position;
-  const slot = availableSlotFor(pos === 'DEF' ? 'DEF' : pos);
+  if (getSalary(player) > budgetRemaining()) return;
+  const positions = positionsForTab(activePos === 'DST' ? 'DST' : activePos);
+  const filterPos = activePos === 'DST' ? ['DEF'] : positionsForTab(activePos);
+  const slot = availableSlotFor(filterPos);
   if (!slot) return;
   selectedPlayers[slot] = { ...player, player_id: playerId };
   renderPosTabs();
   renderRosterSlots();
   renderPlayers();
-  // Auto-advance to next unfilled position
-  const unfilled = POS_TABS.find(p => {
-    const posMap = { QB:['QB'], RB:['RB'], WR:['WR'], TE:['TE'], FLEX:['RB','WR','TE'], DST:['DEF'] };
-    return availableSlotFor(posMap[p]?.[0] || p);
+
+  // Auto-advance to next position that still needs players
+  const nextPos = POS_TABS.find(tab => {
+    const counts = getSlotCounts();
+    const c = counts[tab];
+    return c && c.filled < c.total;
   });
-  if (unfilled && unfilled !== activePos) switchPos(unfilled);
+  if (nextPos && nextPos !== activePos) switchPos(nextPos);
 }
 
 function removePlayer(slot) {
@@ -363,13 +434,13 @@ function removePlayer(slot) {
 
 // ── SUBMIT ────────────────────────────────────────────────────────────────────
 function handleSubmit() {
-  if (totalSelected() < 8) return;
+  if (totalSelected() < 8 || budgetSpent() > BUDGET) return;
   const saved = sessionStorage.getItem('bb_username');
   if (saved) {
     submitEntry(saved, sessionStorage.getItem('bb_displayname') || saved);
   } else {
     document.getElementById('identity-modal').classList.add('open');
-    setTimeout(() => document.getElementById('username-input').focus(), 100);
+    setTimeout(() => document.getElementById('username-input').focus(), 80);
   }
 }
 
@@ -388,55 +459,49 @@ async function submitEntry(username, displayName) {
   document.getElementById('submit-btn').disabled = true;
   document.getElementById('submit-btn').textContent = 'SUBMITTING...';
 
-  // Upsert entry
+  const spent = budgetSpent();
   const { data: entryData, error: entryErr } = await sb.from('bb_entries').upsert({
     contest_id: parseInt(contestId),
     username,
     display_name: displayName,
+    budget_used: spent,
     total_score: 0,
     best_lineup_score: 0,
     submitted_at: new Date().toISOString(),
   }, { onConflict: 'contest_id,username' }).select();
 
   if (entryErr) {
-    alert('Error submitting: ' + entryErr.message);
+    alert('Error: ' + entryErr.message);
     submitting = false;
     renderRosterSlots();
     return;
   }
 
   const entryId = entryData[0].id;
-
-  // Delete existing roster and reinsert
   await sb.from('bb_roster').delete().eq('entry_id', entryId);
 
-  const rosterRows = Object.entries(selectedPlayers).map(([slot, p]) => ({
+  const rows = Object.entries(selectedPlayers).map(([slot, p]) => ({
     entry_id: entryId,
     player_id: p.player_id,
-    player_name: p.full_name || p.player_name,
+    player_name: p.full_name || p.player_name || p.player_id,
     position: p.position,
     nfl_team: p.team || '',
     slot,
+    salary: getSalary(p),
   }));
 
-  const { error: rostErr } = await sb.from('bb_roster').insert(rosterRows);
-  if (rostErr) {
-    alert('Error saving roster: ' + rostErr.message);
-    submitting = false;
-    return;
-  }
+  const { error: rostErr } = await sb.from('bb_roster').insert(rows);
+  if (rostErr) { alert('Roster error: ' + rostErr.message); submitting = false; return; }
 
-  // Success
-  document.getElementById('success-sub').textContent = `${displayName}'s roster is locked in. Good luck!`;
+  document.getElementById('success-sub').textContent = displayName + "\u2019s roster is locked in. 🪙" + spent + " spent. Good luck!";
   document.getElementById('success-overlay').classList.add('open');
 }
 
-// ── LOAD PLAYERS ──────────────────────────────────────────────────────────────
+// ── LOAD DATA ─────────────────────────────────────────────────────────────────
 async function loadPlayers() {
   const res = await fetch('/api/sleeper?endpoint=players/nfl');
   if (!res.ok) return;
   const data = await res.json();
-  // Only skill positions + DST, active
   const validPos = ['QB','RB','WR','TE','DEF'];
   Object.entries(data).forEach(([id, p]) => {
     if (validPos.includes(p.position) && (p.team || p.position === 'DEF')) {
@@ -451,20 +516,20 @@ async function loadContest() {
   const { data } = await sb.from('bb_contests').select('*').eq('id', contestId).single();
   if (data) {
     contestData = data;
-    document.getElementById('contest-label').textContent = data.week_label + ' · Best Ball';
+    document.getElementById('contest-label').textContent = data.week_label + ' · 🪙 50 Coin Budget';
   }
-}
-
-async function init() {
-  await loadContest();
-  renderPosTabs();
-  renderRosterSlots();
-  await loadPlayers();
 }
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('identity-modal').classList.contains('open')) confirmIdentity();
 });
+
+async function init() {
+  await loadContest();
+  renderPosTabs();
+  renderRosterSlots();
+  loadPlayers();
+}
 
 init();
 </script>

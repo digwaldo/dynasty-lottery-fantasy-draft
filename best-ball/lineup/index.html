@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lineup · Best Ball Challenge</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Teko:wght@300;400;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --orange:#E8621A;--orange2:#F08030;--sunset:#F5A623;
+  --red:#C0181A;--teal:#00A89C;--teal2:#00C8BC;--teal-dark:#005f5a;
+  --navy:#0d1a2b;--navy2:#0a1520;--chrome:#d0d8e0;--chrome2:#f0f4f8;
+  --text:#f0ede8;--muted:#7a9ab0;--gold:#F5A623;
+  --border-teal:rgba(0,168,156,0.35);--green:#22c55e;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--navy2);color:var(--text);font-family:'Teko',sans-serif;min-height:100vh;}
+.bg-layer{position:fixed;inset:0;z-index:0;background:linear-gradient(180deg,#060e18,#0a1520);}
+.frame-line{position:fixed;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--orange),var(--teal));z-index:100;}
+.frame-line-top{top:0;}.frame-line-bottom{bottom:0;}
+.container{position:relative;z-index:2;max-width:700px;margin:0 auto;padding:16px 16px 80px;}
+.nav{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.nav-back{color:var(--muted);font-family:'Barlow',sans-serif;font-size:12px;letter-spacing:2px;text-decoration:none;}
+.nav-back:hover{color:var(--teal2);}
+
+/* TABS */
+.view-tabs{display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border-teal);border-radius:4px;overflow:hidden;}
+.view-tab{flex:1;padding:11px;font-family:'Anton',sans-serif;font-size:14px;letter-spacing:3px;color:var(--muted);cursor:pointer;text-align:center;border:none;background:rgba(10,21,32,0.8);transition:all 0.2s;}
+.view-tab.active{background:rgba(0,168,156,0.12);color:var(--teal2);border-bottom:2px solid var(--teal);}
+
+/* ENTRY HEADER */
+.entry-header{background:rgba(10,21,32,0.9);border:1px solid var(--border-teal);border-top:3px solid var(--teal);border-radius:5px;padding:18px 20px;margin-bottom:16px;}
+.entry-owner{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.entry-avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--teal);flex-shrink:0;}
+.entry-avatar-ph{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.07);border:2px solid var(--teal);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:18px;color:var(--muted);flex-shrink:0;}
+.entry-name{font-family:'Anton',sans-serif;font-size:22px;letter-spacing:2px;color:var(--chrome2);}
+.entry-sub{font-size:11px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;}
+.entry-score-big{font-family:'Anton',sans-serif;font-size:42px;letter-spacing:1px;color:var(--chrome2);}
+.entry-score-label{font-size:11px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:2px;}
+
+/* LOCKED BANNER */
+.locked-banner{background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.3);border-radius:4px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.locked-banner-text{font-family:'Barlow',sans-serif;font-size:13px;color:var(--gold);letter-spacing:1px;}
+
+/* LINEUP TABLE */
+.lineup-section{margin-bottom:20px;}
+.lineup-section-title{font-family:'Anton',sans-serif;font-size:12px;letter-spacing:4px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;}
+.player-card{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(10,21,32,0.8);border:1px solid rgba(255,255,255,0.06);border-radius:3px;margin-bottom:4px;transition:all 0.2s;}
+.player-card.starter{border-color:var(--border-teal);background:rgba(0,168,156,0.05);}
+.player-card.best-scorer{border-color:var(--gold);background:rgba(245,166,35,0.05);}
+.player-pos{font-family:'Anton',sans-serif;font-size:10px;padding:2px 6px;border-radius:2px;flex-shrink:0;width:36px;text-align:center;}
+.pos-QB{background:rgba(229,196,64,0.15);color:#e5c440;}
+.pos-RB{background:rgba(74,224,160,0.15);color:#4ae0a0;}
+.pos-WR{background:rgba(74,176,255,0.15);color:#4ab0ff;}
+.pos-TE{background:rgba(255,140,74,0.15);color:#ff8c4a;}
+.pos-FLEX{background:rgba(192,132,252,0.15);color:#c084fc;}
+.pos-DST,.pos-DEF{background:rgba(248,113,113,0.15);color:#f87171;}
+.player-headshot{width:36px;height:36px;border-radius:50%;object-fit:cover;background:rgba(255,255,255,0.06);flex-shrink:0;}
+.player-info{flex:1;}
+.player-name{font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;color:var(--chrome2);}
+.player-team{font-size:10px;color:var(--muted);letter-spacing:1px;}
+.player-score{font-family:'Anton',sans-serif;font-size:18px;color:var(--chrome2);flex-shrink:0;}
+.player-score.scoring{color:var(--teal2);}
+.bench-label{font-size:9px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;margin-left:4px;}
+.hidden-score{font-family:'Barlow',sans-serif;font-size:11px;color:rgba(255,255,255,0.15);letter-spacing:1px;}
+
+/* LEADERBOARD */
+.lb-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(10,21,32,0.8);border:1px solid rgba(255,255,255,0.06);border-radius:3px;margin-bottom:4px;cursor:pointer;transition:all 0.2s;}
+.lb-row:hover{border-color:var(--border-teal);}
+.lb-row.active-entry{border-color:var(--teal);background:rgba(0,168,156,0.07);}
+.lb-row.rank-1{border-color:var(--gold);background:rgba(245,166,35,0.05);}
+.lb-rank{font-family:'Anton',sans-serif;font-size:18px;width:28px;text-align:center;flex-shrink:0;}
+.lb-name{font-family:'Anton',sans-serif;font-size:15px;letter-spacing:1px;color:var(--chrome2);flex:1;}
+.lb-score{font-family:'Anton',sans-serif;font-size:20px;color:var(--chrome2);flex-shrink:0;}
+.live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;margin-right:4px;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+.loading-wrap{text-align:center;padding:40px;}
+.spinner{width:28px;height:28px;border:3px solid var(--border-teal);border-top-color:var(--teal2);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:11px;letter-spacing:3px;color:var(--muted);font-family:'Barlow',sans-serif;}
+.section-header{display:flex;align-items:center;gap:10px;margin:20px 0 12px;}
+.section-title{font-family:'Anton',sans-serif;font-size:16px;letter-spacing:4px;color:var(--chrome2);}
+.section-line{flex:1;height:1px;background:linear-gradient(90deg,var(--border-teal),transparent);}
+.live-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:2px;padding:2px 8px;font-size:9px;letter-spacing:2px;color:var(--green);font-family:'Barlow',sans-serif;}
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+<div class="frame-line frame-line-top"></div>
+<div class="frame-line frame-line-bottom"></div>
+
+<div class="container">
+  <div class="nav">
+    <a href="/best-ball" class="nav-back">‹ Contest</a>
+    <div id="contest-name" style="font-family:'Barlow',sans-serif;font-size:12px;color:var(--muted);letter-spacing:2px;margin-left:auto;"></div>
+  </div>
+
+  <div class="view-tabs">
+    <div class="view-tab active" id="tab-lineup" onclick="switchTab('lineup')">MY LINEUP</div>
+    <div class="view-tab" id="tab-leaderboard" onclick="switchTab('leaderboard')">LEADERBOARD</div>
+  </div>
+
+  <div id="main-content">
+    <div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading...</div></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://vnpsxpofnquntnydcklu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucHN4cG9mbnF1bnRueWRja2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODQ5MzgsImV4cCI6MjA4OTg2MDkzOH0.ergWPNr6dWBAYQP2S03f5_wOtH2QA03TxaBpOSC9Bj8';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const params = new URLSearchParams(window.location.search);
+const entryId = parseInt(params.get('entry'));
+const contestId = parseInt(params.get('contest'));
+
+let contest = null;
+let entry = null;
+let roster = [];
+let scores = [];
+let allEntries = [];
+let activeTab = 'lineup';
+let realtimeChannel = null;
+
+const POS_COLORS = { QB:'pos-QB', RB:'pos-RB', WR:'pos-WR', TE:'pos-TE', FLEX:'pos-FLEX', DEF:'pos-DST', DST:'pos-DST' };
+const SLOT_ORDER = { QB:0, RB1:1, RB2:2, WR1:3, WR2:4, TE:5, FLEX:6, DST:7 };
+
+function posClass(pos) { return POS_COLORS[pos] || 'pos-QB'; }
+
+// ── LOAD ──────────────────────────────────────────────────────────────────────
+async function loadAll() {
+  const [contestRes, entryRes, rosterRes, allEntriesRes] = await Promise.all([
+    sb.from('bb_contests').select('*').eq('id', contestId).single(),
+    sb.from('bb_entries').select('*').eq('id', entryId).single(),
+    sb.from('bb_roster').select('*').eq('entry_id', entryId),
+    sb.from('bb_entries').select('*').eq('contest_id', contestId).order('best_lineup_score', { ascending: false }),
+  ]);
+  contest = contestRes.data;
+  entry = entryRes.data;
+  roster = rosterRes.data || [];
+  allEntries = allEntriesRes.data || [];
+
+  if (contest) document.getElementById('contest-name').textContent = contest.week_label;
+
+  // Load scores if contest is scoring/final
+  if (contest && (contest.status === 'scoring' || contest.status === 'final')) {
+    const { data } = await sb.from('bb_scores').select('*').eq('entry_id', entryId);
+    scores = data || [];
+  }
+}
+
+function subscribeRealtime() {
+  if (realtimeChannel) sb.removeChannel(realtimeChannel);
+  realtimeChannel = sb
+    .channel('lineup_' + contestId + '_' + Date.now())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'bb_entries', filter: 'contest_id=eq.' + contestId }, async () => {
+      const { data } = await sb.from('bb_entries').select('*').eq('contest_id', contestId).order('best_lineup_score', { ascending: false });
+      allEntries = data || [];
+      const { data: myEntry } = await sb.from('bb_entries').select('*').eq('id', entryId).single();
+      if (myEntry) entry = myEntry;
+      if (contest && (contest.status === 'scoring' || contest.status === 'final')) {
+        const { data: sc } = await sb.from('bb_scores').select('*').eq('entry_id', entryId);
+        scores = sc || [];
+      }
+      render();
+    })
+    .subscribe();
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('tab-lineup').classList.toggle('active', tab === 'lineup');
+  document.getElementById('tab-leaderboard').classList.toggle('active', tab === 'leaderboard');
+  render();
+}
+
+function render() {
+  if (activeTab === 'lineup') renderLineup();
+  else renderLeaderboard();
+}
+
+function renderLineup() {
+  const el = document.getElementById('main-content');
+  if (!entry || !contest) { el.innerHTML = '<div class="loading-wrap"><div class="spinner"></div></div>'; return; }
+
+  const isLocked = contest.status !== 'open';
+  const isScoring = contest.status === 'scoring' || contest.status === 'final';
+  const myScore = parseFloat(entry.best_lineup_score || 0).toFixed(1);
+  const rank = allEntries.findIndex(e => e.id === entryId) + 1;
+
+  let html = '';
+
+  // Entry header
+  html += `<div class="entry-header">
+    <div class="entry-owner">
+      <div class="entry-avatar-ph">${(entry.display_name||'?')[0]}</div>
+      <div>
+        <div class="entry-name">${entry.display_name||entry.username}</div>
+        <div class="entry-sub">${entry.username} · 🪙${entry.budget_used||0} spent</div>
+      </div>
+      ${rank > 0 ? `<div style="margin-left:auto;text-align:right;"><div style="font-family:'Anton',sans-serif;font-size:28px;color:var(--gold);">#${rank}</div><div style="font-size:10px;color:var(--muted);font-family:'Barlow',sans-serif;">of ${allEntries.length}</div></div>` : ''}
+    </div>
+    ${isScoring ? `<div><div class="entry-score-big">${myScore}</div><div class="entry-score-label">BEST BALL POINTS</div></div>` : ''}
+  </div>`;
+
+  // Locked notice
+  if (!isLocked) {
+    html += `<div class="locked-banner">
+      <span>🔒</span>
+      <div class="locked-banner-text">Lineups are hidden until the contest locks. Your roster is set — check back after lock to see scores.</div>
+    </div>`;
+  }
+
+  // Sort roster by slot order
+  const sortedRoster = [...roster].sort((a,b) => (SLOT_ORDER[a.slot]||99)-(SLOT_ORDER[b.slot]||99));
+
+  // Get score for each player
+  function getScore(playerId) {
+    const s = scores.find(s => s.player_id === playerId);
+    return s ? parseFloat(s.score||0) : null;
+  }
+  function isStarter(playerId) {
+    const s = scores.find(s => s.player_id === playerId);
+    return s ? s.is_starter : false;
+  }
+
+  // Starters section
+  const starters = isScoring ? sortedRoster.filter(p => isStarter(p.player_id)) : sortedRoster;
+  const bench = isScoring ? sortedRoster.filter(p => !isStarter(p.player_id)) : [];
+
+  const slotDisplay = { QB:'QB', RB1:'RB', RB2:'RB', WR1:'WR', WR2:'WR', TE:'TE', FLEX:'FLEX', DST:'DST' };
+
+  html += `<div class="lineup-section">
+    <div class="lineup-section-title">${isScoring ? 'Best Ball Lineup' : 'Your Roster'}${isScoring ? ' <span class="live-badge"><span class="live-dot"></span>Live</span>' : ''}</div>`;
+
+  starters.forEach(p => {
+    const score = getScore(p.player_id);
+    const scoreTxt = isScoring && score !== null ? score.toFixed(1) : '';
+    const posLabel = slotDisplay[p.slot] || p.position;
+    const posCol = posClass(posLabel === 'DST' ? 'DST' : posLabel);
+    html += `<div class="player-card ${isScoring?'starter':''}">
+      <span class="player-pos ${posCol}">${posLabel}</span>
+      <img class="player-headshot" src="/api/sleeper?player_img=${p.player_id}" onerror="this.src=''">
+      <div class="player-info">
+        <div class="player-name">${p.player_name||p.player_id}</div>
+        <div class="player-team">${p.nfl_team||''} · ${p.position}</div>
+      </div>
+      ${isScoring ? `<div class="player-score scoring">${scoreTxt||'—'}</div>` : `<div class="hidden-score">Locked</div>`}
+    </div>`;
+  });
+
+  if (bench.length > 0) {
+    html += `</div><div class="lineup-section"><div class="lineup-section-title">Bench (not used in best lineup)</div>`;
+    bench.forEach(p => {
+      const score = getScore(p.player_id);
+      const posLabel = slotDisplay[p.slot] || p.position;
+      const posCol = posClass(posLabel === 'DST' ? 'DST' : posLabel);
+      html += `<div class="player-card" style="opacity:0.5;">
+        <span class="player-pos ${posCol}">${posLabel}</span>
+        <img class="player-headshot" src="/api/sleeper?player_img=${p.player_id}" onerror="this.src=''">
+        <div class="player-info">
+          <div class="player-name">${p.player_name||p.player_id}</div>
+          <div class="player-team">${p.nfl_team||''}</div>
+        </div>
+        ${score !== null ? `<div class="player-score">${score.toFixed(1)}</div>` : `<div class="hidden-score">—</div>`}
+      </div>`;
+    });
+  }
+
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+function renderLeaderboard() {
+  const el = document.getElementById('main-content');
+  const isScoring = contest && (contest.status === 'scoring' || contest.status === 'final');
+
+  let html = `<div class="section-header">
+    <div class="section-title">Leaderboard</div>
+    <div class="section-line"></div>
+    ${isScoring ? '<span class="live-badge"><span class="live-dot"></span>Live</span>' : ''}
+  </div>`;
+
+  allEntries.forEach((e, i) => {
+    const rank = i + 1;
+    const rankSymbol = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+    const isMe = e.id === entryId;
+    const score = isScoring ? parseFloat(e.best_lineup_score||0).toFixed(1) : '—';
+    html += `<div class="lb-row ${rank===1?'rank-1':''} ${isMe?'active-entry':''}" onclick="window.location.href='/best-ball/lineup?entry=${e.id}&contest=${contestId}'">
+      <div class="lb-rank">${rankSymbol}</div>
+      <div class="lb-name">${e.display_name||e.username}${isMe?' <span style=\"color:var(--teal2);font-size:11px;\">You</span>':''}</div>
+      <div class="lb-score">${score}</div>
+    </div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+async function init() {
+  await loadAll();
+  subscribeRealtime();
+  render();
+}
+
+init();
+</script>
+</body>
+</html>

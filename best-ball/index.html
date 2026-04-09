@@ -398,12 +398,13 @@ function renderContent() {
       const myClass = e.username === myUsername() ? 'my-entry' : '';
       const rankSymbol = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `<span class="rank-badge other">${rank}</span>`;
       const score = isFinal || c.status === 'scoring' ? (parseFloat(e.best_lineup_score)||0).toFixed(1) : '—';
-      html += `<div class="entry-row ${rankClass} ${myClass}" onclick="viewEntry(${e.id})">
+      const canView = c.status !== 'open';
+      html += `<div class="entry-row ${rankClass} ${myClass}" ${canView ? `onclick="viewEntry(${e.id})"` : ''} style="${canView ? 'cursor:pointer' : 'cursor:default'}">
         <div class="rank-badge">${rankSymbol}</div>
         ${e.avatar_url ? `<img class="entry-avatar" src="${e.avatar_url}" onerror="this.style.display='none'">` : `<div class="entry-avatar-ph">${(e.display_name||'?')[0]}</div>`}
         <div class="entry-info">
           <div class="entry-name">${e.display_name || e.username}</div>
-          <div class="entry-sub">${e.username}${e.username === myUsername() ? ' · <span style="color:var(--teal2)">You</span>' : ''}</div>
+          <div class="entry-sub">${e.username}${e.username === myUsername() ? ' · <span style="color:var(--teal2)">You</span>' : ''}${canView ? ' · <span style="color:var(--teal);font-size:10px;">View Lineup ›</span>' : ''}</div>
         </div>
         <div class="entry-score-wrap">
           <div class="entry-score">${score}</div>
@@ -434,21 +435,24 @@ function renderCommPanel() {
   if (!isCommissioner) return '';
   const c = activeContest;
   return `<div class="comm-panel">
-    <div class="comm-panel-title">Commissioner Tools</div>
+    <div class="comm-panel-title">⚙ Commissioner Tools</div>
     ${!c ? `
       <div class="comm-form">
         <input class="comm-input" id="c-week-label" placeholder="Week label (e.g. Week 1 · Sep 7, 2026)">
         <input class="comm-input" id="c-week-num" type="number" placeholder="Week number (1-18)">
-        <input class="comm-input" id="c-lock-time" type="datetime-local" placeholder="Lock time">
+        <input class="comm-input" id="c-lock-time" type="datetime-local">
         <button class="btn-comm" onclick="commCreateContest()">▶ CREATE CONTEST</button>
       </div>` :
     `<div class="comm-form">
-      <div style="font-family:'Barlow',sans-serif;font-size:12px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">Active: <strong style="color:var(--chrome)">${c.week_label}</strong> · Status: ${statusBadge(c.status)}</div>
+      <div style="font-family:'Barlow',sans-serif;font-size:12px;color:var(--muted);letter-spacing:1px;margin-bottom:10px;">
+        <strong style="color:var(--chrome)">${c.week_label}</strong> · ${statusBadge(c.status)} · ${entries.length} entries
+      </div>
       <div class="comm-row">
-        ${c.status === 'open' ? `<button class="btn-comm" onclick="commSetStatus('locked')">🔒 Lock Contest</button>` : ''}
+        ${c.status === 'open' ? `<button class="btn-comm" onclick="commSetStatus('locked')">🔒 Lock</button>` : ''}
         ${c.status === 'locked' ? `<button class="btn-comm" onclick="commSetStatus('scoring')">📊 Start Scoring</button>` : ''}
         ${c.status === 'scoring' ? `<button class="btn-comm" onclick="commSetStatus('final')">✓ Finalize</button>` : ''}
-        <button class="btn-comm danger" onclick="commSetStatus('open')">↩ Reopen</button>
+        ${c.status !== 'open' ? `<button class="btn-comm" onclick="commReopen()">↩ Reopen</button>` : ''}
+        <button class="btn-comm danger" onclick="commDeleteContest()">🗑 Delete</button>
       </div>
     </div>`}
   </div>`;
@@ -478,6 +482,27 @@ async function commSetStatus(status) {
     if (status === 'scoring' || status === 'final') await pullScoresFromSleeper();
     renderContent();
   }
+}
+
+async function commReopen() {
+  if (!activeContest) return;
+  const ok = await updateContestStatus(activeContest.id, 'open');
+  if (ok) {
+    // Reload fresh from DB
+    activeContest = await loadContest();
+    entries = activeContest ? await loadEntries(activeContest.id) : [];
+    renderContent();
+  }
+}
+
+async function commDeleteContest() {
+  if (!activeContest) return;
+  if (!confirm(`Delete "${activeContest.week_label}"? This also deletes all entries and rosters.`)) return;
+  const { error } = await sb.from('bb_contests').delete().eq('id', activeContest.id);
+  if (error) { showError('Delete error: ' + error.message); return; }
+  activeContest = null;
+  entries = [];
+  renderContent();
 }
 
 // ── SLEEPER SCORING ───────────────────────────────────────────────────────────
@@ -578,7 +603,9 @@ async function pullScoresFromSleeper() {
 
 // ── ENTRY VIEW (stub) ─────────────────────────────────────────────────────────
 function viewEntry(entryId) {
-  window.location.href = '/best-ball/entry?id=' + entryId;
+  // After lock, show lineup — before lock, no reveal
+  if (!activeContest) return;
+  window.location.href = '/best-ball/lineup?entry=' + entryId + '&contest=' + activeContest.id;
 }
 
 // ── PIN ───────────────────────────────────────────────────────────────────────
