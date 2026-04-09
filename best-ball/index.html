@@ -212,7 +212,7 @@ body{background:var(--navy2);color:var(--text);font-family:'Teko',sans-serif;min
 
 <script>
 const SUPABASE_URL = 'https://vnpsxpofnquntnydcklu.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucHN4cG9mbnF1bnRueWRja2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxMDQ1MDcsImV4cCI6MjA1ODY4MDUwN30.HaXTuMJmPHyANJRMCZSbTMquSNlHKJz5wFT8KVwNIiw';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucHN4cG9mbnF1bnRueWRja2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODQ5MzgsImV4cCI6MjA4OTg2MDkzOH0.ergWPNr6dWBAYQP2S03f5_wOtH2QA03TxaBpOSC9Bj8';
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 const COMMISSIONER_PIN = '00136860';
@@ -237,7 +237,12 @@ async function loadContest() {
     .in('status', ['open','locked','scoring','final'])
     .order('created_at', { ascending: false })
     .limit(1);
-  if (error) { showError('Load error: ' + error.message); return null; }
+  if (error) {
+    console.error('[BB] Full error object:', JSON.stringify(error));
+    showError('Load error: ' + (error.message || error.details || error.hint || JSON.stringify(error)));
+    return null;
+  }
+  console.log('[BB] Contest loaded:', data);
   return data && data[0] ? data[0] : null;
 }
 
