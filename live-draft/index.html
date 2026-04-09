@@ -158,6 +158,22 @@
   @keyframes spin{to{transform:rotate(360deg)}}
   .loading-text{font-size:13px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
 </style>
+<style>
+.pick-slot-card{background:rgba(10,21,32,0.85);border:1px solid var(--border-teal);border-radius:4px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:14px;transition:all 0.3s;}
+.pick-slot-card.revealed{border-color:var(--teal);background:rgba(0,168,156,0.08);}
+.pick-slot-card.hidden-pick{opacity:0.4;}
+.pick-num{font-family:'Anton',sans-serif;font-size:28px;letter-spacing:1px;color:var(--muted);width:44px;flex-shrink:0;text-align:center;}
+.pick-slot-card.revealed .pick-num{color:var(--orange2);}
+.pick-divider{width:2px;height:44px;background:var(--border-teal);flex-shrink:0;border-radius:1px;}
+.pick-slot-card.revealed .pick-divider{background:var(--teal);}
+.pick-team-info{flex:1;}
+.pick-team-name{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:2px;color:var(--chrome2);}
+.pick-team-sub{font-size:11px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;margin-top:2px;}
+.pick-avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--teal);flex-shrink:0;}
+.pick-avatar-ph{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.07);border:2px solid var(--border-teal);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:16px;color:var(--muted);flex-shrink:0;}
+.pick-hidden-label{font-family:'Barlow',sans-serif;font-size:12px;color:var(--muted);letter-spacing:2px;font-style:italic;}
+.btn-run-lottery{width:100%;padding:16px;background:linear-gradient(135deg,rgba(0,168,156,0.2),rgba(0,168,156,0.1));border:2px solid var(--teal);border-radius:4px;color:var(--teal2);font-family:'Anton',sans-serif;font-size:20px;letter-spacing:4px;cursor:pointer;margin-bottom:10px;}
+</style>
 </head>
 <body>
 <div class="bg-layer">
@@ -169,30 +185,45 @@
   <svg class="wave-layer wave2" viewBox="0 0 1440 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
     <path d="M0,60 C90,120 180,20 360,70 C540,120 630,10 720,60 C810,110 990,20 1080,70 C1170,120 1350,30 1440,60 L1440,180 L0,180 Z" fill="#007a74" opacity="0.2"/>
   </svg>
-  <svg class="wave-layer wave3" viewBox="0 0 1440 160" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-    <path d="M0,40 C200,100 400,0 600,50 C800,100 1000,0 1200,50 C1300,75 1370,30 1440,50 L1440,160 L0,160 Z" fill="#00C8BC" opacity="0.12"/>
-  </svg>
   <div class="glow-orb orb-orange"></div>
   <div class="glow-orb orb-teal"></div>
-  <div class="glow-orb orb-teal2"></div>
 </div>
 <div class="frame-line-top"></div>
 <div class="frame-line-bottom"></div>
 
-<!-- PIN MODAL -->
-<div class="pin-overlay" id="pin-overlay" style="display:none;">
-  <div class="pin-box">
-    <div class="pin-title">COMMISSIONER</div>
-    <div class="pin-sub">Enter your PIN to draw picks</div>
-    <input class="pin-input" id="pin-input" type="password" maxlength="8" placeholder="••••••••">
-    <div class="pin-error" id="pin-error"></div>
-    <button class="btn-pin" onclick="submitPin()">ENTER</button>
+<!-- PIN OVERLAY -->
+<div id="pin-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;align-items:center;justify-content:center;">
+  <div style="background:#0d1a2b;border:1px solid var(--border-teal);border-top:3px solid var(--teal);border-radius:8px;padding:32px;text-align:center;width:300px;">
+    <div style="font-family:'Anton',sans-serif;font-size:20px;letter-spacing:4px;color:var(--chrome2);margin-bottom:20px;">COMMISSIONER PIN</div>
+    <input id="pin-input" type="password" maxlength="8"
+      style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border-teal);border-radius:3px;color:var(--chrome2);font-family:'Anton',sans-serif;font-size:24px;letter-spacing:8px;text-align:center;outline:none;"
+      placeholder="••••••••">
+    <div id="pin-error" style="color:#ff6060;font-size:12px;font-family:'Barlow',sans-serif;letter-spacing:1px;margin-top:8px;min-height:16px;"></div>
+    <button onclick="submitPin()" style="margin-top:16px;width:100%;padding:12px;background:var(--teal-dark);border:1px solid var(--teal);border-radius:3px;color:var(--chrome2);font-family:'Anton',sans-serif;font-size:16px;letter-spacing:3px;cursor:pointer;">ENTER</button>
   </div>
 </div>
 
-<div class="container">
-  <a href="/" class="nav-back">‹ Lottery Home</a>
+<!-- LOTTERY RUN SPIN OVERLAY -->
+<div id="spin-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,21,32,0.97);z-index:300;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
+  <div style="font-size:11px;letter-spacing:5px;color:var(--teal2);font-family:'Barlow',sans-serif;text-transform:uppercase;">Running Lottery</div>
+  <div id="spin-text" style="font-family:'Anton',sans-serif;font-size:clamp(32px,10vw,64px);letter-spacing:2px;color:var(--chrome2);text-align:center;padding:0 20px;">&#9679;</div>
+  <div style="font-size:12px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:2px;">Generating all picks secretly...</div>
+</div>
 
+<!-- REVEAL SPIN OVERLAY -->
+<div id="reveal-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,21,32,0.97);z-index:300;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
+  <div id="reveal-spin-label" style="font-size:11px;letter-spacing:5px;color:var(--orange2);font-family:'Barlow',sans-serif;text-transform:uppercase;">Revealing Pick</div>
+  <div id="reveal-spin-text" style="font-family:'Anton',sans-serif;font-size:clamp(32px,10vw,64px);letter-spacing:2px;color:var(--chrome2);text-align:center;padding:0 20px;">&#9679;</div>
+  <div style="font-size:12px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:2px;">Selecting winner...</div>
+</div>
+
+<!-- NAV -->
+<div style="position:relative;z-index:10;padding:8px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+  <a href="/" class="nav-back">&#8249; Lottery Home</a>
+  <button id="commissioner-toggle" onclick="showPinModal()" style="margin-left:auto;padding:6px 14px;background:transparent;border:1px solid var(--border-teal);border-radius:3px;color:var(--teal2);font-family:'Teko',sans-serif;font-size:14px;letter-spacing:2px;cursor:pointer;">Commissioner Login</button>
+</div>
+
+<div class="container">
   <header>
     <div class="commissioner-line">Commissioner cinccity</div>
     <h1>LIVE DRAFT</h1>
@@ -209,21 +240,49 @@
     <div class="league-tab" id="tab-MinuteMaid" onclick="switchLeague('MinuteMaid')">MinuteMaid</div>
   </div>
 
-  <div id="main-content">
-    <div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading...</div></div>
+  <!-- Live badge -->
+  <div style="text-align:center;margin-bottom:16px;">
+    <div class="live-badge" style="display:inline-flex;"><div class="live-dot"></div>LIVE · 2026 ROOKIE LOTTERY</div>
   </div>
 
-  <a class="btn-commissioner-toggle" onclick="showPinModal()" id="commissioner-toggle">🔐 Commissioner Login</a>
+  <!-- Schedule strip -->
+  <div id="schedule-strip"></div>
+
+  <!-- Countdown -->
+  <div id="countdown-area"></div>
+
+  <!-- Error bar -->
+  <div id="error-bar" style="display:none;background:rgba(192,24,26,0.15);border:1px solid rgba(192,24,26,0.5);border-radius:3px;padding:10px 14px;margin-bottom:12px;font-family:'Barlow',sans-serif;font-size:13px;color:#ff8080;letter-spacing:1px;"></div>
+
+  <!-- Commissioner panel -->
+  <div id="commissioner-panel"></div>
+
+  <!-- Most recent reveal -->
+  <div id="reveal-zone" class="reveal-zone">
+    <div class="waiting-state">
+      <div class="trophy-icon">&#127942;</div>
+      <div class="waiting-text">Awaiting first pick reveal</div>
+    </div>
+  </div>
+
+  <!-- Draft board -->
+  <div id="draft-board"></div>
 </div>
 
 <script>
-// ── CONFIG ────────────────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://vnpsxpofnquntnydcklu.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucHN4cG9mbnF1bnRueWRja2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODQ5MzgsImV4cCI6MjA4OTg2MDkzOH0.ergWPNr6dWBAYQP2S03f5_wOtH2QA03TxaBpOSC9Bj8';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 const COMMISSIONER_PIN = '00136860';
-const TEST_MODE = false; // set to true to draw any pick regardless of date (commissioner only)
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+function proxyAvatar(url) {
+  if (!url) return null;
+  if (url.includes('sleepercdn.com/uploads/')) return `/api/sleeper?avatar=${encodeURIComponent(url.split('sleepercdn.com/')[1])}`;
+  if (url.includes('sleepercdn.com/avatars/thumbs/')) return `/api/sleeper?avatar=${encodeURIComponent(url.split('/thumbs/')[1])}`;
+  return url;
+}
+
 
 // Draft schedule: pick_slot -> date (ET 5:30pm)
 // Pick slot 8 = Apr 18, slot 7 = Apr 19, ..., slot 1 = Apr 25 (both 1.01 & 1.02 on last day)
@@ -306,104 +365,92 @@ const TEAM_DATA = {
   }
 };
 
+
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let activeLeague = 'CFL';
 let isCommissioner = false;
-let drawnResults = []; // from Supabase
-let allResults = [];   // full pre-drawn lottery (commissioner only)
+let allPicks = [];        // all picks from DB (revealed + hidden)
 let animating = false;
 let countdownInterval = null;
 let realtimeChannel = null;
 
-// ── INIT ──────────────────────────────────────────────────────────────────────
-async function init() {
-  await loadResults();
-  subscribeRealtime();
-  render();
-}
-
 // ── SUPABASE ──────────────────────────────────────────────────────────────────
-async function loadResults() {
+async function loadPicks() {
   const { data, error } = await sb
     .from('lottery_results')
     .select('*')
     .eq('league', activeLeague)
-    .eq('revealed', true)
-    .order('drawn_at', { ascending: false });
-  if (error) { console.error('Load error:', error); return; }
-  drawnResults = data || [];
+    .order('pick_slot', { ascending: false });
+  if (error) { showError('Load error: ' + error.message); return; }
+  allPicks = data || [];
 }
 
-async function saveResult(result) {
-  const { data, error } = await sb.from('lottery_results').upsert({
+async function saveAllPicks(picks) {
+  showError('');
+  const rows = picks.map(p => ({
     league: activeLeague,
-    pick_slot: result.pick,
-    seed: result.seed,
-    team_name: result.team,
-    username: result.username,
-    odds: result.odds,
-    traded_to: result.tradedTo || null,
-    traded_to_display: result.tradedToDisplay || null,
-    avatar_url: result.avatarUrl || null,
+    pick_slot: p.pick,
+    seed: p.seed,
+    team_name: p.team,
+    username: p.username,
+    odds: p.odds,
+    traded_to: p.tradedTo || null,
+    traded_to_display: p.tradedToDisplay || null,
+    avatar_url: p.avatarUrl || null,
     drawn_at: new Date().toISOString(),
-    revealed: true,  // live picks are immediately revealed when drawn
-  }, { onConflict: 'league,pick_slot' }).select();
-  if (error) {
-    console.error('Save error:', error);
-    alert('Error saving pick: ' + error.message);
-    return false;
-  }
+    revealed: false,
+  }));
+  const { error } = await sb.from('lottery_results')
+    .upsert(rows, { onConflict: 'league,pick_slot' });
+  if (error) { showError('Save error: ' + error.message); return false; }
   return true;
+}
+
+async function revealPick(pickSlot) {
+  const { error } = await sb.from('lottery_results')
+    .update({ revealed: true, drawn_at: new Date().toISOString() })
+    .eq('league', activeLeague)
+    .eq('pick_slot', pickSlot);
+  if (error) { showError('Reveal error: ' + error.message); return false; }
+  return true;
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-bar');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
 }
 
 function subscribeRealtime() {
   if (realtimeChannel) sb.removeChannel(realtimeChannel);
   realtimeChannel = sb
-    .channel(`live_${activeLeague}_${Date.now()}`)
+    .channel('live_' + activeLeague + '_' + Date.now())
     .on('postgres_changes', {
       event: '*', schema: 'public', table: 'lottery_results',
-      filter: `league=eq.${activeLeague}`
+      filter: 'league=eq.' + activeLeague
     }, async () => {
-      await loadResults();
-      render();
+      await loadPicks();
+      renderAll();
     })
     .subscribe();
 }
 
-// ── LEAGUE SWITCH ─────────────────────────────────────────────────────────────
 async function switchLeague(league) {
   activeLeague = league;
-  allResults = [];
   document.getElementById('tab-CFL').classList.toggle('active', league === 'CFL');
   document.getElementById('tab-MinuteMaid').classList.toggle('active', league === 'MinuteMaid');
-  document.getElementById('main-content').innerHTML = '<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading...</div></div>';
-  await loadResults();
+  await loadPicks();
   subscribeRealtime();
-  render();
+  renderAll();
 }
 
-// ── LOTTERY LOGIC ─────────────────────────────────────────────────────────────
-function runFullLottery() {
-  // Carry over already-drawn DB results — never reassign their seeds
-  const alreadyDrawnSeeds = drawnResults.map(r => Number(r.seed));
-  const alreadyDrawnSlots = drawnResults.map(r => Number(r.pick_slot));
-
-  allResults = drawnResults.map(r => ({
-    pick: Number(r.pick_slot),
-    seed: Number(r.seed),
-    team: r.team_name,
-    username: r.username,
-    avatarUrl: r.avatar_url,
-    odds: r.odds,
-    tradedTo: r.traded_to || null,
-    tradedToDisplay: r.traded_to_display || null,
-  }));
-
-  let pool = [1,2,3,4,5,6,7,8].filter(s => !alreadyDrawnSeeds.includes(s));
+// ── LOTTERY ───────────────────────────────────────────────────────────────────
+function generateAllPicks() {
+  let pool = [1,2,3,4,5,6,7,8];
+  const results = [];
   const config = LEAGUE_CONFIG[activeLeague];
-
   for (let slot = 1; slot <= 8; slot++) {
-    if (alreadyDrawnSlots.includes(slot)) continue;
     const eligible = pool.filter(s => (ODDS_TABLE[s][slot] || 0) > 0);
     if (eligible.length === 0) continue;
     const w = pool.map(s => ODDS_TABLE[s][slot] || 0);
@@ -419,24 +466,94 @@ function runFullLottery() {
     const tradedTo = seedConfig ? seedConfig.tradedTo : null;
     const td = TEAM_DATA[activeLeague][username] || { displayName: username, avatarUrl: null };
     const tradedToDisplay = tradedTo ? ((TEAM_DATA[activeLeague][tradedTo] || {}).displayName || tradedTo) : null;
-    allResults.push({ pick: slot, seed: winner, team: td.displayName, username, avatarUrl: td.avatarUrl, odds: ODDS_TABLE[winner][slot] || 0, tradedTo, tradedToDisplay });
+    results.push({ pick: slot, seed: winner, team: td.displayName, username, avatarUrl: td.avatarUrl, odds: ODDS_TABLE[winner][slot] || 0, tradedTo, tradedToDisplay });
     pool = pool.filter(s => s !== winner);
   }
+  return results;
+}
+
+async function runLottery() {
+  if (animating) return;
+  if (allPicks.length > 0) {
+    if (!confirm('Lottery already run for ' + activeLeague + '. Reset and run again?')) return;
+    await sb.from('lottery_results').delete().eq('league', activeLeague);
+  }
+  animating = true;
+
+  const spinOverlay = document.getElementById('spin-overlay');
+  const spinText = document.getElementById('spin-text');
+  if (spinOverlay) spinOverlay.style.display = 'flex';
+
+  const allNames = LEAGUE_CONFIG[activeLeague].seeds
+    .map(s => (TEAM_DATA[activeLeague][s.username] || { displayName: s.username }).displayName.toUpperCase());
+
+  let spins = 0;
+  await new Promise(resolve => {
+    const iv = setInterval(() => {
+      if (spinText) spinText.textContent = allNames[Math.floor(Math.random() * allNames.length)];
+      spins++;
+      if (spins >= 25) { clearInterval(iv); resolve(); }
+    }, 70);
+  });
+
+  if (spinOverlay) spinOverlay.style.display = 'none';
+
+  const picks = generateAllPicks();
+  const saved = await saveAllPicks(picks);
+  if (!saved) { animating = false; return; }
+
+  await loadPicks();
+  animating = false;
+  renderAll();
+}
+
+async function revealSlot(slot) {
+  if (animating) return;
+  animating = true;
+
+  const pick = allPicks.find(p => Number(p.pick_slot) === slot);
+  if (!pick) { showError('Pick not found for slot ' + slot); animating = false; return; }
+
+  const overlay = document.getElementById('reveal-overlay');
+  const label = document.getElementById('reveal-spin-label');
+  const spinText = document.getElementById('reveal-spin-text');
+  if (label) label.textContent = 'Revealing Pick 1.0' + slot;
+  if (spinText) spinText.textContent = '●';
+  if (overlay) overlay.style.display = 'flex';
+
+  const hiddenNames = allPicks
+    .filter(p => !p.revealed)
+    .map(p => (TEAM_DATA[activeLeague][p.username] || { displayName: p.team_name }).displayName.toUpperCase());
+
+  const spinNames = hiddenNames.length > 0 ? hiddenNames : ['...'];
+  let spins = 0;
+  await new Promise(resolve => {
+    const iv = setInterval(() => {
+      if (spinText) spinText.textContent = spinNames[Math.floor(Math.random() * spinNames.length)];
+      spins++;
+      if (spins >= 25) { clearInterval(iv); resolve(); }
+    }, 75);
+  });
+
+  const td = TEAM_DATA[activeLeague][pick.username] || { displayName: pick.team_name };
+  if (spinText) spinText.textContent = td.displayName.toUpperCase();
+  await new Promise(r => setTimeout(r, 1000));
+  if (overlay) overlay.style.display = 'none';
+
+  const ok = await revealPick(slot);
+  if (!ok) { animating = false; return; }
+
+  await loadPicks();
+  animating = false;
+  renderAll();
 }
 
 // ── COUNTDOWN ─────────────────────────────────────────────────────────────────
-function getNextPickInfo() {
-  const drawnSlots = drawnResults.map(r => r.pick_slot);
-  const remaining = SCHEDULE.filter(s => !drawnSlots.includes(s.slot));
+function getNextRevealInfo() {
+  const revealedSlots = allPicks.filter(p => p.revealed).map(p => Number(p.pick_slot));
+  const remaining = SCHEDULE.filter(s => !revealedSlots.includes(s.slot));
   if (remaining.length === 0) return null;
-  // Next is highest slot not yet drawn
   return remaining.sort((a,b) => b.slot - a.slot)[0];
-}
-
-function getPickDrawTime(dateStr) {
-  // 5:30pm ET = 21:30 UTC (EST) or 22:30 UTC (EDT)
-  // April is EDT so 5:30pm EDT = 21:30 UTC
-  return new Date(`${dateStr}T21:30:00Z`);
 }
 
 function startCountdown(targetDate) {
@@ -446,221 +563,137 @@ function startCountdown(targetDate) {
 }
 
 function updateCountdown(targetDate) {
-  const now = new Date();
-  const diff = targetDate - now;
   const el = document.getElementById('countdown-timer');
   if (!el) return;
+  const diff = targetDate - new Date();
   if (diff <= 0) {
     clearInterval(countdownInterval);
-    el.innerHTML = '<div class="countdown-num" style="color:var(--teal2);font-size:28px;letter-spacing:2px;">DRAW TIME!</div>';
+    el.innerHTML = '<div class="countdown-num" style="color:var(--teal2);font-size:28px;letter-spacing:2px;">REVEAL TIME!</div>';
     return;
   }
-  const d = Math.floor(diff / 86400000);
-  const h = Math.floor((diff % 86400000) / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  const s = Math.floor((diff % 60000) / 1000);
-  el.innerHTML = (d > 0 ? `
-    <div class="countdown-unit"><div class="countdown-num">${d}</div><div class="countdown-unit-label">Days</div></div>
-    <div class="countdown-sep">:</div>` : '') + `
-    <div class="countdown-unit"><div class="countdown-num">${String(h).padStart(2,'0')}</div><div class="countdown-unit-label">Hours</div></div>
-    <div class="countdown-sep">:</div>
-    <div class="countdown-unit"><div class="countdown-num">${String(m).padStart(2,'0')}</div><div class="countdown-unit-label">Min</div></div>
-    <div class="countdown-sep">:</div>
-    <div class="countdown-unit"><div class="countdown-num">${String(s).padStart(2,'0')}</div><div class="countdown-unit-label">Sec</div></div>`;
+  const d = Math.floor(diff/86400000), h = Math.floor((diff%86400000)/3600000),
+        m = Math.floor((diff%3600000)/60000), s = Math.floor((diff%60000)/1000);
+  el.innerHTML = (d>0?'<div class="countdown-unit"><div class="countdown-num">'+d+'</div><div class="countdown-unit-label">Days</div></div><div class="countdown-sep">:</div>':'') +
+    '<div class="countdown-unit"><div class="countdown-num">'+String(h).padStart(2,'0')+'</div><div class="countdown-unit-label">Hours</div></div><div class="countdown-sep">:</div>'+
+    '<div class="countdown-unit"><div class="countdown-num">'+String(m).padStart(2,'0')+'</div><div class="countdown-unit-label">Min</div></div><div class="countdown-sep">:</div>'+
+    '<div class="countdown-unit"><div class="countdown-num">'+String(s).padStart(2,'0')+'</div><div class="countdown-unit-label">Sec</div></div>';
 }
 
 // ── RENDER ─────────────────────────────────────────────────────────────────────
-function render() {
-  const content = document.getElementById('main-content');
-  const drawnSlots = drawnResults.map(r => r.pick_slot);
-  const allDone = drawnSlots.length >= 8;
-  const nextPick = getNextPickInfo();
-
-  let html = '';
-
-  // Live badge
-  html += '<div style="text-align:center;">';
-  if (!allDone) html += '<div class="live-badge" style="display:inline-flex;"><div class="live-dot"></div>LIVE · 2026 ROOKIE LOTTERY</div>';
-  html += '</div>';
+function renderAll() {
+  const lotteryRun = allPicks.length === 8;
+  const revealedPicks = allPicks.filter(p => p.revealed);
+  const hiddenPicks = allPicks.filter(p => !p.revealed);
+  const allDone = revealedPicks.length === 8;
+  const nextReveal = getNextRevealInfo();
 
   // Schedule strip
-  html += '<div class="schedule-strip">';
-  SCHEDULE.forEach(s => {
-    const done = drawnSlots.includes(s.slot);
-    const isToday = nextPick && nextPick.slot === s.slot;
-    const cls = done ? 'done' : isToday ? 'today' : 'upcoming';
-    html += `<div class="schedule-day ${cls}">
-      <div class="schedule-day-date">${s.label}</div>
-      <div class="schedule-day-pick">1.0${s.slot}</div>
-      <div class="schedule-day-check">${done ? '✓' : isToday ? '●' : ''}</div>
-    </div>`;
-  });
-  html += '</div>';
+  const stripEl = document.getElementById('schedule-strip');
+  if (stripEl) {
+    const revealedSlots = revealedPicks.map(p => Number(p.pick_slot));
+    let html = '<div class="schedule-strip">';
+    SCHEDULE.forEach(s => {
+      const done = revealedSlots.includes(s.slot);
+      const isNext = nextReveal && nextReveal.slot === s.slot;
+      const cls = done ? 'done' : isNext ? 'today' : 'upcoming';
+      html += '<div class="schedule-day ' + cls + '"><div class="schedule-day-date">' + s.label + '</div><div class="schedule-day-pick">1.0' + s.slot + '</div><div class="schedule-day-check">' + (done?'✓':isNext?'●':'') + '</div></div>';
+    });
+    html += '</div>';
+    stripEl.innerHTML = html;
+  }
 
-  // Countdown or complete
-  if (allDone) {
-    html += `<div class="complete-banner"><h2>LOTTERY COMPLETE</h2><p>All 8 picks have been drawn. Good luck this season.</p></div>`;
-  } else if (nextPick) {
-    const drawTime = getPickDrawTime(nextPick.date);
-    const suffix = nextPick.slot === 1 ? 'ST' : nextPick.slot === 2 ? 'ND' : nextPick.slot === 3 ? 'RD' : 'TH';
-    html += `<div class="countdown-wrap">
-      <div class="countdown-label">Next Pick Reveal</div>
-      <div class="countdown-pick">PICK 1.0${nextPick.slot} · ${nextPick.label} at 5:30 PM ET</div>
-      <div class="countdown-timer" id="countdown-timer"></div>
-    </div>`;
-    setTimeout(() => startCountdown(drawTime), 0);
+  // Countdown
+  const countdownEl = document.getElementById('countdown-area');
+  if (countdownEl) {
+    if (allDone) {
+      countdownEl.innerHTML = '<div class="complete-banner"><h2>LOTTERY COMPLETE</h2><p>All 8 picks have been revealed. Good luck this season.</p></div>';
+    } else if (nextReveal && lotteryRun) {
+      const drawTime = new Date(nextReveal.date + 'T21:30:00Z');
+      countdownEl.innerHTML = '<div class="countdown-wrap"><div class="countdown-label">Next Pick Reveal</div><div class="countdown-pick">PICK 1.0' + nextReveal.slot + ' &middot; ' + nextReveal.label + ' at 5:30 PM ET</div><div class="countdown-timer" id="countdown-timer"></div><div class="countdown-date">Tune in live to see who gets Pick 1.0' + nextReveal.slot + '</div></div>';
+      setTimeout(() => startCountdown(drawTime), 0);
+    } else if (!lotteryRun) {
+      countdownEl.innerHTML = '<div class="countdown-wrap"><div class="countdown-label">Lottery Status</div><div class="countdown-pick" style="color:var(--muted);">Commissioner has not yet run the lottery</div></div>';
+    }
   }
 
   // Commissioner panel
-  if (isCommissioner && !allDone) {
-    const nextSlot = nextPick ? nextPick.slot : null;
-    const alreadyDrawn = nextSlot ? drawnSlots.includes(nextSlot) : true;
-    const suffix = nextSlot ? (nextSlot === 1 ? 'ST' : nextSlot === 2 ? 'ND' : nextSlot === 3 ? 'RD' : 'TH') : '';
-
-    // Pre-run lottery if needed
-    if (allResults.length === 0) runFullLottery();
-
-    html += `<div class="commissioner-panel">
-      <div class="commissioner-badge"><div class="commissioner-badge-dot"></div>Commissioner Mode</div>`;
-
-    if (nextSlot && !alreadyDrawn) {
-      html += `<button class="btn-draw" id="draw-btn" onclick="drawPick(${nextSlot})">
-        <span>DRAW PICK 1.0${nextSlot}</span>
-      </button>`;
-    } else if (alreadyDrawn && nextSlot) {
-      html += `<div style="font-size:13px;color:var(--muted);text-align:center;font-family:'Barlow',sans-serif;letter-spacing:1px;padding:8px 0;">Pick 1.0${nextSlot} already drawn today.</div>`;
-    }
-    // Test mode: show all undrawn picks as buttons
-    if (TEST_MODE) {
-      const undrawn = SCHEDULE.filter(s => !drawnSlots.includes(s.slot) && s.slot !== nextSlot);
-      if (undrawn.length > 0) {
-        html += `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-orange);">`;
-        html += `<div style="font-size:10px;letter-spacing:3px;color:var(--orange2);font-family:'Barlow',sans-serif;margin-bottom:8px;text-transform:uppercase;">Test Mode · Draw Any Pick</div>`;
-        html += `<div style="display:flex;flex-wrap:wrap;gap:6px;">`;
-        undrawn.forEach(s => {
-          html += `<button onclick="drawPick(${s.slot})" style="padding:7px 14px;background:transparent;border:1px solid var(--border-orange);border-radius:3px;color:var(--orange2);font-family:'Anton',sans-serif;font-size:14px;letter-spacing:2px;cursor:pointer;">1.0${s.slot}</button>`;
+  const commEl = document.getElementById('commissioner-panel');
+  if (commEl) {
+    if (!isCommissioner) {
+      commEl.innerHTML = '';
+    } else {
+      let html = '<div class="commissioner-panel"><div class="commissioner-badge"><div class="commissioner-badge-dot"></div>Commissioner Mode</div>';
+      if (!lotteryRun) {
+        html += '<button class="btn-run-lottery" onclick="runLottery()">&#9654; RUN LOTTERY &amp; GENERATE ALL PICKS</button>';
+        html += '<div style="font-size:11px;color:var(--muted);font-family:Barlow,sans-serif;letter-spacing:1px;text-align:center;margin-bottom:8px;">Picks are saved secretly · Reveal each pick on its scheduled day</div>';
+      } else if (!allDone) {
+        const unrevealed = [...hiddenPicks].sort((a,b) => Number(b.pick_slot)-Number(a.pick_slot));
+        html += '<div style="font-size:10px;letter-spacing:2px;color:var(--orange2);font-family:Barlow,sans-serif;text-transform:uppercase;margin-bottom:8px;">Reveal a pick:</div>';
+        html += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">';
+        unrevealed.forEach(p => {
+          html += '<button onclick="revealSlot(' + p.pick_slot + ')" class="btn-draw" style="flex:0 0 auto;width:auto;padding:10px 18px;font-size:15px;letter-spacing:3px;">REVEAL 1.0' + p.pick_slot + '</button>';
         });
-        html += `</div></div>`;
+        html += '</div>';
+      } else {
+        html += '<div style="font-size:13px;color:var(--teal2);font-family:Barlow,sans-serif;letter-spacing:1px;margin-bottom:12px;text-align:center;">&#10003; All 8 picks revealed!</div>';
+      }
+      html += '</div>';
+      commEl.innerHTML = html;
+    }
+    const toggle = document.getElementById('commissioner-toggle');
+    if (toggle) toggle.style.display = isCommissioner ? 'none' : 'block';
+  }
+
+  // Most recent reveal zone
+  const revealEl = document.getElementById('reveal-zone');
+  if (revealEl) {
+    if (revealedPicks.length === 0) {
+      revealEl.innerHTML = '<div class="waiting-state"><div class="trophy-icon">&#127942;</div><div class="waiting-text">Awaiting first pick reveal</div></div>';
+    } else {
+      // Most recently revealed = highest drawn_at among revealed picks
+      const recent = [...revealedPicks].sort((a,b) => new Date(b.drawn_at)-new Date(a.drawn_at))[0];
+      const td = TEAM_DATA[activeLeague][recent.username] || { displayName: recent.team_name, avatarUrl: null };
+      const avatarUrl = td.avatarUrl || recent.avatar_url;
+      revealEl.innerHTML = '<div class="revealed-state" style="display:flex;">' +
+        (avatarUrl?'<img class="reveal-avatar" crossorigin="anonymous" src="'+avatarUrl+'" onerror="this.style.display=\'none\'">':'<div class="reveal-avatar-ph">'+(recent.team_name||'?')[0]+'</div>') +
+        '<div class="reveal-pick-label">PICK 1.0'+recent.pick_slot+' &middot; MOST RECENT</div>' +
+        '<div class="reveal-team-name">'+(recent.team_name||'').toUpperCase()+'</div>' +
+        (recent.traded_to?'<div class="reveal-traded">Pick traded to &middot; <strong>'+((recent.traded_to_display||recent.traded_to)||'').toUpperCase()+'</strong></div>':'') +
+        '<div class="reveal-odds">'+parseFloat(recent.odds||0).toFixed(1)+'% odds to land this pick</div>' +
+        '</div>';
+    }
+  }
+
+  // Draft board
+  const boardEl = document.getElementById('draft-board');
+  if (boardEl && lotteryRun) {
+    let html = '<div class="results-section"><h3>Draft Board</h3><div>';
+    for (let slot = 8; slot >= 1; slot--) {
+      const pick = allPicks.find(p => Number(p.pick_slot) === slot);
+      if (!pick) continue;
+      if (pick.revealed) {
+        const td = TEAM_DATA[activeLeague][pick.username] || { displayName: pick.team_name, avatarUrl: null };
+        const avatarUrl = td.avatarUrl || pick.avatar_url;
+        html += '<div class="pick-slot-card revealed">' +
+          '<div class="pick-num">1.0'+slot+'</div><div class="pick-divider"></div>' +
+          (avatarUrl?'<img class="pick-avatar" crossorigin="anonymous" src="'+avatarUrl+'" onerror="this.style.display=\'none\'">':'<div class="pick-avatar-ph">'+(pick.team_name||'?')[0]+'</div>') +
+          '<div class="pick-team-info"><div class="pick-team-name">'+(pick.team_name||'').toUpperCase()+'</div>' +
+          '<div class="pick-team-sub">Seed '+pick.seed+' &middot; '+parseFloat(pick.odds||0).toFixed(1)+'% odds'+(pick.traded_to?' &middot; &#8644; '+(pick.traded_to_display||pick.traded_to):'')+' &middot; Revealed '+new Date(pick.drawn_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})+
+          '</div></div></div>';
+      } else {
+        const schedDay = SCHEDULE.find(s => s.slot === slot);
+        html += '<div class="pick-slot-card hidden-pick">' +
+          '<div class="pick-num" style="color:var(--border-teal);">1.0'+slot+'</div><div class="pick-divider"></div>' +
+          '<div class="pick-avatar-ph" style="border-color:rgba(255,255,255,0.05);">?</div>' +
+          '<div class="pick-team-info"><div class="pick-hidden-label">Reveals '+( schedDay ? schedDay.label + ' at 5:30 PM ET' : 'TBD' )+'</div></div>' +
+          '</div>';
       }
     }
-    // Test mode reset button
-    if (TEST_MODE && drawnResults.length > 0) {
-      html += `<div style="margin-top:10px;text-align:center;">
-        <button onclick="resetTestData()" style="padding:6px 16px;background:transparent;border:1px solid rgba(192,24,26,0.4);border-radius:3px;color:#e06060;font-family:'Teko',sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;">✕ Reset Test Data</button>
-      </div>`;
-    }
-    html += '</div>';
-  }
-
-  // Reveal zone (show today's pick or last drawn)
-  const lastDrawn = drawnResults[0];
-  if (lastDrawn) {
-    const td = TEAM_DATA[activeLeague][lastDrawn.username] || { displayName: lastDrawn.team_name, avatarUrl: null };
-    const avatarUrl = td.avatarUrl || lastDrawn.avatar_url;
-    html += `<div class="reveal-zone">
-      <div class="revealed-state" style="display:flex;">
-        ${avatarUrl
-          ? `<img class="reveal-avatar" crossorigin="anonymous" src="${avatarUrl}" onerror="this.style.display='none'">`
-          : `<div class="reveal-avatar-ph">${(lastDrawn.team_name||'?')[0]}</div>`}
-        <div class="reveal-pick-label">PICK 1.0${lastDrawn.pick_slot} · MOST RECENT</div>
-        <div class="reveal-team-name">${lastDrawn.team_name.toUpperCase()}</div>
-        ${lastDrawn.traded_to ? `<div class="reveal-traded">Pick rights traded to · <strong>${(lastDrawn.traded_to_display||lastDrawn.traded_to).toUpperCase()}</strong></div>` : ''}
-        <div class="reveal-odds">${parseFloat(lastDrawn.odds).toFixed(1)}% odds to land this pick</div>
-      </div>
-      <div class="confetti-burst" id="confetti-burst"></div>
-    </div>`;
-  } else {
-    html += `<div class="reveal-zone">
-      <div class="waiting-state">
-        <div class="trophy-icon">🏆</div>
-        <div class="waiting-text">Awaiting first pick reveal</div>
-      </div>
-    </div>`;
-  }
-
-  // Results log
-  if (drawnResults.length > 0) {
-    html += '<div class="results-section"><h3>Results So Far</h3><div class="results-list">';
-    drawnResults.forEach(r => {
-      const td = TEAM_DATA[activeLeague][r.username] || { displayName: r.team_name, avatarUrl: null };
-      const avatarUrl = td.avatarUrl || r.avatar_url;
-      const drawnDate = r.drawn_at ? new Date(r.drawn_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
-      html += `<div class="result-row">
-        <div class="result-pick-num">${r.pick_slot}</div>
-        <div class="result-divider"></div>
-        ${avatarUrl
-          ? `<img class="result-avatar" crossorigin="anonymous" src="${avatarUrl}" onerror="this.style.display='none'">`
-          : `<div class="result-avatar-ph">${(r.team_name||'?')[0]}</div>`}
-        <div class="result-info">
-          <div class="result-team">${r.team_name.toUpperCase()}</div>
-          ${r.traded_to ? `<div class="result-traded-line">⇄ Traded to ${r.traded_to_display||r.traded_to}</div>` : ''}
-        </div>
-        <div class="result-meta">
-          Seed ${r.seed}<br>
-          <span class="odds-highlight">${parseFloat(r.odds).toFixed(1)}%</span><br>
-          <span class="result-date">${drawnDate}</span>
-        </div>
-      </div>`;
-    });
     html += '</div></div>';
+    boardEl.innerHTML = html;
+  } else if (boardEl) {
+    boardEl.innerHTML = '';
   }
-
-  content.innerHTML = html;
-
-  // Update commissioner toggle
-  const toggle = document.getElementById('commissioner-toggle');
-  if (toggle) toggle.style.display = isCommissioner ? 'none' : 'block';
-}
-
-// ── DRAW PICK ─────────────────────────────────────────────────────────────────
-async function drawPick(slot) {
-  if (animating) return;
-  animating = true;
-  const btn = document.getElementById('draw-btn');
-  if (btn) btn.disabled = true;
-
-  // Re-sync lottery with current DB state before drawing
-  runFullLottery();
-
-  // Find pre-drawn result for this slot
-  const result = allResults.find(r => r.pick === slot);
-  if (!result) { animating = false; return; }
-
-  // Spinning animation in reveal zone
-  const revealZone = document.querySelector('.reveal-zone');
-  if (revealZone) {
-    revealZone.innerHTML = `
-      <div class="waiting-state">
-        <div class="spinning-name" id="spin-text">●</div>
-        <div class="waiting-text">Drawing...</div>
-      </div>
-      <div class="confetti-burst" id="confetti-burst"></div>`;
-  }
-
-  const names = LEAGUE_CONFIG[activeLeague].seeds
-    .filter(s => !drawnResults.find(r => r.seed === s.seed))
-    .map(s => (TEAM_DATA[activeLeague][s.username] || { displayName: s.username }).displayName);
-
-  let spins = 0;
-  const totalSpins = 22 + Math.floor(Math.random() * 10);
-  await new Promise(resolve => {
-    const iv = setInterval(() => {
-      const el = document.getElementById('spin-text');
-      if (el) el.textContent = names[Math.floor(Math.random() * names.length)].toUpperCase();
-      spins++;
-      if (spins >= totalSpins) { clearInterval(iv); resolve(); }
-    }, 75);
-  });
-
-  // Save to Supabase
-  const saved = await saveResult(result);
-  if (!saved) { animating = false; return; }
-
-  // Immediately reload + render for commissioner
-  await loadResults();
-  animating = false;
-  render();
-  // Realtime subscription handles all other viewers
 }
 
 // ── PIN ───────────────────────────────────────────────────────────────────────
@@ -676,9 +709,9 @@ function submitPin() {
   if (val === COMMISSIONER_PIN) {
     isCommissioner = true;
     document.getElementById('pin-overlay').style.display = 'none';
-    render();
+    renderAll();
   } else {
-    document.getElementById('pin-error').textContent = 'Incorrect PIN. Try again.';
+    document.getElementById('pin-error').textContent = 'Incorrect PIN';
     document.getElementById('pin-input').value = '';
   }
 }
@@ -687,18 +720,12 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('pin-overlay').style.display !== 'none') submitPin();
 });
 
-async function resetTestData() {
-  if (!TEST_MODE) return;
-  const { error } = await sb.from('lottery_results').delete().eq('league', activeLeague);
-  if (error) { console.error('Reset error:', error); return; }
-  drawnResults = [];
-  allResults = [];
-  render();
+async function init() {
+  await loadPicks();
+  subscribeRealtime();
+  renderAll();
 }
 
-function getSuffix(n){if(n===1)return'ST';if(n===2)return'ND';if(n===3)return'RD';return'TH';}
-
-// ── START ─────────────────────────────────────────────────────────────────────
 init();
 </script>
 </body>
