@@ -51,6 +51,8 @@ module.exports = async function handler(req, res) {
     /^league\/\d+\/drafts$/,
     /^draft\/\d+\/picks$/,
     /^players\/nfl$/,
+    /^stats\/nfl\/regular\/\d+\/\d+$/,
+    /^projections\/nfl\/regular\/\d+\/\d+$/,
   ];
 
   if (!allowed.some(r => r.test(endpoint))) {

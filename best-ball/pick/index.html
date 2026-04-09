@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build Your Roster · Best Ball Challenge</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Teko:wght@300;400;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --orange:#E8621A;--orange2:#F08030;--sunset:#F5A623;
+  --red:#C0181A;--teal:#00A89C;--teal2:#00C8BC;--teal-dark:#005f5a;
+  --navy:#0d1a2b;--navy2:#0a1520;--chrome:#d0d8e0;--chrome2:#f0f4f8;
+  --text:#f0ede8;--muted:#7a9ab0;--gold:#F5A623;
+  --border-teal:rgba(0,168,156,0.35);--border-orange:rgba(232,98,26,0.5);
+  --green:#22c55e;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--navy2);color:var(--text);font-family:'Teko',sans-serif;min-height:100vh;}
+.bg-layer{position:fixed;inset:0;z-index:0;}
+.bg-base{position:absolute;inset:0;background:linear-gradient(180deg,#060e18 0%,#0a1520 100%);}
+.frame-line{position:fixed;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--orange),var(--teal));z-index:100;}
+.frame-line-top{top:0;}.frame-line-bottom{bottom:0;}
+
+/* LAYOUT: sticky roster on right, picks on left */
+.layout{position:relative;z-index:2;display:grid;grid-template-columns:1fr 280px;gap:0;min-height:100vh;}
+@media(max-width:700px){.layout{grid-template-columns:1fr;}.roster-sidebar{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;border-top:2px solid var(--teal);border-radius:0;max-height:45vh;overflow-y:auto;z-index:50;}}
+
+/* LEFT PANEL */
+.pick-panel{padding:16px 20px 100px;border-right:1px solid rgba(255,255,255,0.05);}
+.pick-header{padding:10px 0 16px;}
+.pick-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.nav-back{color:var(--muted);font-family:'Barlow',sans-serif;font-size:12px;letter-spacing:2px;text-decoration:none;text-transform:uppercase;}
+.nav-back:hover{color:var(--teal2);}
+.pick-title{font-family:'Anton',sans-serif;font-size:26px;letter-spacing:2px;color:var(--chrome2);}
+.pick-subtitle{font-size:12px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:2px;margin-top:2px;}
+
+/* POSITION TABS */
+.pos-tabs{display:flex;gap:4px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px;-ms-overflow-style:none;scrollbar-width:none;}
+.pos-tabs::-webkit-scrollbar{display:none;}
+.pos-tab{flex-shrink:0;padding:7px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:3px;font-family:'Anton',sans-serif;font-size:13px;letter-spacing:2px;color:var(--muted);cursor:pointer;transition:all 0.15s;position:relative;}
+.pos-tab.active{border-color:var(--teal);color:var(--teal2);background:rgba(0,168,156,0.1);}
+.pos-tab:hover{color:var(--text);}
+.pos-tab .slot-count{position:absolute;top:-4px;right:-4px;background:var(--teal);color:#fff;font-size:8px;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow',sans-serif;font-weight:600;}
+.pos-tab .slot-count.full{background:var(--green);}
+
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:12px;}
+.search-input{width:100%;padding:10px 12px 10px 36px;background:rgba(255,255,255,0.05);border:1px solid var(--border-teal);border-radius:3px;color:var(--chrome2);font-family:'Barlow',sans-serif;font-size:14px;outline:none;}
+.search-input:focus{border-color:var(--teal2);}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;}
+
+/* PLAYER LIST */
+.player-list{display:flex;flex-direction:column;gap:4px;}
+.player-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:3px;cursor:pointer;transition:all 0.15s;}
+.player-row:hover{background:rgba(0,168,156,0.06);border-color:var(--border-teal);}
+.player-row.selected{background:rgba(0,168,156,0.1);border-color:var(--teal);pointer-events:none;}
+.player-row.full{opacity:0.35;pointer-events:none;}
+.player-headshot{width:36px;height:36px;border-radius:50%;object-fit:cover;background:rgba(255,255,255,0.06);flex-shrink:0;}
+.player-info{flex:1;min-width:0;}
+.player-name{font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;color:var(--chrome2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.player-meta{font-size:11px;color:var(--muted);letter-spacing:1px;margin-top:1px;}
+.player-pos-badge{font-family:'Anton',sans-serif;font-size:10px;padding:2px 6px;border-radius:2px;flex-shrink:0;}
+.QB .player-pos-badge{background:rgba(229,196,64,0.15);color:#e5c440;}
+.RB .player-pos-badge{background:rgba(74,224,160,0.15);color:#4ae0a0;}
+.WR .player-pos-badge{background:rgba(74,176,255,0.15);color:#4ab0ff;}
+.TE .player-pos-badge{background:rgba(255,140,74,0.15);color:#ff8c4a;}
+.DEF .player-pos-badge,.DST .player-pos-badge{background:rgba(248,113,113,0.15);color:#f87171;}
+.player-check{width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
+.selected .player-check{background:var(--teal);border-color:var(--teal);color:#fff;}
+
+/* ROSTER SIDEBAR */
+.roster-sidebar{background:#0a1520;border-left:1px solid var(--border-teal);padding:16px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.roster-title{font-family:'Anton',sans-serif;font-size:16px;letter-spacing:3px;color:var(--chrome2);margin-bottom:4px;}
+.roster-slots-label{font-size:10px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:2px;margin-bottom:14px;}
+.roster-slot{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:3px;margin-bottom:5px;min-height:48px;position:relative;}
+.roster-slot.filled{background:rgba(0,168,156,0.06);border-color:var(--border-teal);}
+.slot-label{font-family:'Anton',sans-serif;font-size:10px;letter-spacing:2px;width:30px;flex-shrink:0;}
+.slot-label.QB{color:#e5c440;}.slot-label.RB{color:#4ae0a0;}.slot-label.WR{color:#4ab0ff;}
+.slot-label.TE{color:#ff8c4a;}.slot-label.FLEX{color:#c084fc;}.slot-label.DST{color:#f87171;}
+.slot-player-name{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;color:var(--chrome);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.slot-empty{font-family:'Barlow',sans-serif;font-size:11px;color:rgba(255,255,255,0.15);letter-spacing:1px;}
+.slot-remove{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,0.2);cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;}
+.slot-remove:hover{color:var(--red);}
+.roster-spacer{flex:1;}
+
+/* SUBMIT */
+.submit-wrap{margin-top:12px;}
+.roster-progress{display:flex;justify-content:space-between;font-family:'Barlow',sans-serif;font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;}
+.roster-progress-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-bottom:12px;}
+.roster-progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal2));border-radius:2px;transition:width 0.3s;}
+.btn-submit{width:100%;padding:14px;background:linear-gradient(135deg,rgba(0,168,156,0.3),rgba(0,168,156,0.15));border:2px solid var(--teal);border-radius:4px;color:var(--teal2);font-family:'Anton',sans-serif;font-size:16px;letter-spacing:3px;cursor:pointer;transition:all 0.2s;}
+.btn-submit:disabled{opacity:0.35;cursor:not-allowed;border-color:rgba(255,255,255,0.1);color:var(--muted);}
+.btn-submit:not(:disabled):hover{background:linear-gradient(135deg,rgba(0,168,156,0.45),rgba(0,168,156,0.25));}
+
+/* IDENTITY MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;display:none;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:#0d1a2b;border:1px solid var(--border-teal);border-top:3px solid var(--teal);border-radius:8px;padding:28px;width:340px;max-width:90vw;}
+.modal-title{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:3px;color:var(--chrome2);margin-bottom:6px;}
+.modal-sub{font-family:'Barlow',sans-serif;font-size:13px;color:var(--muted);letter-spacing:1px;margin-bottom:18px;line-height:1.5;}
+.modal-input{width:100%;padding:11px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border-teal);border-radius:3px;color:var(--chrome2);font-family:'Barlow',sans-serif;font-size:15px;outline:none;margin-bottom:8px;}
+.modal-input:focus{border-color:var(--teal2);}
+.modal-error{font-size:12px;color:#ff8080;font-family:'Barlow',sans-serif;letter-spacing:1px;min-height:16px;margin-bottom:10px;}
+.btn-modal{width:100%;padding:12px;background:rgba(0,168,156,0.15);border:1px solid var(--teal);border-radius:3px;color:var(--teal2);font-family:'Anton',sans-serif;font-size:16px;letter-spacing:3px;cursor:pointer;}
+
+/* SUCCESS */
+.success-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:400;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+.success-overlay.open{display:flex;}
+.success-icon{font-size:64px;}
+.success-title{font-family:'Anton',sans-serif;font-size:32px;letter-spacing:4px;color:var(--teal2);}
+.success-sub{font-family:'Barlow',sans-serif;font-size:14px;color:var(--muted);letter-spacing:2px;text-align:center;}
+.btn-success{padding:12px 28px;background:rgba(0,168,156,0.15);border:1px solid var(--teal);border-radius:3px;color:var(--teal2);font-family:'Anton',sans-serif;font-size:16px;letter-spacing:3px;cursor:pointer;margin-top:8px;}
+
+.spinner{width:32px;height:32px;border:3px solid var(--border-teal);border-top-color:var(--teal2);border-radius:50%;animation:spin 0.8s linear infinite;margin:40px auto;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="bg-layer"><div class="bg-base"></div></div>
+<div class="frame-line frame-line-top"></div>
+<div class="frame-line frame-line-bottom"></div>
+
+<!-- IDENTITY MODAL -->
+<div class="modal-overlay" id="identity-modal">
+  <div class="modal-box">
+    <div class="modal-title">WHO ARE YOU?</div>
+    <div class="modal-sub">Enter your Sleeper username or display name to submit your entry.</div>
+    <input class="modal-input" id="username-input" placeholder="Sleeper username" maxlength="40">
+    <input class="modal-input" id="displayname-input" placeholder="Display name (optional)">
+    <div class="modal-error" id="modal-error"></div>
+    <button class="btn-modal" onclick="confirmIdentity()">CONFIRM →</button>
+  </div>
+</div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="success-overlay" id="success-overlay">
+  <div class="success-icon">✅</div>
+  <div class="success-title">YOU'RE IN!</div>
+  <div class="success-sub" id="success-sub">Roster submitted. Good luck!</div>
+  <a href="/best-ball" class="btn-success">VIEW LEADERBOARD →</a>
+</div>
+
+<div class="layout">
+  <!-- LEFT: PLAYER PICKER -->
+  <div class="pick-panel">
+    <div class="pick-header">
+      <div class="pick-nav">
+        <a href="/best-ball" class="nav-back">‹ Back</a>
+      </div>
+      <div class="pick-title">BUILD YOUR ROSTER</div>
+      <div class="pick-subtitle" id="contest-label">Loading...</div>
+    </div>
+
+    <div class="pos-tabs" id="pos-tabs"></div>
+
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="search-input" placeholder="Search players..." oninput="renderPlayers()">
+    </div>
+
+    <div id="player-list">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: ROSTER SIDEBAR -->
+  <div class="roster-sidebar">
+    <div class="roster-title">MY ROSTER</div>
+    <div class="roster-slots-label" id="slots-label">0 / 8 selected</div>
+    <div id="roster-slots"></div>
+    <div class="roster-spacer"></div>
+    <div class="submit-wrap">
+      <div class="roster-progress">
+        <span id="progress-text">Select 8 players</span>
+        <span id="progress-count">0/8</span>
+      </div>
+      <div class="roster-progress-bar"><div class="roster-progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <button class="btn-submit" id="submit-btn" disabled onclick="handleSubmit()">SUBMIT ROSTER</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://vnpsxpofnquntnydcklu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucHN4cG9mbnF1bnRueWRja2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxMDQ1MDcsImV4cCI6MjA1ODY4MDUwN30.HaXTuMJmPHyANJRMCZSbTMquSNlHKJz5wFT8KVwNIiw';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Roster config: slot → allowed positions
+const ROSTER_CONFIG = [
+  { slot: 'QB',   pos: ['QB'],           label: 'QB' },
+  { slot: 'RB1',  pos: ['RB'],           label: 'RB' },
+  { slot: 'RB2',  pos: ['RB'],           label: 'RB' },
+  { slot: 'WR1',  pos: ['WR'],           label: 'WR' },
+  { slot: 'WR2',  pos: ['WR'],           label: 'WR' },
+  { slot: 'TE',   pos: ['TE'],           label: 'TE' },
+  { slot: 'FLEX', pos: ['RB','WR','TE'], label: 'FLEX' },
+  { slot: 'DST',  pos: ['DEF'],          label: 'DST' },
+];
+
+const POS_TABS = ['QB','RB','WR','TE','FLEX','DST'];
+
+let contestId = null;
+let contestData = null;
+let playerCache = {};
+let selectedPlayers = {}; // slotKey → player object
+let activePos = 'QB';
+let submitting = false;
+
+// Parse contest ID from URL
+const params = new URLSearchParams(window.location.search);
+contestId = params.get('contest');
+
+// Slot counts per position tab
+function getSlotCounts() {
+  const counts = {};
+  ROSTER_CONFIG.forEach(s => {
+    const base = s.label;
+    if (!counts[base]) counts[base] = { total: 0, filled: 0 };
+    counts[base].total++;
+    if (selectedPlayers[s.slot]) counts[base].filled++;
+  });
+  return counts;
+}
+
+function totalSelected() { return Object.values(selectedPlayers).filter(Boolean).length; }
+
+// Find which slots are available for a given position
+function availableSlotFor(pos) {
+  for (const cfg of ROSTER_CONFIG) {
+    if (!selectedPlayers[cfg.slot] && cfg.pos.includes(pos)) return cfg.slot;
+  }
+  return null;
+}
+
+function isPlayerSelected(playerId) {
+  return Object.values(selectedPlayers).some(p => p && p.player_id === playerId);
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderPosTabs() {
+  const counts = getSlotCounts();
+  const tabsEl = document.getElementById('pos-tabs');
+  const posMap = { FLEX: 'FLEX', DST: 'DST', QB:'QB', RB:'RB', WR:'WR', TE:'TE' };
+  tabsEl.innerHTML = POS_TABS.map(p => {
+    const c = counts[p] || { total: 1, filled: 0 };
+    const full = c.filled >= c.total;
+    return `<div class="pos-tab ${activePos === p ? 'active' : ''}" onclick="switchPos('${p}')">
+      ${p}
+      <span class="slot-count ${full ? 'full' : ''}">${c.filled}/${c.total}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderRosterSlots() {
+  const el = document.getElementById('roster-slots');
+  const total = totalSelected();
+  document.getElementById('slots-label').textContent = total + ' / 8 selected';
+  document.getElementById('progress-text').textContent = total < 8 ? `Select ${8-total} more` : 'Roster complete!';
+  document.getElementById('progress-count').textContent = total + '/8';
+  document.getElementById('progress-fill').style.width = (total/8*100) + '%';
+  document.getElementById('submit-btn').disabled = total < 8 || submitting;
+
+  el.innerHTML = ROSTER_CONFIG.map(cfg => {
+    const p = selectedPlayers[cfg.slot];
+    const slotClass = cfg.label === 'DST' ? 'DST' : cfg.label.replace(/\d/g, '');
+    if (p) {
+      return `<div class="roster-slot filled">
+        <span class="slot-label ${slotClass}">${cfg.label.replace(/\d/,'')}</span>
+        <span class="slot-player-name">${p.last_name || p.full_name || p.player_name}</span>
+        <button class="slot-remove" onclick="removePlayer('${cfg.slot}')">✕</button>
+      </div>`;
+    }
+    return `<div class="roster-slot" onclick="switchPos('${cfg.label.replace(/\d/,'')}')">
+      <span class="slot-label ${slotClass}">${cfg.label.replace(/\d/,'')}</span>
+      <span class="slot-empty">Select ${cfg.label.replace(/\d/,'')}...</span>
+    </div>`;
+  }).join('');
+}
+
+function renderPlayers() {
+  const el = document.getElementById('player-list');
+  const search = document.getElementById('search-input').value.trim().toLowerCase();
+
+  // Filter players by active position
+  const posFilter = activePos === 'DST' ? ['DEF'] :
+                    activePos === 'FLEX' ? ['RB','WR','TE'] : [activePos];
+
+  let players = Object.values(playerCache).filter(p => {
+    if (!posFilter.includes(p.position)) return false;
+    if (p.status === 'Inactive' && !p.team) return false;
+    if (search && !`${p.full_name} ${p.team}`.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  // Sort: active players with teams first, by adp
+  players.sort((a,b) => {
+    if (a.team && !b.team) return -1;
+    if (!a.team && b.team) return 1;
+    return (a.search_rank||9999) - (b.search_rank||9999);
+  });
+
+  // Limit to top 80 for performance
+  players = players.slice(0, 80);
+
+  if (players.length === 0) {
+    el.innerHTML = `<div style="text-align:center;padding:30px;font-family:'Barlow',sans-serif;font-size:13px;color:var(--muted);">No players found</div>`;
+    return;
+  }
+
+  const slotsFull = !availableSlotFor(activePos === 'DST' ? 'DEF' : activePos === 'FLEX' ? 'RB' : activePos);
+
+  el.innerHTML = `<div class="player-list">` + players.map(p => {
+    const pid = p.player_id;
+    const isSelected = isPlayerSelected(pid);
+    const posClass = p.position === 'DEF' ? 'DEF' : p.position;
+    const imgSrc = `/api/sleeper?player_img=${pid}`;
+    return `<div class="player-row ${posClass} ${isSelected ? 'selected' : ''} ${!isSelected && slotsFull ? 'full' : ''}"
+      onclick="${isSelected ? '' : `addPlayer('${pid}')`}">
+      <img class="player-headshot" src="${imgSrc}" onerror="this.src=''">
+      <div class="player-info">
+        <div class="player-name">${p.full_name || pid}</div>
+        <div class="player-meta">${p.team || 'FA'} · ${p.position}</div>
+      </div>
+      <span class="player-pos-badge">${p.position === 'DEF' ? 'DST' : p.position}</span>
+      <div class="player-check">${isSelected ? '✓' : ''}</div>
+    </div>`;
+  }).join('') + `</div>`;
+}
+
+function switchPos(pos) {
+  activePos = pos;
+  document.getElementById('search-input').value = '';
+  renderPosTabs();
+  renderPlayers();
+}
+
+function addPlayer(playerId) {
+  const player = playerCache[playerId];
+  if (!player) return;
+  const pos = player.position;
+  const slot = availableSlotFor(pos === 'DEF' ? 'DEF' : pos);
+  if (!slot) return;
+  selectedPlayers[slot] = { ...player, player_id: playerId };
+  renderPosTabs();
+  renderRosterSlots();
+  renderPlayers();
+  // Auto-advance to next unfilled position
+  const unfilled = POS_TABS.find(p => {
+    const posMap = { QB:['QB'], RB:['RB'], WR:['WR'], TE:['TE'], FLEX:['RB','WR','TE'], DST:['DEF'] };
+    return availableSlotFor(posMap[p]?.[0] || p);
+  });
+  if (unfilled && unfilled !== activePos) switchPos(unfilled);
+}
+
+function removePlayer(slot) {
+  delete selectedPlayers[slot];
+  renderPosTabs();
+  renderRosterSlots();
+  renderPlayers();
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────────────────────
+function handleSubmit() {
+  if (totalSelected() < 8) return;
+  const saved = sessionStorage.getItem('bb_username');
+  if (saved) {
+    submitEntry(saved, sessionStorage.getItem('bb_displayname') || saved);
+  } else {
+    document.getElementById('identity-modal').classList.add('open');
+    setTimeout(() => document.getElementById('username-input').focus(), 100);
+  }
+}
+
+function confirmIdentity() {
+  const username = document.getElementById('username-input').value.trim();
+  const displayName = document.getElementById('displayname-input').value.trim() || username;
+  if (!username) { document.getElementById('modal-error').textContent = 'Username required'; return; }
+  sessionStorage.setItem('bb_username', username);
+  sessionStorage.setItem('bb_displayname', displayName);
+  document.getElementById('identity-modal').classList.remove('open');
+  submitEntry(username, displayName);
+}
+
+async function submitEntry(username, displayName) {
+  submitting = true;
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('submit-btn').textContent = 'SUBMITTING...';
+
+  // Upsert entry
+  const { data: entryData, error: entryErr } = await sb.from('bb_entries').upsert({
+    contest_id: parseInt(contestId),
+    username,
+    display_name: displayName,
+    total_score: 0,
+    best_lineup_score: 0,
+    submitted_at: new Date().toISOString(),
+  }, { onConflict: 'contest_id,username' }).select();
+
+  if (entryErr) {
+    alert('Error submitting: ' + entryErr.message);
+    submitting = false;
+    renderRosterSlots();
+    return;
+  }
+
+  const entryId = entryData[0].id;
+
+  // Delete existing roster and reinsert
+  await sb.from('bb_roster').delete().eq('entry_id', entryId);
+
+  const rosterRows = Object.entries(selectedPlayers).map(([slot, p]) => ({
+    entry_id: entryId,
+    player_id: p.player_id,
+    player_name: p.full_name || p.player_name,
+    position: p.position,
+    nfl_team: p.team || '',
+    slot,
+  }));
+
+  const { error: rostErr } = await sb.from('bb_roster').insert(rosterRows);
+  if (rostErr) {
+    alert('Error saving roster: ' + rostErr.message);
+    submitting = false;
+    return;
+  }
+
+  // Success
+  document.getElementById('success-sub').textContent = `${displayName}'s roster is locked in. Good luck!`;
+  document.getElementById('success-overlay').classList.add('open');
+}
+
+// ── LOAD PLAYERS ──────────────────────────────────────────────────────────────
+async function loadPlayers() {
+  const res = await fetch('/api/sleeper?endpoint=players/nfl');
+  if (!res.ok) return;
+  const data = await res.json();
+  // Only skill positions + DST, active
+  const validPos = ['QB','RB','WR','TE','DEF'];
+  Object.entries(data).forEach(([id, p]) => {
+    if (validPos.includes(p.position) && (p.team || p.position === 'DEF')) {
+      playerCache[id] = { ...p, player_id: id };
+    }
+  });
+  renderPlayers();
+}
+
+async function loadContest() {
+  if (!contestId) return;
+  const { data } = await sb.from('bb_contests').select('*').eq('id', contestId).single();
+  if (data) {
+    contestData = data;
+    document.getElementById('contest-label').textContent = data.week_label + ' · Best Ball';
+  }
+}
+
+async function init() {
+  await loadContest();
+  renderPosTabs();
+  renderRosterSlots();
+  await loadPlayers();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('identity-modal').classList.contains('open')) confirmIdentity();
+});
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Best Ball Challenge</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Teko:wght@300;400;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --orange:#E8621A;--orange2:#F08030;--sunset:#F5A623;
+  --red:#C0181A;--teal:#00A89C;--teal2:#00C8BC;--teal-dark:#005f5a;
+  --navy:#0d1a2b;--navy2:#0a1520;--chrome:#d0d8e0;--chrome2:#f0f4f8;
+  --text:#f0ede8;--muted:#7a9ab0;--gold:#F5A623;
+  --border-teal:rgba(0,168,156,0.35);--border-orange:rgba(232,98,26,0.5);
+  --green:#22c55e;--green2:#16a34a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--navy2);color:var(--text);font-family:'Teko',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* BG */
+.bg-layer{position:fixed;inset:0;z-index:0;overflow:hidden;}
+.bg-base{position:absolute;inset:0;background:linear-gradient(180deg,#060e18 0%,#0a1520 40%,#0d1a2b 70%,#0a1520 100%);}
+.bg-glow{position:absolute;width:600px;height:300px;background:radial-gradient(ellipse,rgba(0,168,156,0.07),transparent 70%);top:20%;left:50%;transform:translateX(-50%);}
+.bg-glow2{position:absolute;width:400px;height:400px;background:radial-gradient(ellipse,rgba(232,98,26,0.05),transparent 70%);bottom:10%;right:-100px;}
+.frame-line{position:fixed;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--orange),var(--teal));z-index:100;}
+.frame-line-top{top:0;}.frame-line-bottom{bottom:0;}
+
+.container{position:relative;z-index:2;max-width:860px;margin:0 auto;padding:16px 16px 80px;}
+
+/* NAV */
+.nav{display:flex;align-items:center;gap:10px;padding:10px 0 20px;flex-wrap:wrap;}
+.nav-back{color:var(--muted);font-family:'Barlow',sans-serif;font-size:13px;letter-spacing:2px;text-decoration:none;text-transform:uppercase;}
+.nav-back:hover{color:var(--teal2);}
+
+/* HEADER */
+.header{text-align:center;padding:10px 0 28px;margin-bottom:8px;position:relative;}
+.header-eyebrow{font-size:11px;letter-spacing:6px;color:var(--teal2);text-transform:uppercase;margin-bottom:6px;font-family:'Barlow',sans-serif;}
+.header h1{font-family:'Anton',sans-serif;font-size:clamp(36px,9vw,68px);letter-spacing:1px;line-height:0.9;background:linear-gradient(160deg,#fff,var(--chrome),#a0aab4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.header-accent{font-family:'Anton',sans-serif;font-size:clamp(14px,3vw,20px);letter-spacing:6px;color:var(--orange2);display:block;margin-top:4px;}
+.header-rule{width:80px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:14px auto 0;}
+
+/* STATUS STRIP */
+.status-strip{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px;}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+.status-text{font-family:'Barlow',sans-serif;font-size:12px;letter-spacing:3px;color:var(--green);text-transform:uppercase;}
+
+/* CONTEST CARD */
+.contest-card{background:rgba(10,21,32,0.9);border:1px solid var(--border-teal);border-top:3px solid var(--teal);border-radius:6px;padding:24px;margin-bottom:20px;backdrop-filter:blur(10px);}
+.contest-week{font-size:11px;letter-spacing:5px;color:var(--muted);text-transform:uppercase;font-family:'Barlow',sans-serif;margin-bottom:4px;}
+.contest-title{font-family:'Anton',sans-serif;font-size:28px;letter-spacing:2px;color:var(--chrome2);margin-bottom:14px;}
+.contest-meta{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px;}
+.contest-meta-item{display:flex;align-items:center;gap:6px;font-family:'Barlow',sans-serif;font-size:13px;color:var(--muted);letter-spacing:1px;}
+.contest-meta-item strong{color:var(--chrome);}
+.contest-meta-icon{font-size:14px;}
+
+/* ENTRY PROGRESS BAR */
+.progress-wrap{margin-bottom:20px;}
+.progress-label{display:flex;justify-content:space-between;font-family:'Barlow',sans-serif;font-size:12px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;}
+.progress-bar{height:6px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal2));border-radius:3px;transition:width 0.5s ease;}
+
+/* LOCK COUNTDOWN */
+.lock-wrap{background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.2);border-radius:4px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.lock-icon{font-size:20px;}
+.lock-label{font-size:11px;letter-spacing:3px;color:var(--sunset);text-transform:uppercase;font-family:'Barlow',sans-serif;}
+.lock-timer{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:2px;color:var(--gold);}
+
+/* ENTER BUTTON */
+.btn-enter{display:block;width:100%;padding:18px;background:linear-gradient(135deg,rgba(0,168,156,0.25),rgba(0,168,156,0.1));border:2px solid var(--teal);border-radius:5px;color:var(--teal2);font-family:'Anton',sans-serif;font-size:22px;letter-spacing:4px;cursor:pointer;text-align:center;text-decoration:none;transition:all 0.2s;position:relative;overflow:hidden;}
+.btn-enter::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,168,156,0.15),transparent);opacity:0;transition:opacity 0.2s;}
+.btn-enter:hover::before{opacity:1;}
+.btn-enter:hover{border-color:var(--teal2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,168,156,0.2);}
+.btn-enter.locked{border-color:var(--border-orange);color:var(--muted);cursor:not-allowed;background:rgba(255,255,255,0.02);}
+.btn-enter.entered{border-color:var(--green);color:var(--green);background:rgba(34,197,94,0.08);}
+
+/* ENTRIES ENTERED */
+.already-entered{display:flex;align-items:center;gap:8px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:4px;padding:10px 14px;margin-top:10px;font-family:'Barlow',sans-serif;font-size:13px;color:var(--green);letter-spacing:1px;}
+
+/* LEADERBOARD */
+.section-header{display:flex;align-items:center;gap:12px;margin:24px 0 14px;}
+.section-title{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:4px;color:var(--chrome2);text-transform:uppercase;}
+.section-line{flex:1;height:1px;background:linear-gradient(90deg,var(--border-teal),transparent);}
+.section-badge{font-size:10px;letter-spacing:2px;color:var(--muted);font-family:'Barlow',sans-serif;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);padding:2px 8px;border-radius:2px;}
+
+.leaderboard{display:flex;flex-direction:column;gap:6px;}
+.entry-row{background:rgba(10,21,32,0.8);border:1px solid var(--border-teal);border-radius:4px;padding:12px 16px;display:flex;align-items:center;gap:12px;transition:all 0.2s;cursor:pointer;}
+.entry-row:hover{border-color:var(--teal2);background:rgba(0,168,156,0.05);}
+.entry-row.rank-1{border-color:var(--gold);background:rgba(245,166,35,0.06);}
+.entry-row.rank-2{border-color:rgba(192,192,192,0.4);}
+.entry-row.rank-3{border-color:rgba(180,120,60,0.4);}
+.entry-row.my-entry{border-color:var(--teal);box-shadow:0 0 0 1px rgba(0,168,156,0.2);}
+
+.rank-badge{font-family:'Anton',sans-serif;font-size:18px;width:32px;text-align:center;flex-shrink:0;}
+.rank-1 .rank-badge{color:var(--gold);}
+.rank-2 .rank-badge{color:#c0c0c0;}
+.rank-3 .rank-badge{color:#b4783c;}
+.rank-badge.other{color:var(--muted);font-size:14px;}
+
+.entry-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--border-teal);flex-shrink:0;}
+.entry-avatar-ph{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.07);border:2px solid var(--border-teal);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:14px;color:var(--muted);flex-shrink:0;}
+.entry-info{flex:1;}
+.entry-name{font-family:'Anton',sans-serif;font-size:16px;letter-spacing:1px;color:var(--chrome2);}
+.entry-sub{font-size:11px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;margin-top:1px;}
+.entry-score{font-family:'Anton',sans-serif;font-size:22px;letter-spacing:1px;color:var(--chrome2);text-align:right;flex-shrink:0;}
+.entry-score-label{font-size:9px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;text-align:right;}
+.entry-score-wrap{text-align:right;}
+
+/* ROSTER POSITIONS PREVIEW */
+.roster-preview{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;}
+.pos-chip{font-size:9px;letter-spacing:1px;padding:1px 5px;border-radius:2px;font-family:'Barlow',sans-serif;font-weight:600;}
+.pos-QB{background:rgba(229,196,64,0.15);color:#e5c440;}
+.pos-RB{background:rgba(74,224,160,0.15);color:#4ae0a0;}
+.pos-WR{background:rgba(74,176,255,0.15);color:#4ab0ff;}
+.pos-TE{background:rgba(255,140,74,0.15);color:#ff8c4a;}
+.pos-FLEX{background:rgba(192,132,252,0.15);color:#c084fc;}
+.pos-DST,.pos-DEF{background:rgba(248,113,113,0.15);color:#f87171;}
+.pos-K{background:rgba(192,132,252,0.15);color:#c084fc;}
+
+/* RULES CARD */
+.rules-card{background:rgba(10,21,32,0.7);border:1px solid rgba(255,255,255,0.06);border-radius:5px;padding:20px;margin-top:20px;}
+.rules-title{font-family:'Anton',sans-serif;font-size:14px;letter-spacing:4px;color:var(--muted);margin-bottom:12px;text-transform:uppercase;}
+.rules-list{list-style:none;display:flex;flex-direction:column;gap:7px;}
+.rules-list li{font-family:'Barlow',sans-serif;font-size:13px;color:var(--muted);letter-spacing:0.5px;padding-left:16px;position:relative;}
+.rules-list li::before{content:'·';position:absolute;left:4px;color:var(--teal);}
+
+/* NO CONTEST */
+.no-contest{text-align:center;padding:48px 20px;}
+.no-contest-icon{font-size:48px;margin-bottom:16px;}
+.no-contest-title{font-family:'Anton',sans-serif;font-size:24px;letter-spacing:3px;color:var(--chrome);margin-bottom:8px;}
+.no-contest-sub{font-family:'Barlow',sans-serif;font-size:14px;color:var(--muted);letter-spacing:1px;}
+
+/* COMMISSIONER PANEL */
+.comm-panel{background:rgba(10,21,32,0.9);border:1px solid var(--border-orange);border-left:4px solid var(--orange);border-radius:4px;padding:18px;margin-bottom:20px;}
+.comm-panel-title{font-family:'Anton',sans-serif;font-size:13px;letter-spacing:4px;color:var(--orange2);margin-bottom:14px;text-transform:uppercase;}
+.comm-form{display:flex;flex-direction:column;gap:10px;}
+.comm-input{padding:10px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border-teal);border-radius:3px;color:var(--chrome2);font-family:'Barlow',sans-serif;font-size:14px;outline:none;}
+.comm-input:focus{border-color:var(--teal2);}
+.comm-row{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-comm{padding:10px 18px;background:rgba(232,98,26,0.15);border:1px solid var(--orange);border-radius:3px;color:var(--orange2);font-family:'Anton',sans-serif;font-size:14px;letter-spacing:2px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.btn-comm:hover{background:rgba(232,98,26,0.3);}
+.btn-comm.danger{border-color:rgba(192,24,26,0.5);color:#ff6060;background:rgba(192,24,26,0.08);}
+
+/* LOADING */
+.loading-wrap{text-align:center;padding:40px;}
+.spinner{width:32px;height:32px;border:3px solid var(--border-teal);border-top-color:var(--teal2);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:12px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;font-family:'Barlow',sans-serif;}
+
+/* EMPTY */
+.empty-entries{text-align:center;padding:30px;background:rgba(255,255,255,0.02);border:1px dashed rgba(255,255,255,0.07);border-radius:4px;}
+.empty-entries p{font-family:'Barlow',sans-serif;font-size:13px;color:var(--muted);letter-spacing:1px;}
+
+/* STATUS BADGES */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:2px;font-size:10px;letter-spacing:2px;font-family:'Barlow',sans-serif;text-transform:uppercase;}
+.badge-open{background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.3);}
+.badge-locked{background:rgba(245,166,35,0.1);color:var(--gold);border:1px solid rgba(245,166,35,0.3);}
+.badge-scoring{background:rgba(74,176,255,0.1);color:#4ab0ff;border:1px solid rgba(74,176,255,0.3);}
+.badge-final{background:rgba(192,24,26,0.1);color:#ff6060;border:1px solid rgba(192,24,26,0.3);}
+
+/* PIN OVERLAY */
+.pin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;align-items:center;justify-content:center;}
+.pin-overlay.open{display:flex;}
+.pin-box{background:#0d1a2b;border:1px solid var(--border-teal);border-top:3px solid var(--teal);border-radius:8px;padding:32px;text-align:center;width:300px;}
+.pin-title{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:4px;color:var(--chrome2);margin-bottom:20px;}
+.pin-input{width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border-teal);border-radius:3px;color:var(--chrome2);font-family:'Anton',sans-serif;font-size:24px;letter-spacing:8px;text-align:center;outline:none;}
+.pin-error{color:#ff6060;font-size:12px;font-family:'Barlow',sans-serif;letter-spacing:1px;margin-top:8px;min-height:16px;}
+.btn-pin{margin-top:16px;width:100%;padding:12px;background:var(--teal-dark);border:1px solid var(--teal);border-radius:3px;color:var(--chrome2);font-family:'Anton',sans-serif;font-size:16px;letter-spacing:3px;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="bg-layer">
+  <div class="bg-base"></div>
+  <div class="bg-glow"></div>
+  <div class="bg-glow2"></div>
+</div>
+<div class="frame-line frame-line-top"></div>
+<div class="frame-line frame-line-bottom"></div>
+
+<!-- PIN OVERLAY -->
+<div class="pin-overlay" id="pin-overlay">
+  <div class="pin-box">
+    <div class="pin-title">COMMISSIONER PIN</div>
+    <input class="pin-input" id="pin-input" type="password" maxlength="8" placeholder="••••••••">
+    <div class="pin-error" id="pin-error"></div>
+    <button class="btn-pin" onclick="submitPin()">ENTER</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="nav">
+    <a href="/" class="nav-back">‹ Lottery Home</a>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+      <button id="comm-toggle" onclick="document.getElementById('pin-overlay').classList.add('open');document.getElementById('pin-input').value='';document.getElementById('pin-error').textContent='';setTimeout(()=>document.getElementById('pin-input').focus(),100)" style="padding:5px 12px;background:transparent;border:1px solid var(--border-teal);border-radius:3px;color:var(--muted);font-family:'Teko',sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;">Commissioner</button>
+    </div>
+  </div>
+
+  <div class="header">
+    <div class="header-eyebrow">Free to Enter · Weekly</div>
+    <h1>BEST BALL<br>CHALLENGE</h1>
+    <span class="header-accent">WINNER TAKE ALL</span>
+    <div class="header-rule"></div>
+  </div>
+
+  <div id="error-bar" style="display:none;background:rgba(192,24,26,0.15);border:1px solid rgba(192,24,26,0.5);border-radius:3px;padding:10px 14px;margin-bottom:14px;font-family:'Barlow',sans-serif;font-size:13px;color:#ff8080;letter-spacing:1px;"></div>
+
+  <div id="main-content">
+    <div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading contest...</div></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://vnpsxpofnquntnydcklu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucHN4cG9mbnF1bnRueWRja2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxMDQ1MDcsImV4cCI6MjA1ODY4MDUwN30.HaXTuMJmPHyANJRMCZSbTMquSNlHKJz5wFT8KVwNIiw';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const COMMISSIONER_PIN = '00136860';
+
+let isCommissioner = false;
+let activeContest = null;
+let entries = [];
+let realtimeChannel = null;
+let lockInterval = null;
+
+function showError(msg) {
+  const el = document.getElementById('error-bar');
+  el.textContent = msg; el.style.display = msg ? 'block' : 'none';
+}
+
+// ── SUPABASE ──────────────────────────────────────────────────────────────────
+async function loadContest() {
+  // Get most recent open or active contest
+  const { data, error } = await sb
+    .from('bb_contests')
+    .select('*')
+    .in('status', ['open','locked','scoring','final'])
+    .order('created_at', { ascending: false })
+    .limit(1);
+  if (error) { showError('Load error: ' + error.message); return null; }
+  return data && data[0] ? data[0] : null;
+}
+
+async function loadEntries(contestId) {
+  const { data, error } = await sb
+    .from('bb_entries')
+    .select('*')
+    .eq('contest_id', contestId)
+    .order('best_lineup_score', { ascending: false });
+  if (error) { showError('Load error: ' + error.message); return []; }
+  return data || [];
+}
+
+async function createContest(weekLabel, weekNumber, lockTime) {
+  const { data, error } = await sb.from('bb_contests').insert({
+    week_label: weekLabel,
+    week_number: weekNumber,
+    lock_time: lockTime,
+    status: 'open',
+    season: '2026',
+  }).select();
+  if (error) { showError('Create error: ' + error.message); return null; }
+  return data[0];
+}
+
+async function updateContestStatus(id, status) {
+  const { error } = await sb.from('bb_contests').update({ status }).eq('id', id);
+  if (error) { showError('Update error: ' + error.message); return false; }
+  return true;
+}
+
+function subscribeRealtime(contestId) {
+  if (realtimeChannel) sb.removeChannel(realtimeChannel);
+  realtimeChannel = sb
+    .channel('bb_' + contestId + '_' + Date.now())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'bb_entries', filter: 'contest_id=eq.' + contestId }, async () => {
+      entries = await loadEntries(contestId);
+      renderContent();
+    })
+    .subscribe();
+}
+
+// ── LOCK COUNTDOWN ────────────────────────────────────────────────────────────
+function startLockCountdown(lockTime) {
+  if (lockInterval) clearInterval(lockInterval);
+  const update = () => {
+    const diff = new Date(lockTime) - new Date();
+    const el = document.getElementById('lock-timer');
+    if (!el) { clearInterval(lockInterval); return; }
+    if (diff <= 0) { el.textContent = 'LOCKED'; clearInterval(lockInterval); return; }
+    const h = Math.floor(diff/3600000), m = Math.floor((diff%3600000)/60000), s = Math.floor((diff%60000)/1000);
+    el.textContent = (h>0?h+'h ':'')+String(m).padStart(2,'0')+'m '+String(s).padStart(2,'0')+'s';
+  };
+  update();
+  lockInterval = setInterval(update, 1000);
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function myUsername() { return sessionStorage.getItem('bb_username') || ''; }
+
+function statusBadge(status) {
+  const map = { open:'badge-open', locked:'badge-locked', scoring:'badge-scoring', final:'badge-final' };
+  const labels = { open:'Open', locked:'Locked', scoring:'Scoring', final:'Final' };
+  return `<span class="badge ${map[status]||''}">● ${labels[status]||status}</span>`;
+}
+
+function posChip(pos) {
+  const p = pos === 'DEF' ? 'DST' : pos;
+  return `<span class="pos-chip pos-${p}">${p}</span>`;
+}
+
+function renderContent() {
+  const el = document.getElementById('main-content');
+  if (!activeContest) {
+    el.innerHTML = `
+      <div class="no-contest">
+        <div class="no-contest-icon">🏈</div>
+        <div class="no-contest-title">NO ACTIVE CONTEST</div>
+        <div class="no-contest-sub">Check back Sunday morning when the week's contest opens.</div>
+      </div>
+      ${isCommissioner ? renderCommPanel() : ''}`;
+    return;
+  }
+
+  const c = activeContest;
+  const isOpen = c.status === 'open';
+  const isLocked = c.status === 'locked' || c.status === 'scoring' || c.status === 'final';
+  const isFinal = c.status === 'final';
+  const myEntry = entries.find(e => e.username === myUsername());
+  const entryCount = entries.length;
+  const lockPassed = new Date(c.lock_time) < new Date();
+
+  let html = '';
+
+  // Status
+  html += `<div class="status-strip">${statusBadge(c.status)}</div>`;
+
+  // Contest card
+  html += `<div class="contest-card">
+    <div class="contest-week">Season 2026</div>
+    <div class="contest-title">${c.week_label}</div>
+    <div class="contest-meta">
+      <div class="contest-meta-item"><span class="contest-meta-icon">🏆</span> <span>Winner-Take-All · Free Entry</span></div>
+      <div class="contest-meta-item"><span class="contest-meta-icon">👥</span> <strong>${entryCount}</strong>&nbsp;entered</div>
+      <div class="contest-meta-item"><span class="contest-meta-icon">📋</span> <span>1QB 2RB 2WR 1TE 1FLEX 1DST</span></div>
+    </div>`;
+
+  // Lock countdown
+  if (isOpen && !lockPassed) {
+    const lockDate = new Date(c.lock_time).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'});
+    html += `<div class="lock-wrap">
+      <span class="lock-icon">🔒</span>
+      <div>
+        <div class="lock-label">Locks in</div>
+        <div class="lock-timer" id="lock-timer">--</div>
+        <div style="font-size:10px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;margin-top:2px;">${lockDate}</div>
+      </div>
+    </div>`;
+    setTimeout(() => startLockCountdown(c.lock_time), 0);
+  }
+
+  // Enter button
+  if (isOpen && !lockPassed) {
+    if (myEntry) {
+      html += `<div class="already-entered">✓ You're entered · <strong>${myEntry.display_name}</strong></div>
+        <a href="/best-ball/pick?contest=${c.id}&edit=1" style="display:block;margin-top:8px;text-align:center;font-family:'Barlow',sans-serif;font-size:12px;color:var(--teal2);letter-spacing:2px;text-decoration:none;">Edit Roster ›</a>`;
+    } else {
+      html += `<a href="/best-ball/pick?contest=${c.id}" class="btn-enter">BUILD MY ROSTER →</a>`;
+    }
+  } else if (lockPassed || isLocked) {
+    html += `<div class="btn-enter locked">🔒 CONTEST LOCKED</div>`;
+  }
+
+  html += `</div>`; // end contest card
+
+  // Commissioner panel
+  if (isCommissioner) html += renderCommPanel();
+
+  // Leaderboard
+  html += `<div class="section-header">
+    <div class="section-title">Leaderboard</div>
+    <div class="section-line"></div>
+    <div class="section-badge">${entryCount} ${entryCount === 1 ? 'entry' : 'entries'}</div>
+  </div>`;
+
+  if (entries.length === 0) {
+    html += `<div class="empty-entries"><p>No entries yet — be the first to enter!</p></div>`;
+  } else {
+    html += `<div class="leaderboard">`;
+    entries.forEach((e, i) => {
+      const rank = i + 1;
+      const rankClass = rank <= 3 ? `rank-${rank}` : '';
+      const myClass = e.username === myUsername() ? 'my-entry' : '';
+      const rankSymbol = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `<span class="rank-badge other">${rank}</span>`;
+      const score = isFinal || c.status === 'scoring' ? (parseFloat(e.best_lineup_score)||0).toFixed(1) : '—';
+      html += `<div class="entry-row ${rankClass} ${myClass}" onclick="viewEntry(${e.id})">
+        <div class="rank-badge">${rankSymbol}</div>
+        ${e.avatar_url ? `<img class="entry-avatar" src="${e.avatar_url}" onerror="this.style.display='none'">` : `<div class="entry-avatar-ph">${(e.display_name||'?')[0]}</div>`}
+        <div class="entry-info">
+          <div class="entry-name">${e.display_name || e.username}</div>
+          <div class="entry-sub">${e.username}${e.username === myUsername() ? ' · <span style="color:var(--teal2)">You</span>' : ''}</div>
+        </div>
+        <div class="entry-score-wrap">
+          <div class="entry-score">${score}</div>
+          <div class="entry-score-label">${c.status === 'open' ? 'Entered' : 'pts'}</div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Rules
+  html += `<div class="rules-card">
+    <div class="rules-title">How It Works</div>
+    <ul class="rules-list">
+      <li>Free entry — no buy-in required</li>
+      <li>Pick your roster before the Sunday lock time</li>
+      <li>After lock, best ball automatically scores your optimal lineup</li>
+      <li>No start/sit decisions — just build the best roster</li>
+      <li>Highest score wins · Contest fills dynamically</li>
+      <li>Winner earns a badge on their team profile</li>
+    </ul>
+  </div>`;
+
+  el.innerHTML = html;
+}
+
+function renderCommPanel() {
+  if (!isCommissioner) return '';
+  const c = activeContest;
+  return `<div class="comm-panel">
+    <div class="comm-panel-title">Commissioner Tools</div>
+    ${!c ? `
+      <div class="comm-form">
+        <input class="comm-input" id="c-week-label" placeholder="Week label (e.g. Week 1 · Sep 7, 2026)">
+        <input class="comm-input" id="c-week-num" type="number" placeholder="Week number (1-18)">
+        <input class="comm-input" id="c-lock-time" type="datetime-local" placeholder="Lock time">
+        <button class="btn-comm" onclick="commCreateContest()">▶ CREATE CONTEST</button>
+      </div>` :
+    `<div class="comm-form">
+      <div style="font-family:'Barlow',sans-serif;font-size:12px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;">Active: <strong style="color:var(--chrome)">${c.week_label}</strong> · Status: ${statusBadge(c.status)}</div>
+      <div class="comm-row">
+        ${c.status === 'open' ? `<button class="btn-comm" onclick="commSetStatus('locked')">🔒 Lock Contest</button>` : ''}
+        ${c.status === 'locked' ? `<button class="btn-comm" onclick="commSetStatus('scoring')">📊 Start Scoring</button>` : ''}
+        ${c.status === 'scoring' ? `<button class="btn-comm" onclick="commSetStatus('final')">✓ Finalize</button>` : ''}
+        <button class="btn-comm danger" onclick="commSetStatus('open')">↩ Reopen</button>
+      </div>
+    </div>`}
+  </div>`;
+}
+
+// ── COMMISSIONER ACTIONS ──────────────────────────────────────────────────────
+async function commCreateContest() {
+  const label = document.getElementById('c-week-label')?.value?.trim();
+  const weekNum = parseInt(document.getElementById('c-week-num')?.value);
+  const lockRaw = document.getElementById('c-lock-time')?.value;
+  if (!label || !lockRaw) { showError('Fill in all fields'); return; }
+  const lockTime = new Date(lockRaw).toISOString();
+  const contest = await createContest(label, weekNum || 1, lockTime);
+  if (contest) {
+    activeContest = contest;
+    entries = [];
+    subscribeRealtime(contest.id);
+    renderContent();
+  }
+}
+
+async function commSetStatus(status) {
+  if (!activeContest) return;
+  const ok = await updateContestStatus(activeContest.id, status);
+  if (ok) {
+    activeContest.status = status;
+    if (status === 'scoring' || status === 'final') await pullScoresFromSleeper();
+    renderContent();
+  }
+}
+
+// ── SLEEPER SCORING ───────────────────────────────────────────────────────────
+async function pullScoresFromSleeper() {
+  if (!activeContest) return;
+  showError('');
+  // Fetch all rosters for this contest's entries
+  const { data: rostData } = await sb.from('bb_roster')
+    .select('*, bb_entries!inner(contest_id)')
+    .eq('bb_entries.contest_id', activeContest.id);
+
+  if (!rostData || rostData.length === 0) return;
+
+  // Get unique player IDs
+  const playerIds = [...new Set(rostData.map(r => r.player_id))];
+
+  // Fetch scores from Sleeper (week stats)
+  // Use the NFL stats endpoint for the current week
+  const week = activeContest.week_number || 1;
+  let playerStats = {};
+  try {
+    const res = await fetch(`/api/sleeper?endpoint=stats/nfl/regular/${new Date().getFullYear()}/${week}`);
+    if (res.ok) {
+      const data = await res.json();
+      playerStats = data || {};
+    }
+  } catch(e) { console.error('Stats fetch error:', e); }
+
+  // Calculate scores using CFL scoring settings
+  function calcScore(stats) {
+    if (!stats) return 0;
+    let s = 0;
+    s += (stats.pass_yd||0) * 0.04;
+    s += (stats.pass_td||0) * 4;
+    s += (stats.pass_int||0) * -1;
+    s += (stats.rush_yd||0) * 0.1;
+    s += (stats.rush_td||0) * 6;
+    s += (stats.rec||0) * 1;
+    s += (stats.rec_yd||0) * 0.1;
+    s += (stats.rec_td||0) * 6;
+    s += (stats.fum_lost||0) * -2;
+    s += (stats.bonus_rec_te||0) * 0.5;
+    return Math.round(s * 100) / 100;
+  }
+
+  // Group rosters by entry
+  const byEntry = {};
+  rostData.forEach(r => {
+    if (!byEntry[r.entry_id]) byEntry[r.entry_id] = [];
+    byEntry[r.entry_id].push({ ...r, score: calcScore(playerStats[r.player_id]) });
+  });
+
+  // Best ball optimization per entry
+  const SLOTS = { QB:1, RB:2, WR:2, TE:1, FLEX:1, DST:1 };
+  for (const [entryId, players] of Object.entries(byEntry)) {
+    const sorted = { QB:[], RB:[], WR:[], TE:[], DST:[], FLEX_ELG:[] };
+    players.forEach(p => {
+      const pos = p.position === 'DEF' ? 'DST' : p.position;
+      if (sorted[pos]) sorted[pos].push(p);
+      if (['RB','WR','TE'].includes(pos)) sorted.FLEX_ELG.push(p);
+    });
+
+    let starters = [];
+    // Fill required slots
+    Object.entries(SLOTS).forEach(([pos, count]) => {
+      if (pos === 'FLEX') return;
+      const pool = (sorted[pos] || []).sort((a,b) => b.score - a.score);
+      for (let i = 0; i < count && i < pool.length; i++) {
+        starters.push({ ...pool[i], slot: pos });
+      }
+    });
+    // Fill FLEX with best remaining eligible
+    const usedIds = new Set(starters.map(s => s.id));
+    const flexPool = sorted.FLEX_ELG.filter(p => !usedIds.has(p.id)).sort((a,b) => b.score - a.score);
+    if (flexPool[0]) starters.push({ ...flexPool[0], slot: 'FLEX' });
+
+    const totalScore = starters.reduce((sum, p) => sum + p.score, 0);
+    const starterIds = new Set(starters.map(s => s.id));
+
+    // Upsert scores
+    const scoreRows = players.map(p => ({
+      entry_id: parseInt(entryId),
+      player_id: p.player_id,
+      player_name: p.player_name,
+      position: p.position,
+      score: p.score,
+      is_starter: starterIds.has(p.id),
+    }));
+
+    await sb.from('bb_scores').upsert(scoreRows, { onConflict: 'entry_id,player_id' });
+    await sb.from('bb_entries').update({ best_lineup_score: Math.round(totalScore*100)/100 }).eq('id', parseInt(entryId));
+  }
+
+  // Reload entries with updated scores
+  entries = await loadEntries(activeContest.id);
+  renderContent();
+}
+
+// ── ENTRY VIEW (stub) ─────────────────────────────────────────────────────────
+function viewEntry(entryId) {
+  window.location.href = '/best-ball/entry?id=' + entryId;
+}
+
+// ── PIN ───────────────────────────────────────────────────────────────────────
+function submitPin() {
+  const val = document.getElementById('pin-input').value;
+  if (val === COMMISSIONER_PIN) {
+    isCommissioner = true;
+    document.getElementById('pin-overlay').classList.remove('open');
+    document.getElementById('comm-toggle').style.display = 'none';
+    renderContent();
+  } else {
+    document.getElementById('pin-error').textContent = 'Incorrect PIN';
+    document.getElementById('pin-input').value = '';
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('pin-overlay').classList.contains('open')) submitPin();
+  if (e.key === 'Escape') document.getElementById('pin-overlay').classList.remove('open');
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  activeContest = await loadContest();
+  if (activeContest) {
+    entries = await loadEntries(activeContest.id);
+    subscribeRealtime(activeContest.id);
+  }
+  renderContent();
+}
+
+init();
+</script>
+</body>
+</html>
