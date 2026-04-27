@@ -212,31 +212,31 @@
   <!-- LEAGUE SELECT -->
   <div id="league-select">
 
-    <!-- LIVE DRAFT CARD -->
-    <a href="/live-draft" style="display:flex;align-items:center;gap:12px;background:rgba(10,21,32,0.9);border:1px solid rgba(192,24,26,0.5);border-left:4px solid var(--red);border-radius:4px;padding:16px 20px;margin-bottom:10px;text-decoration:none;transition:all 0.25s;backdrop-filter:blur(10px);position:relative;overflow:hidden;" onmouseover="this.style.borderColor='var(--orange)';this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='rgba(192,24,26,0.5)';this.style.transform='translateX(0)'">
-      <div style="display:flex;align-items:center;gap:6px;position:absolute;top:10px;right:12px;background:rgba(192,24,26,0.15);border:1px solid rgba(192,24,26,0.4);border-radius:2px;padding:2px 7px;">
-        <div style="width:5px;height:5px;border-radius:50%;background:#ff4040;animation:livePulse 1s infinite;"></div>
-        <span style="font-size:10px;letter-spacing:2px;color:#ff6060;font-family:'Barlow',sans-serif;text-transform:uppercase;">LIVE</span>
-      </div>
-      <span style="font-size:24px;">🏆</span>
-      <div>
-        <div style="font-family:'Anton',sans-serif;font-size:22px;letter-spacing:3px;color:var(--chrome2);">LIVE DRAFT</div>
-        <div style="font-size:12px;color:var(--muted);letter-spacing:2px;font-family:'Barlow',sans-serif;font-weight:300;">Official 2026 Rookie Lottery · Apr 18–24</div>
-      </div>
-      <span style="margin-left:auto;font-size:22px;color:var(--orange2);opacity:0.6;">›</span>
-    </a>
+    <!-- LIVE DRAFT CARD — commissioner only -->
+    <div id="live-draft-card" style="display:none;">
+      <a href="/live-draft" style="display:flex;align-items:center;gap:12px;background:rgba(10,21,32,0.9);border:1px solid rgba(192,24,26,0.4);border-left:4px solid var(--red);border-radius:4px;padding:14px 20px;margin-bottom:10px;text-decoration:none;transition:all 0.25s;backdrop-filter:blur(10px);" onmouseover="this.style.borderColor='var(--red)';this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='rgba(192,24,26,0.4)';this.style.transform='translateX(0)'">
+        <span style="font-size:20px;">🔴</span>
+        <div>
+          <div style="font-family:'Anton',sans-serif;font-size:20px;letter-spacing:3px;color:#ff6060;">LIVE DRAFT</div>
+          <div style="font-size:12px;color:var(--muted);letter-spacing:2px;font-family:'Barlow',sans-serif;font-weight:300;">2026 Rookie Lottery · Commissioner</div>
+        </div>
+        <span style="margin-left:auto;font-size:22px;color:#ff6060;opacity:0.6;">›</span>
+      </a>
+    </div>
 
-    <!-- BEST BALL CARD -->
-    <a href="/best-ball" style="display:flex;align-items:center;gap:12px;background:rgba(10,21,32,0.85);border:1px solid rgba(34,197,94,0.35);border-left:4px solid #22c55e;border-radius:4px;padding:14px 20px;margin-bottom:10px;text-decoration:none;transition:all 0.25s;backdrop-filter:blur(10px);" onmouseover="this.style.borderColor='#22c55e';this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='rgba(34,197,94,0.35)';this.style.transform='translateX(0)'">
-      <span style="font-size:20px;">🏈</span>
-      <div>
-        <div style="font-family:'Anton',sans-serif;font-size:20px;letter-spacing:3px;color:#22c55e;">BEST BALL CHALLENGE</div>
-        <div style="font-size:12px;color:var(--muted);letter-spacing:2px;font-family:'Barlow',sans-serif;font-weight:300;">Free entry · Weekly · Winner take all</div>
-      </div>
-      <span style="margin-left:auto;font-size:22px;color:#22c55e;opacity:0.6;">›</span>
-    </a>
+<!-- BEST BALL CARD — commissioner only -->
+    <div id="best-ball-card" style="display:none;">
+      <a href="/best-ball" style="display:flex;align-items:center;gap:12px;background:rgba(10,21,32,0.85);border:1px solid rgba(34,197,94,0.35);border-left:4px solid #22c55e;border-radius:4px;padding:14px 20px;margin-bottom:10px;text-decoration:none;transition:all 0.25s;backdrop-filter:blur(10px);" onmouseover="this.style.borderColor='#22c55e';this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='rgba(34,197,94,0.35)';this.style.transform='translateX(0)'">
+        <span style="font-size:20px;">🏈</span>
+        <div>
+          <div style="font-family:'Anton',sans-serif;font-size:20px;letter-spacing:3px;color:#22c55e;">BEST BALL CHALLENGE</div>
+          <div style="font-size:12px;color:var(--muted);letter-spacing:2px;font-family:'Barlow',sans-serif;font-weight:300;">Free entry · Weekly · Winner take all</div>
+        </div>
+        <span style="margin-left:auto;font-size:22px;color:#22c55e;opacity:0.6;">›</span>
+      </a>
+    </div>
 
-    <!-- LEAGUE HISTORY CARD -->
+<!-- LEAGUE HISTORY CARD -->
     <a href="/league-history" style="display:flex;align-items:center;gap:12px;background:rgba(10,21,32,0.85);border:1px solid rgba(245,166,35,0.4);border-left:4px solid var(--sunset);border-radius:4px;padding:14px 20px;margin-bottom:10px;text-decoration:none;transition:all 0.25s;backdrop-filter:blur(10px);" onmouseover="this.style.borderColor='var(--sunset)';this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='rgba(245,166,35,0.4)';this.style.transform='translateX(0)'">
       <span style="font-size:20px;">🏆</span>
       <div>
@@ -336,8 +336,12 @@
       card.style.display = 'flex';
       document.getElementById('dev-section-label').style.display = 'block';
       document.getElementById('dev-section-label').textContent = 'Developer';
-      // Style the label properly
       document.getElementById('dev-section-label').className = 'league-select-title';
+      // Also reveal live draft and best ball cards
+      const liveDraft = document.getElementById('live-draft-card');
+      const bestBall = document.getElementById('best-ball-card');
+      if (liveDraft) liveDraft.style.display = 'block';
+      if (bestBall) bestBall.style.display = 'block';
     }
 
     document.addEventListener('keydown', e => {
