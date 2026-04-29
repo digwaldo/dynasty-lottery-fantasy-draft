@@ -515,11 +515,6 @@ async function loadBIG12Projections() {
     try { const r = await fetch(API('players/nfl')); if (r.ok) { const d = await r.json(); Object.assign(playerCache, d); } } catch {}
   }
 
-  // Log first pick metadata so we can see all available fields
-  if (allPicks.length > 0) {
-    console.log('[PROJ] Pick metadata sample:', JSON.stringify(allPicks[0].metadata, null, 2));
-  }
-
   // Fetch all BIG12 startup picks fresh
   const draftId = STARTUP_DRAFT_IDS['BIG12'];
   let allPicks = [];
@@ -527,6 +522,11 @@ async function loadBIG12Projections() {
     const r = await fetch(API('draft/' + draftId + '/picks'));
     allPicks = r.ok ? await r.json() : [];
   } catch {}
+
+  // Log metadata from first pick to see available projection fields
+  if (allPicks.length > 0) {
+    console.log('[PROJ] Pick metadata sample:', JSON.stringify(allPicks[0].metadata, null, 2));
+  }
 
   projPicksCache = allPicks;
 
