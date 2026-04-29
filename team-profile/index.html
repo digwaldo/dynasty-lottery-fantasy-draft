@@ -742,6 +742,8 @@ async function loadBIG12Projections() {
   const statusEl = document.getElementById('proj-status');
   const boardEl = document.getElementById('proj-leaderboard');
   if (!boardEl) return;
+  // Show refreshing indicator
+  if (statusEl) statusEl.textContent = '· refreshing...';
 
   // Load player cache if needed
   if (Object.keys(playerCache).length === 0) {
@@ -785,7 +787,9 @@ async function loadBIG12Projections() {
     const players = playerIds.map(pid => {
       const cached = playerCache[pid] || {};
       const name = cached.full_name || '';
-      return { pid, pos: cached.position || '', score: projScore(pid, name) };
+      const score = projScore(pid, name);
+      if (playerIds.length <= 3) console.log('[DS] pid:', pid, 'name:', name, 'score:', score);
+      return { pid, pos: cached.position || '', score };
     }).sort((a,b) => b.score - a.score);
 
     const pools = { QB:[], RB:[], WR:[], TE:[], K:[], DEF:[] };
@@ -840,7 +844,9 @@ async function loadBIG12Projections() {
   const totalPicksMade = allPicks.length;
   const picksPerTeam = Math.floor(totalPicksMade / 12);
 
-  if (statusEl) statusEl.textContent = `· ${totalPicksMade} / ${totalRounds*12} picks made`;
+  const _now = new Date();
+  const _t = _now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',second:'2-digit'});
+  if (statusEl) statusEl.textContent = `· ${totalPicksMade} / ${totalRounds*12} picks · updated ${_t}`;
 
   const POS_COL = { QB:'#e5c440', RB:'#4ae0a0', WR:'#4ab0ff', TE:'#ff8c4a', K:'#c084fc', DEF:'#f87171' };
 
