@@ -278,6 +278,7 @@
   <div class="league-tabs">
     <div class="league-tab active" onclick="switchLeague('CFL')">CFL</div>
     <div class="league-tab" onclick="switchLeague('MinuteMaid')">MinuteMaid</div>
+    <div class="league-tab" onclick="switchLeague('BIG12')">BIG12</div>
   </div>
 
   <div id="main-content">
@@ -341,7 +342,8 @@ function proxyAvatar(url) {
 
 const LEAGUE_IDS = {
   CFL: '1325949536840974336',        // 2026 season (live)
-  MinuteMaid: '1325971620531015680'  // 2026 season (live)
+  MinuteMaid: '1325971620531015680', // 2026 season (live)
+  BIG12: '1354903443910721536',      // 2026 season (live)
 };
 
 // Hardcoded roster_id -> username mapping
@@ -353,9 +355,13 @@ const ROSTER_MAP = {
   },
   MinuteMaid: {
     1:'cinccity', 2:'dweeebzz', 3:'ifeellikemontez', 4:'tredagoat082410',
-    5:'BarbieBry', 6:'meedzs', 7:'bleedgreenz', 8:'TheAmberErica',
-    9:'jwilly301', 10:'xtepps'
-  }
+    5:'BarbieBry', 6:'meedzs', 7:'bleedgreenz', 8:'TheAmberErica', 9:'jwilly301', 10:'xtepps'
+  },
+  BIG12: {
+    1:'cinccity', 2:'dweeebzz', 3:'TheCountB', 4:'kingfifi',
+    5:'Kushwopp', 6:'Hustle4itkennel', 7:'meedzs', 8:'Garciaan19',
+    9:'GMen86900711', 10:'bleedgreenz', 11:'YoungboyJosh', 12:'ifeellikemontez'
+  },
 };
 
 // Hardcoded team data from Sleeper JSON
@@ -385,7 +391,21 @@ const TEAM_DATA = {
     'BarbieBry':       {displayName:'DemChickensAshtonImLotion', avatarUrl:'https://sleepercdn.com/avatars/thumbs/c1c03ad4aabca1013a119f17661d23fb'},
     'TheAmberErica':   {displayName:'Team TheAmberErica',        avatarUrl:'https://sleepercdn.com/avatars/thumbs/0a8202bcaec9acdd00beaec067cc75b4'},
     'xtepps':          {displayName:'Team xtepps',               avatarUrl:'https://sleepercdn.com/avatars/thumbs/725aaca491cef7045d2090c9cfa4c025'},
-  }
+  },
+  BIG12: {
+    'cinccity':       {displayName:'CINCCITY CINNERS',    avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/bfd04df196af2270233b525c60d69be7')},
+    'dweeebzz':       {displayName:'dweeebzz',            avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/8eb8f8bf999945d523f2c4033f70473e')},
+    'TheCountB':      {displayName:'TheCountB',           avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/2b5dadcb8a24a8efb736ed0281687822')},
+    'kingfifi':       {displayName:'London Capaholics',   avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/e17e9802790aeb3cabc0a6f17656921f')},
+    'Kushwopp':       {displayName:'Kushwopp',            avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/b3338675f635c2c1f42b469621d38ec6')},
+    'Hustle4itkennel':{displayName:'Hustle4itkennel',     avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/46207162bb09d906e1cfda72b2fc088e')},
+    'meedzs':         {displayName:'meedzs',              avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/13eea83d867b32106862ac0b2b3d3c40')},
+    'Garciaan19':     {displayName:'Garciaan19',          avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/b3338675f635c2c1f42b469621d38ec6')},
+    'GMen86900711':   {displayName:'GMen86900711',        avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/15d7cf259bc30eab8f6120f45f652fb6')},
+    'bleedgreenz':    {displayName:'bleedgreenz',         avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/b3338675f635c2c1f42b469621d38ec6')},
+    'YoungboyJosh':   {displayName:'YoungboyJosh',        avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/93c1e5c75c9f7b6bc36954310795cfac')},
+    'ifeellikemontez':{displayName:'ifeellikemontez',     avatarUrl:proxyAvatar('https://sleepercdn.com/avatars/thumbs/0a937d29c073d8893dfd7b4e365e4363')},
+  },
 };
 
 // Draft IDs
