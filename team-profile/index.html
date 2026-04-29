@@ -523,6 +523,14 @@ async function loadBIG12Projections() {
     allPicks = r.ok ? await r.json() : [];
   } catch {}
 
+  // Log metadata from first few skill position picks to find projection fields
+  const skillPicks = allPicks.filter(p => ['QB','RB','WR','TE'].includes(p.metadata?.position));
+  if (skillPicks.length > 0) {
+    console.log('[META] First skill pick metadata keys:', Object.keys(skillPicks[0].metadata || {}));
+    console.log('[META] Full metadata:', JSON.stringify(skillPicks[0].metadata));
+    if (skillPicks[1]) console.log('[META] Second pick metadata:', JSON.stringify(skillPicks[1].metadata));
+  }
+
   // Fetch per-player season projections using Sleeper's player projection endpoint
   // /projections/nfl/player/<id>?season=2026&season_type=regular&grouping=season
   if (!projCache) {
