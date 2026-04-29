@@ -1025,12 +1025,14 @@ async function loadStartupTab(league, username) {
     try { const res = await fetch(API('players/nfl')); if (res.ok) { const d = await res.json(); Object.assign(playerCache, d); } } catch {}
   }
 
-  const cacheKey = 'startup_' + draftId;
-  if (!draftCache[cacheKey]) {
-    try { const res = await fetch(API('draft/' + draftId + '/picks')); draftCache[cacheKey] = res.ok ? await res.json() : []; } catch { draftCache[cacheKey] = []; }
-  }
+  // Always fetch fresh — draft is live and picks change frequently
+  let startupPicks = [];
+  try {
+    const res = await fetch(API('draft/' + draftId + '/picks'));
+    startupPicks = res.ok ? await res.json() : [];
+  } catch {}
 
-  const allPicks = draftCache[cacheKey];
+  const allPicks = startupPicks;
   const myPicks = allPicks.filter(p => parseInt(p.roster_id) === rosterId).sort((a,b) => a.pick_no - b.pick_no);
 
   if (myPicks.length === 0) {
