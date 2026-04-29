@@ -761,10 +761,10 @@ async function loadBIG12Projections() {
     if (byRoster[rid]) byRoster[rid].push(pick.player_id);
   });
 
-  // Draft Sharks 2026 projected points per player
+  // Draft Sharks 2026 3D Value per player (dynasty value metric)
   function projScore(pid, playerName) {
     const ds = getDSProjection(playerName || '');
-    return ds.proj || 100; // default 100 for unlisted players
+    return ds.val || 1; // default 1 for unlisted players
   }
 
   // Best lineup optimizer per team
@@ -860,7 +860,7 @@ async function loadBIG12Projections() {
   </style>
   <div class="proj-board">
     <div class="proj-legend">
-      <span><strong style="color:var(--chrome2);">Score</strong> = Draft Sharks 2026 projected pts (starters)</span>
+      <span><strong style="color:var(--chrome2);">Score</strong> = Draft Sharks 2026 3D Value (starters)</span>
       <span style="color:var(--muted);">+bench depth below</span>
     </div>`;
 
