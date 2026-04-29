@@ -349,6 +349,230 @@ const LEAGUE_IDS = {
 
 const STARTUP_LEAGUES = ['BIG12']; // leagues with startup drafts
 
+// Draft Sharks 2026 Superflex TE Premium Rankings — 3D Projected Points
+// Players not listed default to val:1, proj:100
+const DS_RANKINGS = {
+  "Josh Allen": {proj:382, val:100, pos:"QB", team:"BUF"},
+  "Puka Nacua": {proj:364, val:96, pos:"WR", team:"LAR"},
+  "Jahmyr Gibbs": {proj:359, val:93, pos:"RB", team:"DET"},
+  "Bijan Robinson": {proj:356, val:91, pos:"RB", team:"ATL"},
+  "Ja'Marr Chase": {proj:349, val:88, pos:"WR", team:"CIN"},
+  "Christian McCaffrey": {proj:343, val:84, pos:"RB", team:"SF"},
+  "Jaxon Smith-Njigba": {proj:336, val:81, pos:"WR", team:"SEA"},
+  "Amon-Ra St. Brown": {proj:330, val:78, pos:"WR", team:"DET"},
+  "Lamar Jackson": {proj:360, val:76, pos:"QB", team:"BAL"},
+  "Drake Maye": {proj:357, val:72, pos:"QB", team:"NE"},
+  "CeeDee Lamb": {proj:318, val:72, pos:"WR", team:"DAL"},
+  "Rashee Rice": {proj:317, val:71, pos:"WR", team:"KC"},
+  "Jonathan Taylor": {proj:317, val:71, pos:"RB", team:"IND"},
+  "Trey McBride": {proj:328, val:70, pos:"TE", team:"ARI"},
+  "Jalen Hurts": {proj:354, val:69, pos:"QB", team:"PHI"},
+  "Joe Burrow": {proj:354, val:69, pos:"QB", team:"CIN"},
+  "Justin Jefferson": {proj:308, val:66, pos:"WR", team:"MIN"},
+  "Brock Bowers": {proj:313, val:64, pos:"TE", team:"LVR"},
+  "Jayden Daniels": {proj:349, val:63, pos:"QB", team:"WAS"},
+  "Trevor Lawrence": {proj:347, val:61, pos:"QB", team:"JAC"},
+  "James Cook": {proj:299, val:61, pos:"RB", team:"BUF"},
+  "Ashton Jeanty": {proj:299, val:61, pos:"RB", team:"LVR"},
+  "Drake London": {proj:295, val:60, pos:"WR", team:"ATL"},
+  "Nico Collins": {proj:295, val:60, pos:"WR", team:"HOU"},
+  "Caleb Williams": {proj:344, val:57, pos:"QB", team:"CHI"},
+  "Saquon Barkley": {proj:291, val:56, pos:"RB", team:"PHI"},
+  "Brock Purdy": {proj:343, val:56, pos:"QB", team:"SF"},
+  "De'Von Achane": {proj:290, val:56, pos:"RB", team:"MIA"},
+  "Justin Herbert": {proj:342, val:55, pos:"QB", team:"LAC"},
+  "Dak Prescott": {proj:341, val:54, pos:"QB", team:"DAL"},
+  "George Pickens": {proj:283, val:54, pos:"WR", team:"DAL"},
+  "Kenneth Walker III": {proj:285, val:53, pos:"RB", team:"KC"},
+  "Colston Loveland": {proj:283, val:53, pos:"TE", team:"CHI"},
+  "Jaxson Dart": {proj:339, val:52, pos:"QB", team:"NYG"},
+  "Josh Jacobs": {proj:282, val:52, pos:"RB", team:"GB"},
+  "Omarion Hampton": {proj:279, val:50, pos:"RB", team:"LAC"},
+  "Tyler Warren": {proj:275, val:50, pos:"TE", team:"IND"},
+  "A.J. Brown": {proj:276, val:50, pos:"WR", team:"PHI"},
+  "Jeremiyah Love": {proj:278, val:50, pos:"RB", team:"ARI"},
+  "Bo Nix": {proj:337, val:49, pos:"QB", team:"DEN"},
+  "Chase Brown": {proj:276, val:48, pos:"RB", team:"CIN"},
+  "Malik Nabers": {proj:272, val:47, pos:"WR", team:"NYG"},
+  "Derrick Henry": {proj:272, val:46, pos:"RB", team:"BAL"},
+  "Zay Flowers": {proj:265, val:44, pos:"WR", team:"BAL"},
+  "Harold Fannin Jr.": {proj:258, val:43, pos:"TE", team:"CLE"},
+  "Kyler Murray": {proj:330, val:43, pos:"QB", team:"MIN"},
+  "Chris Olave": {proj:263, val:43, pos:"WR", team:"NO"},
+  "Matthew Stafford": {proj:330, val:42, pos:"QB", team:"LAR"},
+  "Patrick Mahomes": {proj:329, val:41, pos:"QB", team:"KC"},
+  "Breece Hall": {proj:262, val:41, pos:"RB", team:"NYJ"},
+  "DeVonta Smith": {proj:258, val:40, pos:"WR", team:"PHI"},
+  "Jared Goff": {proj:327, val:39, pos:"QB", team:"DET"},
+  "Tee Higgins": {proj:257, val:39, pos:"WR", team:"CIN"},
+  "Javonte Williams": {proj:257, val:38, pos:"RB", team:"DAL"},
+  "Travis Etienne": {proj:256, val:38, pos:"RB", team:"NO"},
+  "Garrett Wilson": {proj:254, val:38, pos:"WR", team:"NYJ"},
+  "Sam LaPorta": {proj:242, val:37, pos:"TE", team:"DET"},
+  "Tucker Kraft": {proj:241, val:37, pos:"TE", team:"GB"},
+  "Davante Adams": {proj:252, val:37, pos:"WR", team:"LAR"},
+  "Tyler Shough": {proj:324, val:36, pos:"QB", team:"NO"},
+  "Jaylen Waddle": {proj:250, val:35, pos:"WR", team:"DEN"},
+  "Kyle Pitts": {proj:233, val:34, pos:"TE", team:"ATL"},
+  "Kyren Williams": {proj:248, val:33, pos:"RB", team:"LAR"},
+  "Luther Burden III": {proj:245, val:33, pos:"WR", team:"CHI"},
+  "Baker Mayfield": {proj:320, val:33, pos:"QB", team:"TB"},
+  "Tetairoa McMillan": {proj:244, val:33, pos:"WR", team:"CAR"},
+  "Jordan Love": {proj:318, val:32, pos:"QB", team:"GB"},
+  "Ladd McConkey": {proj:241, val:32, pos:"WR", team:"LAC"},
+  "Emeka Egbuka": {proj:239, val:31, pos:"WR", team:"TB"},
+  "C.J. Stroud": {proj:312, val:31, pos:"QB", team:"HOU"},
+  "D'Andre Swift": {proj:238, val:30, pos:"RB", team:"CHI"},
+  "Travis Kelce": {proj:226, val:30, pos:"TE", team:"KC"},
+  "Daniel Jones": {proj:308, val:30, pos:"QB", team:"IND"},
+  "Terry McLaurin": {proj:236, val:30, pos:"WR", team:"WAS"},
+  "Jameson Williams": {proj:235, val:30, pos:"WR", team:"DET"},
+  "Malik Willis": {proj:306, val:29, pos:"QB", team:"MIA"},
+  "Christian Watson": {proj:234, val:29, pos:"WR", team:"GB"},
+  "Bucky Irving": {proj:234, val:29, pos:"RB", team:"TB"},
+  "D.K. Metcalf": {proj:233, val:29, pos:"WR", team:"PIT"},
+  "Cameron Ward": {proj:301, val:28, pos:"QB", team:"TEN"},
+  "TreVeyon Henderson": {proj:229, val:27, pos:"RB", team:"NE"},
+  "Quinshon Judkins": {proj:225, val:27, pos:"RB", team:"CLE"},
+  "Sam Darnold": {proj:298, val:27, pos:"QB", team:"SEA"},
+  "Mike Evans": {proj:228, val:27, pos:"WR", team:"SF"},
+  "Rome Odunze": {proj:227, val:26, pos:"WR", team:"CHI"},
+  "George Kittle": {proj:219, val:26, pos:"TE", team:"SF"},
+  "Jaylen Warren": {proj:224, val:26, pos:"RB", team:"PIT"},
+  "Courtland Sutton": {proj:225, val:26, pos:"WR", team:"DEN"},
+  "Jakobi Meyers": {proj:224, val:25, pos:"WR", team:"JAC"},
+  "Michael Pittman Jr.": {proj:223, val:25, pos:"WR", team:"IND"},
+  "Cameron Skattebo": {proj:222, val:25, pos:"RB", team:"NYG"},
+  "Carnell Tate": {proj:221, val:25, pos:"WR", team:"TEN"},
+  "Ricky Pearsall": {proj:220, val:24, pos:"WR", team:"SF"},
+  "Marvin Harrison Jr.": {proj:220, val:24, pos:"WR", team:"ARI"},
+  "Alec Pierce": {proj:220, val:24, pos:"WR", team:"IND"},
+  "Parker Washington": {proj:219, val:24, pos:"WR", team:"JAC"},
+  "Bryce Young": {proj:284, val:23, pos:"QB", team:"CAR"},
+  "Jordyn Tyson": {proj:316, val:23, pos:"WR", team:"NO"},
+  "D.J. Moore": {proj:316, val:23, pos:"WR", team:"BUF"},
+  "Fernando Mendoza": {proj:260, val:23, pos:"QB", team:"IND"},
+  "Brian Thomas Jr.": {proj:217, val:23, pos:"WR", team:"JAC"},
+  "Jordan Addison": {proj:317, val:22, pos:"WR", team:"MIN"},
+  "Dalton Kincaid": {proj:214, val:22, pos:"TE", team:"BUF"},
+  "Quentin Johnston": {proj:212, val:21, pos:"WR", team:"LAC"},
+  "Aaron Rodgers": {proj:155, val:21, pos:"QB", team:"PIT"},
+  "Romeo Doubs": {proj:211, val:21, pos:"WR", team:"NE"},
+  "Jake Ferguson": {proj:211, val:21, pos:"TE", team:"DAL"},
+  "Chris Godwin": {proj:210, val:20, pos:"WR", team:"TB"},
+  "Geno Smith": {proj:272, val:20, pos:"QB", team:"NYG"},
+  "Stefon Diggs": {proj:209, val:20, pos:"WR", team:"JAC"},
+  "Jayden Reed": {proj:209, val:20, pos:"WR", team:"GB"},
+  "Rhamondre Stevenson": {proj:206, val:20, pos:"RB", team:"NE"},
+  "Tony Pollard": {proj:204, val:19, pos:"RB", team:"TEN"},
+  "Brandon Aubrey": {proj:202, val:19, pos:"K", team:"DAL"},
+  "Bhayshul Tuten": {proj:202, val:19, pos:"RB", team:"JAC"},
+  "Kirk Cousins": {proj:203, val:19, pos:"QB", team:"ATL"},
+  "Deshaun Watson": {proj:68, val:19, pos:"QB", team:"CLE"},
+  "Xavier Worthy": {proj:203, val:17, pos:"WR", team:"KC"},
+  "Michael Wilson": {proj:203, val:17, pos:"WR", team:"ARI"},
+  "Carson Beck": {proj:93, val:17, pos:"QB", team:"CHI"},
+  "David Montgomery": {proj:198, val:17, pos:"RB", team:"DET"},
+  "Mac Jones": {proj:77, val:17, pos:"QB", team:"SF"},
+  "Brandon Aiyuk": {proj:201, val:17, pos:"WR", team:"PIT"},
+  "Michael Penix Jr.": {proj:259, val:17, pos:"QB", team:"ATL"},
+  "KC Concepcion": {proj:201, val:17, pos:"WR", team:"CLE"},
+  "Shedeur Sanders": {proj:67, val:16, pos:"QB", team:"CLE"},
+  "Makai Lamb": {proj:200, val:16, pos:"WR", team:"ARI"},
+  "Jayden Higgins": {proj:199, val:16, pos:"WR", team:"ARI"},
+  "Russell Wilson": {proj:77, val:16, pos:"QB", team:"DAL"},
+  "Jacoby Brissett": {proj:145, val:16, pos:"QB", team:"NE"},
+  "Hunter Henry": {proj:203, val:16, pos:"TE", team:"NE"},
+  "Brenton Strange": {proj:203, val:16, pos:"TE", team:"JAC"},
+  "Dallas Goedert": {proj:197, val:16, pos:"TE", team:"PHI"},
+  "Khalil Shakir": {proj:197, val:15, pos:"WR", team:"BUF"},
+  "WanDale Robinson": {proj:197, val:15, pos:"WR", team:"TEN"},
+  "Josh Downs": {proj:197, val:15, pos:"WR", team:"IND"},
+  "Jodarian Price": {proj:192, val:15, pos:"RB", team:"GB"},
+  "RJ Harvey": {proj:192, val:15, pos:"RB", team:"CIN"},
+  "Tua Tagovailoa": {proj:121, val:15, pos:"QB", team:"ARI"},
+  "J.K. Dobbins": {proj:192, val:15, pos:"RB", team:"BAL"},
+  "Chuba Hubbard": {proj:192, val:15, pos:"RB", team:"CAR"},
+  "Deebo Samuel": {proj:194, val:14, pos:"WR", team:"LAC"},
+  "Rico Dowdle": {proj:190, val:14, pos:"RB", team:"DAL"},
+  "Oronde Gadsden II": {proj:200, val:13, pos:"TE", team:"LAC"},
+  "Matthew Golden": {proj:190, val:13, pos:"WR", team:"GB"},
+  "Calvin Ridley": {proj:190, val:12, pos:"WR", team:"NE"},
+  "Juwan Johnson": {proj:188, val:12, pos:"TE", team:"NO"},
+  "Cameron Dicker": {proj:159, val:11, pos:"K", team:"LAC"},
+  "Cam Little": {proj:128, val:11, pos:"K", team:"LAC"},
+  "Jaeuan Jennings": {proj:186, val:11, pos:"WR", team:"MIA"},
+  "Denzel Boston": {proj:185, val:11, pos:"WR", team:"CLE"},
+  "Rachaad White": {proj:185, val:11, pos:"RB", team:"NE"},
+  "T.J. Hockenson": {proj:185, val:11, pos:"TE", team:"MIN"},
+  "Kyle Monangai": {proj:179, val:10, pos:"RB", team:"NYJ"},
+  "Omar Cooper Jr.": {proj:182, val:10, pos:"WR", team:"NYG"},
+  "Kamyon Sadiq": {proj:180, val:10, pos:"TE", team:"TEN"},
+  "Jordan Mason": {proj:178, val:10, pos:"RB", team:"SF"},
+  "Isaiah Likely": {proj:178, val:10, pos:"TE", team:"BAL"},
+  "Kenneth Gainwell": {proj:178, val:10, pos:"RB", team:"TB"},
+  "Tyjon Spears": {proj:176, val:10, pos:"RB", team:"CLE"},
+  "Jalen McMillan": {proj:182, val:10, pos:"WR", team:"TB"},
+  "Dalton Schultz": {proj:184, val:10, pos:"TE", team:"ARI"},
+  "Harrison Mevis": {proj:183, val:10, pos:"K", team:"LAC"},
+  "Aaron Jones": {proj:175, val:9, pos:"RB", team:"MIN"},
+  "Denver Broncos": {proj:121, val:9, pos:"DEF", team:"DEN"},
+  "Seattle Seahawks": {proj:119, val:9, pos:"DEF", team:"SEA"},
+  "Ka'imi Fairbairn": {proj:161, val:9, pos:"K", team:"HOU"},
+  "Jason Myers": {proj:160, val:9, pos:"K", team:"SEA"},
+  "Andrea Borregales": {proj:151, val:9, pos:"K", team:"NE"},
+  "Keenan Allen": {proj:179, val:9, pos:"WR", team:"IND"},
+  "Mark Andrews": {proj:302, val:8, pos:"TE", team:"BAL"},
+  "Houston Texans": {proj:118, val:8, pos:"DEF", team:"HOU"},
+  "Rashid Shaheed": {proj:177, val:8, pos:"WR", team:"SEA"},
+  "New England Patriots": {proj:115, val:8, pos:"DEF", team:"NE"},
+  "John Bates": {proj:155, val:7, pos:"TE", team:"DAL"},
+  "Jalen Coker": {proj:171, val:7, pos:"WR", team:"CAR"},
+  "Germie Bernard": {proj:128, val:7, pos:"WR", team:"PIT"},
+  "Green Bay Packers": {proj:112, val:6, pos:"DEF", team:"GB"},
+  "Tyler Loop": {proj:153, val:6, pos:"K", team:"BAL"},
+  "Jonathon Brooks": {proj:165, val:6, pos:"RB", team:"CAR"},
+  "Blake Corum": {proj:163, val:6, pos:"RB", team:"LAR"},
+  "Jerry Jeudy": {proj:170, val:5, pos:"WR", team:"CLE"},
+  "Charlie Smyth": {proj:148, val:5, pos:"K", team:"NO"},
+  "Tyreek Hill": {proj:168, val:5, pos:"WR", team:"MIA"},
+  "Minnesota Vikings": {proj:109, val:5, pos:"DEF", team:"MIN"},
+  "Harrison Butker": {proj:148, val:5, pos:"K", team:"KC"},
+  "Los Angeles Rams": {proj:107, val:4, pos:"DEF", team:"LAR"},
+  "Chigoziem Okonkwo": {proj:165, val:4, pos:"TE", team:"TEN"},
+  "Dylan Sampson": {proj:158, val:4, pos:"RB", team:"TEN"},
+  "Jace Crosley-Merritt": {proj:161, val:4, pos:"RB", team:"BAL"},
+};
+
+// Last name lookup for matching Sleeper player names
+const DS_BY_LAST = {};
+Object.entries(DS_RANKINGS).forEach(([name, data]) => {
+  const parts = name.split(' ');
+  const last = parts[parts.length - 1].toLowerCase().replace(/[^a-z]/g,'');
+  if (!DS_BY_LAST[last]) DS_BY_LAST[last] = [];
+  DS_BY_LAST[last].push({...data, fullName: name});
+});
+
+function getDSProjection(playerName) {
+  if (!playerName) return {proj:100, val:1};
+  // Try exact match first
+  if (DS_RANKINGS[playerName]) return DS_RANKINGS[playerName];
+  // Try last name fuzzy match
+  const parts = playerName.split(' ');
+  const last = parts[parts.length-1].toLowerCase().replace(/[^a-z]/g,'');
+  const matches = DS_BY_LAST[last] || [];
+  if (matches.length === 1) return matches[0];
+  if (matches.length > 1) {
+    // Multiple players with same last name - try first name initial
+    const firstInit = (parts[0]||'')[0]?.toLowerCase();
+    const m = matches.find(p => p.fullName[0].toLowerCase() === firstInit);
+    if (m) return m;
+    return matches[0];
+  }
+  // Not found - default
+  return {proj:100, val:1};
+}
+
 // Hardcoded roster_id -> username mapping
 const ROSTER_MAP = {
   CFL: {
@@ -502,9 +726,6 @@ function renderTeamGrid() {
 }
 
 // ── BIG12 PROJECTION LEADERBOARD ──────────────────────────────────────────────
-let projCache = null;
-let projPicksCache = null;
-
 async function loadBIG12Projections() {
   const statusEl = document.getElementById('proj-status');
   const boardEl = document.getElementById('proj-leaderboard');
@@ -531,46 +752,6 @@ async function loadBIG12Projections() {
     if (skillPicks[1]) console.log('[META] Second pick metadata:', JSON.stringify(skillPicks[1].metadata));
   }
 
-  // Fetch per-player season projections using Sleeper's player projection endpoint
-  // /projections/nfl/player/<id>?season=2026&season_type=regular&grouping=season
-  if (!projCache) {
-    projCache = {};
-    const uniquePids = [...new Set(allPicks.map(p => p.player_id))];
-    if (statusEl) statusEl.textContent = '· loading projections (' + uniquePids.length + ' players)...';
-    // Fetch in batches of 10 to avoid overwhelming the proxy
-    const BATCH = 10;
-    for (let i = 0; i < uniquePids.length; i += BATCH) {
-      const batch = uniquePids.slice(i, i + BATCH);
-      await Promise.all(batch.map(async pid => {
-        try {
-          // Use 2025 actual season stats as projection baseline (2026 projections not populated yet)
-          // /stats/nfl/player/<id>?season=2025&season_type=regular&grouping=season
-          const res = await fetch(API('stats/nfl/player/' + pid) + '&season=2025&season_type=regular&grouping=season');
-          if (res.ok) {
-            const data = await res.json();
-            if (pid === uniquePids[0]) console.log('[PROJ] 2025 stats sample:', JSON.stringify(data).slice(0, 300));
-            // Response is week-keyed object — sum pts_ppr across all weeks
-            let total = 0;
-            if (data && typeof data === 'object' && !Array.isArray(data)) {
-              Object.values(data).forEach(week => {
-                if (week && typeof week === 'object') total += (week.pts_ppr || 0);
-              });
-            }
-            projCache[pid] = { pts_ppr: Math.round(total * 10) / 10 };
-          }
-        } catch(e) { projCache[pid] = { pts_ppr: 0 }; }
-      }));
-    }
-    const withPts = Object.values(projCache).filter(p => p.pts_ppr > 0).length;
-    console.log('[PROJ] Loaded projections:', withPts, '/', uniquePids.length, 'players with pts_ppr > 0');
-    if (withPts > 0) {
-      const topEntry = Object.entries(projCache).sort((a,b) => b[1].pts_ppr - a[1].pts_ppr)[0];
-      console.log('[PROJ] Top player:', topEntry[0], '→', topEntry[1].pts_ppr, 'pts');
-    }
-  }
-
-  projPicksCache = allPicks;
-
   // Group picks by roster_id
   const rosterMap = ROSTER_MAP['BIG12'];
   const byRoster = {};
@@ -580,11 +761,10 @@ async function loadBIG12Projections() {
     if (byRoster[rid]) byRoster[rid].push(pick.player_id);
   });
 
-  // pts_ppr direct from Sleeper per-player season projection
-  function projScore(pid) {
-    const p = projCache[pid];
-    if (!p) return 0;
-    return Math.round((p.pts_ppr || 0) * 10) / 10;
+  // Draft Sharks 2026 projected points per player
+  function projScore(pid, playerName) {
+    const ds = getDSProjection(playerName || '');
+    return ds.proj || 100; // default 100 for unlisted players
   }
 
   // Best lineup optimizer per team
@@ -592,7 +772,8 @@ async function loadBIG12Projections() {
   function calcTeamProjection(playerIds) {
     const players = playerIds.map(pid => {
       const cached = playerCache[pid] || {};
-      return { pid, pos: cached.position || '', score: projScore(pid) };
+      const name = cached.full_name || '';
+      return { pid, pos: cached.position || '', score: projScore(pid, name) };
     }).sort((a,b) => b.score - a.score);
 
     const pools = { QB:[], RB:[], WR:[], TE:[], K:[], DEF:[] };
@@ -679,7 +860,7 @@ async function loadBIG12Projections() {
   </style>
   <div class="proj-board">
     <div class="proj-legend">
-      <span><strong style="color:var(--chrome2);">Score</strong> = 2025 season PPR pts (starters)</span>
+      <span><strong style="color:var(--chrome2);">Score</strong> = Draft Sharks 2026 projected pts (starters)</span>
       <span style="color:var(--muted);">+bench depth below</span>
     </div>`;
 
@@ -1551,3 +1732,8 @@ renderTeamGrid();
 </script>
 </body>
 </html>
+
+  // Use Draft Sharks 2026 projections (getDSProjection matches by player name)
+  // projCache not needed - we use pick metadata names directly
+
+  // Group picks by roster_id
