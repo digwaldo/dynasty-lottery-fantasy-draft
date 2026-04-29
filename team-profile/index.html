@@ -728,7 +728,7 @@ function renderTeamGrid() {
     window._big12RefreshInterval = setInterval(() => {
       if (activeLeague === 'BIG12') loadBIG12Projections();
       else clearInterval(window._big12RefreshInterval);
-    }, 60000);
+    }, 600000);
   } else {
     if (window._big12RefreshInterval) {
       clearInterval(window._big12RefreshInterval);
@@ -878,7 +878,7 @@ async function loadBIG12Projections() {
   </style>
   <div class="proj-board">
     <div class="proj-legend">
-      <span><strong style="color:var(--chrome2);">Score</strong> = Draft Sharks 2026 3D Value (starters)</span>
+      <span><strong style="color:var(--chrome2);">Score</strong> = 3D Value</span>
       <span style="color:var(--muted);">+bench depth below</span>
     </div>`;
 
