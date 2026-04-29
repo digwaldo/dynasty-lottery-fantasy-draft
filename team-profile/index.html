@@ -469,12 +469,22 @@ function switchLeague(league) {
 }
 
 function renderTeamGrid() {
-  const content = document.getElementById('main-content');
+  const el = document.getElementById('main-content');
   const usernames = Object.keys(TEAM_DATA[activeLeague]);
 
-  let html = `<div class="section-label">${activeLeague} Teams — Click to view profile</div><div class="team-grid">`;
+  let html = '';
+
+  // BIG12: show projection leaderboard above grid
+  if (activeLeague === 'BIG12') {
+    html += `<div class="section-label">BIG12 · 2026 Roster Projections <span id="proj-status" style="font-size:10px;color:var(--muted);letter-spacing:1px;font-family:'Barlow',sans-serif;"></span></div>`;
+    html += `<div id="proj-leaderboard" style="margin-bottom:20px;">
+      <div style="text-align:center;padding:16px;font-family:'Barlow',sans-serif;font-size:12px;color:var(--muted);letter-spacing:2px;">Loading projections...</div>
+    </div>`;
+  }
+
+  html += `<div class="section-label" style="margin-top:${activeLeague==='BIG12'?'0':'0'}">${activeLeague} Teams — Click to view profile</div><div class="team-grid">`;
   usernames.forEach(username => {
-    const t = getTeam(activeLeague, username); // use getTeam so avatar is proxied
+    const t = getTeam(activeLeague, username);
     html += `
       <div class="team-card" onclick="openTeamProfile('${username}')">
         ${t.avatarUrl
@@ -485,7 +495,198 @@ function renderTeamGrid() {
       </div>`;
   });
   html += '</div>';
-  content.innerHTML = html;
+  el.innerHTML = html;
+
+  // Load projections for BIG12 after render
+  if (activeLeague === 'BIG12') loadBIG12Projections();
+}
+
+// ── BIG12 PROJECTION LEADERBOARD ──────────────────────────────────────────────
+let projCache = null;
+let projPicksCache = null;
+
+async function loadBIG12Projections() {
+  const statusEl = document.getElementById('proj-status');
+  const boardEl = document.getElementById('proj-leaderboard');
+  if (!boardEl) return;
+
+  // Load player cache if needed
+  if (Object.keys(playerCache).length === 0) {
+    try { const r = await fetch(API('players/nfl')); if (r.ok) { const d = await r.json(); Object.assign(playerCache, d); } } catch {}
+  }
+
+  // Fetch projections (season week 1 = full season proxy, pts_ppr)
+  if (!projCache) {
+    try {
+      if (statusEl) statusEl.textContent = '· loading projections...';
+      const r = await fetch(API('projections/nfl/regular/2025/1'));
+      projCache = r.ok ? await r.json() : {};
+    } catch { projCache = {}; }
+  }
+
+  // Fetch all BIG12 startup picks fresh
+  const draftId = STARTUP_DRAFT_IDS['BIG12'];
+  let allPicks = [];
+  try {
+    const r = await fetch(API('draft/' + draftId + '/picks'));
+    allPicks = r.ok ? await r.json() : [];
+  } catch {}
+
+  projPicksCache = allPicks;
+
+  // Group picks by roster_id
+  const rosterMap = ROSTER_MAP['BIG12'];
+  const byRoster = {};
+  Object.keys(rosterMap).forEach(rid => { byRoster[rid] = []; });
+  allPicks.forEach(pick => {
+    const rid = String(pick.roster_id);
+    if (byRoster[rid]) byRoster[rid].push(pick.player_id);
+  });
+
+  // Scoring settings (PPR)
+  function projScore(pid) {
+    const p = projCache[pid];
+    if (!p) return 0;
+    let s = 0;
+    s += (p.pass_yd||0) * 0.04;
+    s += (p.pass_td||0) * 4;
+    s += (p.pass_int||0) * -1;
+    s += (p.rush_yd||0) * 0.1;
+    s += (p.rush_td||0) * 6;
+    s += (p.rec||0) * 1;
+    s += (p.rec_yd||0) * 0.1;
+    s += (p.rec_td||0) * 6;
+    s += (p.fum_lost||0) * -2;
+    s += (p.bonus_rec_te||0) * 0.5;
+    // DST/K use pts_ppr if available
+    if (!s && p.pts_ppr) s = p.pts_ppr;
+    return Math.round(s * 10) / 10;
+  }
+
+  // Best lineup optimizer per team
+  // Slots: QB×1, WR×2, RB×2, TE×1, FLEX×3(RB/WR/TE), SF×1(QB/any), K×1, DEF×1
+  function calcTeamProjection(playerIds) {
+    const players = playerIds.map(pid => {
+      const cached = playerCache[pid] || {};
+      return { pid, pos: cached.position || '', score: projScore(pid) };
+    }).sort((a,b) => b.score - a.score);
+
+    const pools = { QB:[], RB:[], WR:[], TE:[], K:[], DEF:[] };
+    players.forEach(p => { if (pools[p.pos]) pools[p.pos].push(p); });
+
+    const take = (pos, n) => pools[pos].splice(0,n);
+
+    const starters = [
+      ...take('QB',1),
+      ...take('WR',2),
+      ...take('RB',2),
+      ...take('TE',1),
+    ];
+
+    // FLEX: best remaining RB/WR/TE
+    const flexPool = [...pools.RB,...pools.WR,...pools.TE].sort((a,b)=>b.score-a.score);
+    pools.RB=[]; pools.WR=[]; pools.TE=[];
+    starters.push(...flexPool.splice(0,3));
+
+    // SF: best remaining QB then flex
+    const sfPool = [...pools.QB,...flexPool].sort((a,b)=>b.score-a.score);
+    pools.QB=[];
+    starters.push(...sfPool.splice(0,1));
+
+    starters.push(...take('K',1));
+    starters.push(...take('DEF',1));
+
+    const starterScore = starters.reduce((s,p)=>s+p.score, 0);
+
+    // Bench = everyone not in starters
+    const usedPids = new Set(starters.map(p=>p.pid));
+    const bench = players.filter(p=>!usedPids.has(p.pid));
+    const benchScore = bench.reduce((s,p)=>s+p.score, 0);
+
+    return {
+      starterScore: Math.round(starterScore * 10) / 10,
+      benchScore: Math.round(benchScore * 10) / 10,
+      totalScore: Math.round((starterScore + benchScore) * 10) / 10,
+      picks: playerIds.length,
+    };
+  }
+
+  // Build leaderboard
+  const totalRounds = 33;
+  const teams = Object.entries(rosterMap).map(([rid, username]) => {
+    const pids = byRoster[rid] || [];
+    const proj = calcTeamProjection(pids);
+    const t = getTeam('BIG12', username);
+    return { username, displayName: t.displayName, avatarUrl: t.avatarUrl, ...proj };
+  }).sort((a,b) => b.starterScore - a.starterScore);
+
+  const totalPicksMade = allPicks.length;
+  const picksPerTeam = Math.floor(totalPicksMade / 12);
+
+  if (statusEl) statusEl.textContent = `· ${totalPicksMade} / ${totalRounds*12} picks made`;
+
+  const POS_COL = { QB:'#e5c440', RB:'#4ae0a0', WR:'#4ab0ff', TE:'#ff8c4a', K:'#c084fc', DEF:'#f87171' };
+
+  let html = `
+  <style>
+    .proj-board{display:flex;flex-direction:column;gap:5px;}
+    .proj-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(10,21,32,0.85);border:1px solid var(--border-teal);border-radius:4px;cursor:pointer;transition:all 0.2s;}
+    .proj-row:hover{border-color:var(--teal2);transform:translateX(2px);}
+    .proj-row.rank-1{border-color:var(--gold);background:rgba(245,166,35,0.06);}
+    .proj-row.rank-2{border-color:rgba(192,192,192,0.35);}
+    .proj-row.rank-3{border-color:rgba(180,120,60,0.35);}
+    .proj-rank{font-family:'Anton',sans-serif;font-size:18px;width:26px;text-align:center;flex-shrink:0;}
+    .proj-rank.r1{color:var(--gold);}
+    .proj-rank.r2{color:#c0c0c0;}
+    .proj-rank.r3{color:#b4783c;}
+    .proj-rank.rn{color:var(--muted);font-size:13px;}
+    .proj-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--border-teal);flex-shrink:0;}
+    .proj-avatar-ph{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.07);border:2px solid var(--border-teal);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:14px;color:var(--muted);flex-shrink:0;}
+    .proj-info{flex:1;min-width:0;}
+    .proj-name{font-family:'Anton',sans-serif;font-size:15px;letter-spacing:1px;color:var(--chrome2);}
+    .proj-picks{font-size:10px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;}
+    .proj-scores{text-align:right;flex-shrink:0;}
+    .proj-starter{font-family:'Anton',sans-serif;font-size:19px;color:var(--chrome2);}
+    .proj-bench{font-size:10px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;}
+    .proj-bar{height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;margin-top:3px;}
+    .proj-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--teal),var(--teal2));}
+    .proj-legend{display:flex;gap:14px;font-family:'Barlow',sans-serif;font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:8px;justify-content:flex-end;}
+    .proj-legend span{display:flex;align-items:center;gap:4px;}
+  </style>
+  <div class="proj-board">
+    <div class="proj-legend">
+      <span><strong style="color:var(--chrome2);">Score</strong> = projected starter pts</span>
+      <span style="color:var(--muted);">+bench depth shown below</span>
+    </div>`;
+
+  const maxScore = teams[0]?.starterScore || 1;
+  teams.forEach((team, i) => {
+    const rank = i + 1;
+    const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+    const rankLabel = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+    const rankStyle = rank <= 3 ? `r${rank}` : 'rn';
+    const barPct = maxScore > 0 ? Math.round((team.starterScore / maxScore) * 100) : 0;
+    const incomplete = team.picks < totalRounds;
+
+    html += `<div class="proj-row ${rankClass}" onclick="openTeamProfile('${team.username}')">
+      <div class="proj-rank ${rankStyle}">${rankLabel}</div>
+      ${team.avatarUrl
+        ? `<img class="proj-avatar" src="${team.avatarUrl}" crossorigin="anonymous" onerror="this.style.display='none'">`
+        : `<div class="proj-avatar-ph">${team.displayName[0]}</div>`}
+      <div class="proj-info">
+        <div class="proj-name">${team.displayName}</div>
+        <div class="proj-picks">${team.picks} / ${totalRounds} picks${incomplete ? ' · drafting' : ' · complete'}</div>
+        <div class="proj-bar"><div class="proj-bar-fill" style="width:${barPct}%"></div></div>
+      </div>
+      <div class="proj-scores">
+        <div class="proj-starter">${team.starterScore > 0 ? team.starterScore.toLocaleString() : '—'}</div>
+        <div class="proj-bench">${team.benchScore > 0 ? '+' + team.benchScore.toLocaleString() + ' bench' : team.picks === 0 ? 'No picks yet' : 'bench TBD'}</div>
+      </div>
+    </div>`;
+  });
+
+  html += '</div>';
+  boardEl.innerHTML = html;
 }
 
 // ── MODAL ─────────────────────────────────────────────────────────────────────
