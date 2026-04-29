@@ -1127,24 +1127,37 @@ async function loadStartupTab(league, username) {
     .su-progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal2));border-radius:2px;}
 
     /* FIELD */
-    .su-field{background:linear-gradient(180deg,rgba(0,55,20,0.4),rgba(0,35,10,0.25));border:1px solid rgba(0,168,156,0.18);border-radius:6px;padding:14px 8px 18px;position:relative;overflow:hidden;margin-bottom:14px;}
+    .su-field{background:linear-gradient(180deg,rgba(0,55,20,0.4),rgba(0,35,10,0.25));border:1px solid rgba(0,168,156,0.18);border-radius:6px;padding:14px 4px 18px;position:relative;overflow:hidden;margin-bottom:14px;}
     .su-field::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 38px,rgba(255,255,255,0.025) 38px,rgba(255,255,255,0.025) 39px);pointer-events:none;}
-    .su-row{display:flex;align-items:flex-start;justify-content:center;gap:6px;margin-bottom:10px;position:relative;z-index:1;}
+    .su-row{display:flex;align-items:flex-start;justify-content:center;gap:3px;margin-bottom:10px;position:relative;z-index:1;}
     .su-row.qb-row{margin-bottom:6px;}
     .su-row.bottom-row{margin-top:4px;}
 
     /* FIELD SLOT */
-    .fs{display:flex;flex-direction:column;align-items:center;gap:2px;width:58px;text-align:center;flex-shrink:0;}
-    .fs-label{font-family:'Anton',sans-serif;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;min-height:13px;}
-    .fs-circle{width:46px;height:46px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .fs{display:flex;flex-direction:column;align-items:center;gap:2px;width:46px;text-align:center;flex-shrink:0;}
+    .fs-label{font-family:'Anton',sans-serif;font-size:8px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;min-height:12px;}
+    .fs-circle{width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
     .fs.filled .fs-circle{border-width:2px;}
-    .fs-name{font-family:'Anton',sans-serif;font-size:9px;letter-spacing:1px;color:var(--chrome2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58px;}
-    .fs-team{font-size:8px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;}
+    .fs-name{font-family:'Anton',sans-serif;font-size:8px;letter-spacing:1px;color:var(--chrome2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46px;}
+    .fs-team{font-size:7px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;}
 
-    /* OL slots */
-    .ol-slot .fs-circle{width:38px;height:38px;border-color:rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);}
-    .ol-slot .fs-circle span{font-family:'Anton',sans-serif;font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.25);}
-    .ol-slot{width:42px;}
+    /* OL slots — extra compact */
+    .ol-slot .fs-circle{width:28px;height:28px;border-color:rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);}
+    .ol-slot .fs-circle span{font-family:'Anton',sans-serif;font-size:7px;letter-spacing:0px;color:rgba(255,255,255,0.25);}
+    .ol-slot{width:30px;}
+    .ol-slot .fs-label{display:none;}
+
+    /* Mobile: compress top row so WR1/WR2 fit */
+    @media(max-width:480px){
+      .su-row{gap:3px;}
+      .fs{width:44px;}
+      .fs-circle{width:38px;height:38px;}
+      .fs-name{font-size:8px;max-width:44px;}
+      .ol-slot{width:28px;}
+      .ol-slot .fs-circle{width:26px;height:26px;margin-top:6px;}
+      .ol-slot .fs-circle span{font-size:7px;}
+      .su-field{padding:10px 4px 14px;}
+    }
 
     /* divider */
     .su-divider{display:flex;align-items:center;gap:6px;margin:2px 12px 8px;opacity:0.5;position:relative;z-index:1;}
