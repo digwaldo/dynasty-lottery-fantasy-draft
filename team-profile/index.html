@@ -515,30 +515,9 @@ async function loadBIG12Projections() {
     try { const r = await fetch(API('players/nfl')); if (r.ok) { const d = await r.json(); Object.assign(playerCache, d); } } catch {}
   }
 
-  // Fetch projections - try 2025 season (most recent available)
-  // Sleeper projections return pts_ppr, pts_half_ppr, pts_std per player per week
-  if (!projCache) {
-    try {
-      if (statusEl) statusEl.textContent = '· loading projections...';
-      // Try multiple weeks to find one with data, use week 1 as baseline
-      let proj = {};
-      for (const week of [1, 2, 3]) {
-        const r = await fetch(API('projections/nfl/regular/2025/' + week));
-        if (r.ok) {
-          const d = await r.json();
-          // Check if we got actual data with pts_ppr
-          const sample = Object.values(d)[0];
-          console.log('[PROJ] Week', week, 'sample fields:', sample ? Object.keys(sample).slice(0,10) : 'empty');
-          console.log('[PROJ] Week', week, 'sample pts_ppr:', sample?.pts_ppr, 'pts_half_ppr:', sample?.pts_half_ppr);
-          if (sample && (sample.pts_ppr || sample.pts_half_ppr)) {
-            proj = d;
-            break;
-          }
-        }
-      }
-      projCache = proj;
-      console.log('[PROJ] Total players with projections:', Object.keys(projCache).length);
-    } catch(e) { projCache = {}; console.error('[PROJ] Error:', e); }
+  // Log first pick metadata so we can see all available fields
+  if (allPicks.length > 0) {
+    console.log('[PROJ] Pick metadata sample:', JSON.stringify(allPicks[0].metadata, null, 2));
   }
 
   // Fetch all BIG12 startup picks fresh
@@ -675,7 +654,7 @@ async function loadBIG12Projections() {
   </style>
   <div class="proj-board">
     <div class="proj-legend">
-      <span><strong style="color:var(--chrome2);">Score</strong> = Sleeper projected pts (starters)</span>
+      <span><strong style="color:var(--chrome2);">Score</strong> = 2024 season PPR pts (starters)</span>
       <span style="color:var(--muted);">+bench depth below</span>
     </div>`;
 
