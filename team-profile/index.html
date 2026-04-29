@@ -535,27 +535,22 @@ async function loadBIG12Projections() {
       const batch = uniquePids.slice(i, i + BATCH);
       await Promise.all(batch.map(async pid => {
         try {
-          const res = await fetch(API('projections/nfl/player/' + pid) + '&season=2026&season_type=regular&grouping=season');
+          // Use 2025 actual season stats as projection baseline (2026 projections not populated yet)
+          // /stats/nfl/player/<id>?season=2025&season_type=regular&grouping=season
+          const res = await fetch(API('stats/nfl/player/' + pid) + '&season=2025&season_type=regular&grouping=season');
           if (res.ok) {
             const data = await res.json();
-            // Log the first player's raw response so we can see the structure
-            if (pid === uniquePids[0]) {
-              console.log('[PROJ] Raw response type:', Array.isArray(data) ? 'array['+data.length+']' : typeof data);
-              console.log('[PROJ] Raw response:', JSON.stringify(data).slice(0, 500));
+            if (pid === uniquePids[0]) console.log('[PROJ] 2025 stats sample:', JSON.stringify(data).slice(0, 300));
+            // Response is week-keyed object — sum pts_ppr across all weeks
+            let total = 0;
+            if (data && typeof data === 'object' && !Array.isArray(data)) {
+              Object.values(data).forEach(week => {
+                if (week && typeof week === 'object') total += (week.pts_ppr || 0);
+              });
             }
-            if (Array.isArray(data)) {
-              projCache[pid] = { pts_ppr: data.reduce((s, w) => s + (w.stats?.pts_ppr || w.pts_ppr || 0), 0) };
-            } else if (data && data.stats) {
-              projCache[pid] = { pts_ppr: data.stats.pts_ppr || 0 };
-            } else if (data && typeof data === 'object') {
-              // Try every key that might contain pts_ppr
-              const flat = Object.values(data).find(v => v && v.pts_ppr);
-              projCache[pid] = { pts_ppr: flat ? flat.pts_ppr : (data.pts_ppr || 0) };
-            } else {
-              projCache[pid] = { pts_ppr: 0 };
-            }
+            projCache[pid] = { pts_ppr: Math.round(total * 10) / 10 };
           }
-        } catch(e) { projCache[pid] = { pts_ppr: 0 }; console.warn('[PROJ] Fetch error for', pid, e.message); }
+        } catch(e) { projCache[pid] = { pts_ppr: 0 }; }
       }));
     }
     const withPts = Object.values(projCache).filter(p => p.pts_ppr > 0).length;
@@ -676,7 +671,7 @@ async function loadBIG12Projections() {
   </style>
   <div class="proj-board">
     <div class="proj-legend">
-      <span><strong style="color:var(--chrome2);">Score</strong> = 2026 season PPR projection (starters)</span>
+      <span><strong style="color:var(--chrome2);">Score</strong> = 2025 season PPR pts (starters)</span>
       <span style="color:var(--muted);">+bench depth below</span>
     </div>`;
 
