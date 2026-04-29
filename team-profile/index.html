@@ -347,6 +347,8 @@ const LEAGUE_IDS = {
   BIG12: '1354903443910721536',      // 2026 season (live)
 };
 
+const STARTUP_LEAGUES = ['BIG12']; // leagues with startup drafts
+
 // Hardcoded roster_id -> username mapping
 const ROSTER_MAP = {
   CFL: {
@@ -460,9 +462,9 @@ async function fetchPlayer(playerId) {
 // ── RENDER TEAMS ──────────────────────────────────────────────────────────────
 function switchLeague(league) {
   activeLeague = league;
-  tradeCache = {}; // clear cache on league switch to prevent stale roster ID mapping
-  document.querySelectorAll('.league-tab').forEach((t,i) => {
-    t.classList.toggle('active', ['CFL','MinuteMaid'][i] === league);
+  tradeCache = {}; // clear cache on league switch
+  document.querySelectorAll('.league-tab').forEach(t => {
+    t.classList.toggle('active', t.textContent.trim() === league);
   });
   renderTeamGrid();
 }
@@ -488,9 +490,6 @@ function renderTeamGrid() {
 }
 
 // ── MODAL ─────────────────────────────────────────────────────────────────────
-async // Which leagues have startup drafts
-const STARTUP_LEAGUES = ['BIG12'];
-
 async function openTeamProfile(username) {
   activeTeam = username;
   activeTab = 'trades';
