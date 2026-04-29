@@ -1019,39 +1019,25 @@ async function loadStartupTab(league, username) {
   const rosterId = parseInt(Object.keys(rosterMap).find(k => rosterMap[k] === username));
   const draftId = STARTUP_DRAFT_IDS[league];
 
-  if (!draftId) {
-    body.innerHTML = '<div class="empty-state">No startup draft found.</div>';
-    return;
-  }
+  if (!draftId) { body.innerHTML = '<div class="empty-state">No startup draft found.</div>'; return; }
 
-  // Load player cache
   if (Object.keys(playerCache).length === 0) {
-    try {
-      const res = await fetch(API('players/nfl'));
-      if (res.ok) { const data = await res.json(); Object.assign(playerCache, data); }
-    } catch {}
+    try { const res = await fetch(API('players/nfl')); if (res.ok) { const d = await res.json(); Object.assign(playerCache, d); } } catch {}
   }
 
-  // Fetch picks
   const cacheKey = 'startup_' + draftId;
   if (!draftCache[cacheKey]) {
-    try {
-      const res = await fetch(API('draft/' + draftId + '/picks'));
-      draftCache[cacheKey] = res.ok ? await res.json() : [];
-    } catch { draftCache[cacheKey] = []; }
+    try { const res = await fetch(API('draft/' + draftId + '/picks')); draftCache[cacheKey] = res.ok ? await res.json() : []; } catch { draftCache[cacheKey] = []; }
   }
 
   const allPicks = draftCache[cacheKey];
-  const myPicks = allPicks
-    .filter(p => parseInt(p.roster_id) === rosterId)
-    .sort((a,b) => a.pick_no - b.pick_no);
+  const myPicks = allPicks.filter(p => parseInt(p.roster_id) === rosterId).sort((a,b) => a.pick_no - b.pick_no);
 
   if (myPicks.length === 0) {
     body.innerHTML = '<div class="empty-state">No picks yet.<br><span style="font-size:12px;color:var(--muted);">Check back as the draft progresses.</span></div>';
     return;
   }
 
-  // Build player objects from picks
   const players = myPicks.map(pick => {
     const meta = pick.metadata || {};
     const pid = pick.player_id;
@@ -1059,8 +1045,7 @@ async function loadStartupTab(league, username) {
     return {
       pid,
       name: meta.first_name ? meta.first_name + ' ' + meta.last_name : (cached.full_name || pid),
-      firstName: meta.first_name || cached.first_name || '',
-      lastName: meta.last_name || cached.last_name || '',
+      lastName: (meta.last_name || cached.last_name || (cached.full_name||'').split(' ').pop() || pid).toUpperCase(),
       pos: meta.position || cached.position || '',
       nflTeam: meta.team || cached.team || '',
       round: pick.round,
@@ -1068,193 +1053,163 @@ async function loadStartupTab(league, username) {
     };
   });
 
-  // ── FORMATION ASSIGNMENT ────────────────────────────────────────────────────
-  // Starter slots: QB1, WR1, WR2, RB1, RB2, TE1, FLEX1, FLEX2, FLEX3, SUPERFLEX, K, DEF
-  // Right side panel: QB2, RB2 (if >2 RBs), FLEX extras
-  // Rest: bench
+  // ── SLOT ASSIGNMENT ──────────────────────────────────────────────────────────
+  const pools = { QB:[], RB:[], WR:[], TE:[], K:[], DEF:[] };
+  players.forEach(p => { if (pools[p.pos]) pools[p.pos].push(p); });
 
-  const byPos = { QB:[], RB:[], WR:[], TE:[], K:[], DEF:[] };
-  players.forEach(p => {
-    const pos = p.pos === 'DEF' ? 'DEF' : p.pos;
-    if (byPos[pos]) byPos[pos].push(p);
-  });
+  const take = (pos, n=1) => pools[pos].splice(0, n);
 
-  // Pull starters
-  const slot = (pos, n=1) => {
-    const pool = byPos[pos] || [];
-    return pool.splice(0, n);
-  };
-
-  const QB1   = slot('QB', 1);
-  const WR1   = slot('WR', 1);
-  const WR2   = slot('WR', 1);
-  const RB1   = slot('RB', 1);
-  const RB2   = slot('RB', 1);
-  const TE1   = slot('TE', 1);
+  const QB1  = take('QB',1)[0]  || null;
+  const WR1  = take('WR',1)[0]  || null;
+  const WR2  = take('WR',1)[0]  || null;
+  const RB1  = take('RB',1)[0]  || null;
+  const RB2  = take('RB',1)[0]  || null;
+  const TE1  = take('TE',1)[0]  || null;
 
   // FLEX pool: remaining RB/WR/TE
-  const flexPool = [...(byPos.RB||[]), ...(byPos.WR||[]), ...(byPos.TE||[])];
-  byPos.RB = []; byPos.WR = []; byPos.TE = [];
-  const FLEX1  = flexPool.splice(0,1);
-  const FLEX2  = flexPool.splice(0,1);
-  const FLEX3  = flexPool.splice(0,1);
+  const flexPool = [...pools.RB, ...pools.WR, ...pools.TE];
+  pools.RB = []; pools.WR = []; pools.TE = [];
+  const FLEX1 = flexPool.shift() || null;
+  const FLEX2 = flexPool.shift() || null;
+  const FLEX3 = flexPool.shift() || null;
 
-  // SuperFlex: QB first, then any skill
-  const sfPool = [...(byPos.QB||[]), ...flexPool];
-  byPos.QB = [];
-  const SF     = sfPool.splice(0,1);
+  // SuperFlex: QB first then any flex
+  const sfPool = [...pools.QB, ...flexPool];
+  pools.QB = [];
+  const SF = sfPool.shift() || null;
+  const remainingFlex = sfPool;
 
-  const K1     = slot('K', 1);
-  const DEF1   = slot('DEF', 1);
+  const K1   = take('K',1)[0]   || null;
+  const DEF1 = take('DEF',1)[0] || null;
 
-  // Remaining = bench (all leftovers)
-  const bench = [
-    ...sfPool, ...flexPool,
-    ...(byPos.QB||[]), ...(byPos.RB||[]), ...(byPos.WR||[]),
-    ...(byPos.TE||[]), ...(byPos.K||[]), ...(byPos.DEF||[]),
-  ];
+  // Bench = everyone left, sorted by round
+  const usedPids = new Set([QB1,WR1,WR2,RB1,RB2,TE1,FLEX1,FLEX2,FLEX3,SF,K1,DEF1].filter(Boolean).map(p=>p.pid));
+  const bench = players.filter(p => !usedPids.has(p.pid));
 
-  // ── RENDER HELPERS ──────────────────────────────────────────────────────────
-  const POS_COLORS = {
-    QB:'#e5c440', RB:'#4ae0a0', WR:'#4ab0ff', TE:'#ff8c4a',
-    K:'#c084fc', DEF:'#f87171', FLEX:'#c084fc', SF:'#f0c060'
-  };
+  // ── RENDER ───────────────────────────────────────────────────────────────────
+  const POS_COLOR = { QB:'#e5c440', RB:'#4ae0a0', WR:'#4ab0ff', TE:'#ff8c4a', K:'#c084fc', DEF:'#f87171' };
 
-  function miniCard(player, slotLabel, slotColor) {
-    if (!player) {
-      return `<div class="formation-slot empty">
-        <div class="formation-slot-label" style="color:${slotColor||'var(--muted)'};">${slotLabel}</div>
-        <div class="formation-slot-name" style="color:rgba(255,255,255,0.15);">—</div>
-      </div>`;
-    }
-    const posColor = POS_COLORS[player.pos] || '#fff';
-    const headshot = '/api/sleeper?player_img=' + encodeURIComponent(player.pid);
-    const lastName = (player.lastName || player.name.split(' ').pop()).toUpperCase();
-    return `<div class="formation-slot filled">
-      <div class="formation-slot-label" style="color:${slotColor||posColor};">${slotLabel}</div>
-      <div class="formation-slot-photo">
-        <img src="${headshot}" crossorigin="anonymous"
-          style="width:100%;height:100%;object-fit:cover;object-position:top;"
-          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:16px;color:var(--muted);">
-          ${player.pos==='DEF'?'🛡️':player.pos==='K'?'🦵':'👤'}
-        </div>
-      </div>
-      <div class="formation-slot-name">${lastName}</div>
-      <div class="formation-slot-team">${player.nflTeam||''}</div>
-      <div class="formation-slot-pos" style="color:${posColor};">#${player.overall}</div>
+  function fieldSlot(player, label, color) {
+    const c = color || (player ? POS_COLOR[player.pos] || '#fff' : 'rgba(255,255,255,0.2)');
+    if (!player) return `<div class="fs empty"><div class="fs-label" style="color:${c}">${label}</div><div class="fs-circle" style="border-color:${c}20"><span style="color:${c};font-family:'Anton',sans-serif;font-size:10px;letter-spacing:1px;">${label}</span></div><div class="fs-name" style="opacity:0.2">—</div></div>`;
+    const img = '/api/sleeper?player_img=' + encodeURIComponent(player.pid);
+    return `<div class="fs filled"><div class="fs-label" style="color:${c}">${label}</div><div class="fs-circle" style="border-color:${c}">
+      <img src="${img}" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover;object-position:top;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:13px;">👤</div>
+    </div><div class="fs-name">${player.lastName}</div><div class="fs-team">${player.nflTeam}</div></div>`;
+  }
+
+  function oline(pos) {
+    // Static OL slot — circle with position label, no player
+    return `<div class="fs ol-slot"><div class="fs-circle ol-circle"><span>${pos}</span></div></div>`;
+  }
+
+  function benchRow(player) {
+    const c = POS_COLOR[player.pos] || '#fff';
+    const img = '/api/sleeper?player_img=' + encodeURIComponent(player.pid);
+    return `<div class="bench-row">
+      <div class="bench-round">Rd ${player.round}</div>
+      <div class="bench-pick">#${player.overall}</div>
+      <img src="${img}" crossorigin="anonymous" class="bench-headshot" onerror="this.style.display='none'">
+      <div class="bench-pos" style="color:${c}">${player.pos}</div>
+      <div class="bench-name">${player.name}</div>
+      <div class="bench-team">${player.nflTeam}</div>
     </div>`;
   }
 
-  function benchCard(player) {
-    const posColor = POS_COLORS[player.pos] || '#fff';
-    const headshot = '/api/sleeper?player_img=' + encodeURIComponent(player.pid);
-    const lastName = (player.lastName || player.name.split(' ').pop()).toUpperCase();
-    return `<div class="bench-card">
-      <div class="bench-card-pos" style="color:${posColor};">${player.pos}</div>
-      <img src="${headshot}" crossorigin="anonymous" class="bench-card-photo"
-        onerror="this.style.display='none'">
-      <div class="bench-card-name">${lastName}</div>
-      <div class="bench-card-pick">#${player.overall}</div>
-    </div>`;
-  }
-
-  // ── BUILD HTML ──────────────────────────────────────────────────────────────
   const totalPicks = myPicks.length;
-  const totalRounds = 33;
 
-  let html = `
+  body.innerHTML = `
   <style>
-    .formation-wrap{padding:4px 0 16px;}
-    .formation-field{background:linear-gradient(180deg,rgba(0,60,20,0.35) 0%,rgba(0,40,10,0.2) 100%);border:1px solid rgba(0,168,156,0.2);border-radius:6px;padding:14px 10px;margin-bottom:14px;position:relative;overflow:hidden;}
-    .formation-field::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(255,255,255,0.02) 40px,rgba(255,255,255,0.02) 41px);pointer-events:none;}
-    .formation-row{display:flex;justify-content:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
-    .formation-row.spread{justify-content:space-around;}
-    .formation-slot{width:64px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;}
-    .formation-slot-label{font-family:'Anton',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;}
-    .formation-slot-photo{width:44px;height:44px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);flex-shrink:0;}
-    .formation-slot.filled .formation-slot-photo{border-color:rgba(0,168,156,0.5);}
-    .formation-slot.empty .formation-slot-photo{opacity:0.3;}
-    .formation-slot-name{font-family:'Anton',sans-serif;font-size:10px;letter-spacing:1px;color:var(--chrome2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:64px;}
-    .formation-slot-team{font-size:9px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;}
-    .formation-slot-pos{font-size:9px;font-family:'Barlow',sans-serif;letter-spacing:1px;}
-    .formation-divider{display:flex;align-items:center;gap:8px;margin:6px 0 10px;opacity:0.4;}
-    .formation-divider-line{flex:1;height:1px;background:var(--teal);}
-    .formation-divider-text{font-size:9px;letter-spacing:3px;color:var(--teal2);font-family:'Barlow',sans-serif;text-transform:uppercase;}
-    .formation-side-panel{display:flex;flex-direction:column;gap:6px;}
-    .formation-main{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;}
-    .side-label{font-family:'Anton',sans-serif;font-size:9px;letter-spacing:2px;color:var(--muted);text-align:center;margin-bottom:4px;}
-    .bench-section{margin-top:4px;}
-    .bench-label{font-size:9px;letter-spacing:3px;color:var(--muted);font-family:'Barlow',sans-serif;text-transform:uppercase;margin-bottom:8px;}
-    .bench-grid{display:flex;flex-wrap:wrap;gap:6px;}
-    .bench-card{display:flex;flex-direction:column;align-items:center;gap:2px;width:52px;text-align:center;}
-    .bench-card-pos{font-family:'Anton',sans-serif;font-size:9px;letter-spacing:1px;}
-    .bench-card-photo{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);}
-    .bench-card-name{font-family:'Anton',sans-serif;font-size:9px;letter-spacing:1px;color:var(--chrome);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52px;}
-    .bench-card-pick{font-size:8px;color:var(--muted);font-family:'Barlow',sans-serif;}
-    .draft-progress{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-family:'Barlow',sans-serif;font-size:11px;color:var(--muted);letter-spacing:1px;}
-    .draft-progress-bar{height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;margin-bottom:10px;}
-    .draft-progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal2));border-radius:2px;}
+    .su-wrap{padding:4px 0 12px;}
+    .su-progress-row{display:flex;justify-content:space-between;font-family:'Barlow',sans-serif;font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:5px;}
+    .su-progress-bar{height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;margin-bottom:12px;}
+    .su-progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal2));border-radius:2px;}
+
+    /* FIELD */
+    .su-field{background:linear-gradient(180deg,rgba(0,55,20,0.4),rgba(0,35,10,0.25));border:1px solid rgba(0,168,156,0.18);border-radius:6px;padding:14px 8px 18px;position:relative;overflow:hidden;margin-bottom:14px;}
+    .su-field::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 38px,rgba(255,255,255,0.025) 38px,rgba(255,255,255,0.025) 39px);pointer-events:none;}
+    .su-row{display:flex;align-items:flex-start;justify-content:center;gap:6px;margin-bottom:10px;position:relative;z-index:1;}
+    .su-row.qb-row{margin-bottom:6px;}
+    .su-row.bottom-row{margin-top:4px;}
+
+    /* FIELD SLOT */
+    .fs{display:flex;flex-direction:column;align-items:center;gap:2px;width:58px;text-align:center;flex-shrink:0;}
+    .fs-label{font-family:'Anton',sans-serif;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;min-height:13px;}
+    .fs-circle{width:46px;height:46px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .fs.filled .fs-circle{border-width:2px;}
+    .fs-name{font-family:'Anton',sans-serif;font-size:9px;letter-spacing:1px;color:var(--chrome2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58px;}
+    .fs-team{font-size:8px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;}
+
+    /* OL slots */
+    .ol-slot .fs-circle{width:38px;height:38px;border-color:rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);}
+    .ol-slot .fs-circle span{font-family:'Anton',sans-serif;font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.25);}
+    .ol-slot{width:42px;}
+
+    /* divider */
+    .su-divider{display:flex;align-items:center;gap:6px;margin:2px 12px 8px;opacity:0.5;position:relative;z-index:1;}
+    .su-divider-line{flex:1;height:1px;background:var(--teal);}
+    .su-divider-text{font-size:8px;letter-spacing:3px;color:var(--teal2);font-family:'Barlow',sans-serif;text-transform:uppercase;white-space:nowrap;}
+
+    /* BENCH */
+    .su-bench-label{font-size:10px;letter-spacing:3px;color:var(--muted);font-family:'Barlow',sans-serif;text-transform:uppercase;margin-bottom:8px;}
+    .bench-row{display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(10,21,32,0.6);border:1px solid rgba(255,255,255,0.05);border-radius:3px;margin-bottom:4px;}
+    .bench-round{font-family:'Anton',sans-serif;font-size:10px;color:var(--orange2);letter-spacing:1px;width:30px;flex-shrink:0;}
+    .bench-pick{font-size:9px;color:var(--muted);font-family:'Barlow',sans-serif;width:24px;flex-shrink:0;}
+    .bench-headshot{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,0.08);flex-shrink:0;}
+    .bench-pos{font-family:'Anton',sans-serif;font-size:10px;letter-spacing:1px;width:28px;flex-shrink:0;}
+    .bench-name{font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;color:var(--chrome2);flex:1;}
+    .bench-team{font-size:10px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;}
   </style>
-  <div class="formation-wrap">
-    <div class="draft-progress">
+
+  <div class="su-wrap">
+    <div class="su-progress-row">
       <span>2026 Startup Draft</span>
-      <span>${totalPicks} / ${totalRounds} rounds</span>
+      <span>${totalPicks} / 33 rounds picked</span>
     </div>
-    <div class="draft-progress-bar">
-      <div class="draft-progress-fill" style="width:${Math.round(totalPicks/totalRounds*100)}%"></div>
-    </div>
+    <div class="su-progress-bar"><div class="su-progress-fill" style="width:${Math.round(totalPicks/33*100)}%"></div></div>
 
-    <div class="formation-field">
-      <!-- WRs top -->
-      <div class="formation-row spread">
-        ${miniCard(WR1[0], 'WR1', POS_COLORS.WR)}
-        ${miniCard(WR2[0], 'WR2', POS_COLORS.WR)}
+    <div class="su-field">
+      <!-- Row 1: WR1 · FLEX · OL × 5 · TE · WR2 -->
+      <div class="su-row">
+        ${fieldSlot(WR1, 'WR1', POS_COLOR.WR)}
+        ${fieldSlot(FLEX1, 'FLEX')}
+        ${oline('LT')}${oline('LG')}${oline('C')}${oline('RG')}${oline('RT')}
+        ${fieldSlot(TE1, 'TE', POS_COLOR.TE)}
+        ${fieldSlot(WR2, 'WR2', POS_COLOR.WR)}
       </div>
 
-      <!-- RBs + TE middle -->
-      <div class="formation-row">
-        ${miniCard(RB1[0], 'RB1', POS_COLORS.RB)}
-        ${miniCard(TE1[0], 'TE', POS_COLORS.TE)}
-        ${miniCard(RB2[0], 'RB2', POS_COLORS.RB)}
+      <!-- Row 2: QB (centered) -->
+      <div class="su-row qb-row">
+        ${fieldSlot(QB1, 'QB', POS_COLOR.QB)}
       </div>
 
-      <!-- QB -->
-      <div class="formation-row">
-        ${miniCard(QB1[0], 'QB', POS_COLORS.QB)}
+      <!-- Row 3: RB2 -->
+      <div class="su-row">
+        ${fieldSlot(RB2, 'RB2', POS_COLOR.RB)}
       </div>
 
-      <div class="formation-divider">
-        <div class="formation-divider-line"></div>
-        <div class="formation-divider-text">Flex · SuperFlex · K · DEF</div>
-        <div class="formation-divider-line"></div>
+      <!-- Row 4: RB1 -->
+      <div class="su-row">
+        ${fieldSlot(RB1, 'RB1', POS_COLOR.RB)}
       </div>
 
-      <!-- FLEX row -->
-      <div class="formation-row">
-        ${miniCard(FLEX1[0], 'FLEX', POS_COLORS.FLEX)}
-        ${miniCard(FLEX2[0], 'FLEX', POS_COLORS.FLEX)}
-        ${miniCard(FLEX3[0], 'FLEX', POS_COLORS.FLEX)}
-        ${miniCard(SF[0], 'SF', POS_COLORS.SF)}
-      </div>
+      <div class="su-divider"><div class="su-divider-line"></div><div class="su-divider-text">Flex · SuperFlex · K · DEF</div><div class="su-divider-line"></div></div>
 
-      <!-- K + DEF -->
-      <div class="formation-row">
-        ${miniCard(K1[0], 'K', POS_COLORS.K)}
-        ${miniCard(DEF1[0], 'DEF', POS_COLORS.DEF)}
+      <!-- Row 5: FLEX · FLEX · FLEX · SF · K · DEF -->
+      <div class="su-row bottom-row">
+        ${fieldSlot(FLEX2, 'FLEX')}
+        ${fieldSlot(FLEX3, 'FLEX')}
+        ${fieldSlot(SF,    'SF', '#f0c060')}
+        ${fieldSlot(K1,    'K',  POS_COLOR.K)}
+        ${fieldSlot(DEF1,  'DEF',POS_COLOR.DEF)}
       </div>
     </div>
 
     ${bench.length > 0 ? `
-    <div class="bench-section">
-      <div class="bench-label">Bench (${bench.length} players)</div>
-      <div class="bench-grid">
-        ${bench.map(p => benchCard(p)).join('')}
-      </div>
-    </div>` : ''}
+    <div class="su-bench-label">Bench · ${bench.length} players</div>
+    ${bench.map(p => benchRow(p)).join('')}` : ''}
   </div>`;
-
-  body.innerHTML = html;
 }
 
 
