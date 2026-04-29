@@ -477,7 +477,7 @@ function renderTeamGrid() {
     html += `
       <div class="team-card" onclick="openTeamProfile('${username}')">
         ${t.avatarUrl
-          ? `<img class="team-card-avatar" crossorigin="anonymous" src="${t.avatarUrl}" alt="${t.displayName}" onerror="this.outerHTML='<div class=team-card-avatar-ph>${t.displayName[0]}</div>'">`
+          ? `<img class="team-card-avatar" crossorigin="anonymous" src="${t.avatarUrl}" alt="${t.displayName}" onerror="this.style.display='none'">`
           : `<div class="team-card-avatar-ph">${t.displayName[0]}</div>`}
         <div class="team-card-name">${t.displayName}</div>
         <div class="team-card-username">@${username}</div>
@@ -491,7 +491,7 @@ function renderTeamGrid() {
 async // Which leagues have startup drafts
 const STARTUP_LEAGUES = ['BIG12'];
 
-function openTeamProfile(username) {
+async function openTeamProfile(username) {
   activeTeam = username;
   activeTab = 'trades';
   const league = activeLeague;
