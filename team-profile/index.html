@@ -721,8 +721,20 @@ function renderTeamGrid() {
   html += '</div>';
   el.innerHTML = html;
 
-  // Load projections for BIG12 after render
-  if (activeLeague === 'BIG12') loadBIG12Projections();
+  // Load projections for BIG12 after render + auto-refresh every 60s during draft
+  if (activeLeague === 'BIG12') {
+    loadBIG12Projections();
+    if (window._big12RefreshInterval) clearInterval(window._big12RefreshInterval);
+    window._big12RefreshInterval = setInterval(() => {
+      if (activeLeague === 'BIG12') loadBIG12Projections();
+      else clearInterval(window._big12RefreshInterval);
+    }, 60000);
+  } else {
+    if (window._big12RefreshInterval) {
+      clearInterval(window._big12RefreshInterval);
+      window._big12RefreshInterval = null;
+    }
+  }
 }
 
 // ── BIG12 PROJECTION LEADERBOARD ──────────────────────────────────────────────
