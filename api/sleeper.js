@@ -53,6 +53,7 @@ module.exports = async function handler(req, res) {
     /^players\/nfl$/,
     /^stats\/nfl\/regular\/\d+\/\d+$/,
     /^projections\/nfl\/regular\/\d+\/\d+$/,
+    /^projections\/nfl\/player\/\d+$/,
   ];
 
   if (!allowed.some(r => r.test(endpoint))) {
@@ -60,7 +61,12 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const url = `https://api.sleeper.app/v1/${endpoint}`;
+    // Forward any extra query params (e.g. season, season_type, grouping)
+    const extraParams = Object.entries(req.query)
+      .filter(([k]) => k !== 'endpoint')
+      .map(([k,v]) => `${k}=${encodeURIComponent(v)}`)
+      .join('&');
+    const url = `https://api.sleeper.app/v1/${endpoint}${extraParams ? '?' + extraParams : ''}`;
     const sleeperRes = await fetch(url);
     if (!sleeperRes.ok) return res.status(sleeperRes.status).json({ error: 'Sleeper API error' });
     const data = await sleeperRes.json();

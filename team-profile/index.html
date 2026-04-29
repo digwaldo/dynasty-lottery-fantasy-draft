@@ -523,9 +523,43 @@ async function loadBIG12Projections() {
     allPicks = r.ok ? await r.json() : [];
   } catch {}
 
-  // Log metadata from first pick to see available projection fields
-  if (allPicks.length > 0) {
-    console.log('[PROJ] Pick metadata sample:', JSON.stringify(allPicks[0].metadata, null, 2));
+  // Fetch per-player season projections using Sleeper's player projection endpoint
+  // /projections/nfl/player/<id>?season=2026&season_type=regular&grouping=season
+  if (!projCache) {
+    projCache = {};
+    const uniquePids = [...new Set(allPicks.map(p => p.player_id))];
+    if (statusEl) statusEl.textContent = '· loading projections (' + uniquePids.length + ' players)...';
+    // Fetch in batches of 10 to avoid overwhelming the proxy
+    const BATCH = 10;
+    for (let i = 0; i < uniquePids.length; i += BATCH) {
+      const batch = uniquePids.slice(i, i + BATCH);
+      await Promise.all(batch.map(async pid => {
+        try {
+          const res = await fetch(API('projections/nfl/player/' + pid) + '&season=2026&season_type=regular&grouping=season');
+          if (res.ok) {
+            const data = await res.json();
+            // data is an array of week projections or a season object
+            // When grouping=season it returns a single object with stats
+            if (Array.isArray(data)) {
+              // Sum weekly pts_ppr across all weeks
+              projCache[pid] = { pts_ppr: data.reduce((s, w) => s + (w.stats?.pts_ppr || w.pts_ppr || 0), 0) };
+            } else if (data && data.stats) {
+              projCache[pid] = { pts_ppr: data.stats.pts_ppr || 0 };
+            } else if (data && data.pts_ppr !== undefined) {
+              projCache[pid] = { pts_ppr: data.pts_ppr };
+            } else {
+              projCache[pid] = { pts_ppr: 0 };
+            }
+          }
+        } catch { projCache[pid] = { pts_ppr: 0 }; }
+      }));
+    }
+    const withPts = Object.values(projCache).filter(p => p.pts_ppr > 0).length;
+    console.log('[PROJ] Loaded projections:', withPts, '/', uniquePids.length, 'players with pts_ppr > 0');
+    if (withPts > 0) {
+      const topEntry = Object.entries(projCache).sort((a,b) => b[1].pts_ppr - a[1].pts_ppr)[0];
+      console.log('[PROJ] Top player:', topEntry[0], '→', topEntry[1].pts_ppr, 'pts');
+    }
   }
 
   projPicksCache = allPicks;
@@ -539,27 +573,11 @@ async function loadBIG12Projections() {
     if (byRoster[rid]) byRoster[rid].push(pick.player_id);
   });
 
-  // Use Sleeper pts_ppr — falls back to manual PPR calc if missing
+  // pts_ppr direct from Sleeper per-player season projection
   function projScore(pid) {
     const p = projCache[pid];
     if (!p) return 0;
-    // Try all point formats Sleeper might return
-    if (p.pts_ppr)       return Math.round(p.pts_ppr * 10) / 10;
-    if (p.pts_half_ppr)  return Math.round(p.pts_half_ppr * 10) / 10;
-    if (p.pts_std)       return Math.round(p.pts_std * 10) / 10;
-    // Manual PPR calc from raw stat projections
-    let s = 0;
-    s += (p.pass_yd||0) * 0.04;
-    s += (p.pass_td||0) * 4;
-    s += (p.pass_int||0) * -1;
-    s += (p.rush_yd||0) * 0.1;
-    s += (p.rush_td||0) * 6;
-    s += (p.rec||0) * 1;
-    s += (p.rec_yd||0) * 0.1;
-    s += (p.rec_td||0) * 6;
-    s += (p.fum_lost||0) * -2;
-    s += (p.bonus_rec_te||0) * 0.5;
-    return Math.round(s * 10) / 10;
+    return Math.round((p.pts_ppr || 0) * 10) / 10;
   }
 
   // Best lineup optimizer per team
@@ -654,7 +672,7 @@ async function loadBIG12Projections() {
   </style>
   <div class="proj-board">
     <div class="proj-legend">
-      <span><strong style="color:var(--chrome2);">Score</strong> = 2024 season PPR pts (starters)</span>
+      <span><strong style="color:var(--chrome2);">Score</strong> = 2026 season PPR projection (starters)</span>
       <span style="color:var(--muted);">+bench depth below</span>
     </div>`;
 
