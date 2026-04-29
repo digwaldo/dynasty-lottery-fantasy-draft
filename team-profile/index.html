@@ -515,13 +515,30 @@ async function loadBIG12Projections() {
     try { const r = await fetch(API('players/nfl')); if (r.ok) { const d = await r.json(); Object.assign(playerCache, d); } } catch {}
   }
 
-  // Fetch projections (season week 1 = full season proxy, pts_ppr)
+  // Fetch projections - try 2025 season (most recent available)
+  // Sleeper projections return pts_ppr, pts_half_ppr, pts_std per player per week
   if (!projCache) {
     try {
       if (statusEl) statusEl.textContent = '· loading projections...';
-      const r = await fetch(API('projections/nfl/regular/2026/1'));
-      projCache = r.ok ? await r.json() : {};
-    } catch { projCache = {}; }
+      // Try multiple weeks to find one with data, use week 1 as baseline
+      let proj = {};
+      for (const week of [1, 2, 3]) {
+        const r = await fetch(API('projections/nfl/regular/2025/' + week));
+        if (r.ok) {
+          const d = await r.json();
+          // Check if we got actual data with pts_ppr
+          const sample = Object.values(d)[0];
+          console.log('[PROJ] Week', week, 'sample fields:', sample ? Object.keys(sample).slice(0,10) : 'empty');
+          console.log('[PROJ] Week', week, 'sample pts_ppr:', sample?.pts_ppr, 'pts_half_ppr:', sample?.pts_half_ppr);
+          if (sample && (sample.pts_ppr || sample.pts_half_ppr)) {
+            proj = d;
+            break;
+          }
+        }
+      }
+      projCache = proj;
+      console.log('[PROJ] Total players with projections:', Object.keys(projCache).length);
+    } catch(e) { projCache = {}; console.error('[PROJ] Error:', e); }
   }
 
   // Fetch all BIG12 startup picks fresh
@@ -543,12 +560,15 @@ async function loadBIG12Projections() {
     if (byRoster[rid]) byRoster[rid].push(pick.player_id);
   });
 
-  // Use Sleeper's own pts_ppr projection directly — same number shown on their draft board
+  // Use Sleeper pts_ppr — falls back to manual PPR calc if missing
   function projScore(pid) {
     const p = projCache[pid];
     if (!p) return 0;
-    if (p.pts_ppr) return Math.round(p.pts_ppr * 10) / 10;
-    // Fallback: manual PPR calc
+    // Try all point formats Sleeper might return
+    if (p.pts_ppr)       return Math.round(p.pts_ppr * 10) / 10;
+    if (p.pts_half_ppr)  return Math.round(p.pts_half_ppr * 10) / 10;
+    if (p.pts_std)       return Math.round(p.pts_std * 10) / 10;
+    // Manual PPR calc from raw stat projections
     let s = 0;
     s += (p.pass_yd||0) * 0.04;
     s += (p.pass_td||0) * 4;
