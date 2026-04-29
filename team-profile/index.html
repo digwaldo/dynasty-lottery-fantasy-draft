@@ -314,6 +314,7 @@
     </div>
     <div class="modal-tabs">
       <div class="modal-tab active" id="tab-trades" onclick="switchTab('trades')">Trades</div>
+      <div class="modal-tab" id="tab-startup" style="display:none;" onclick="switchTab('startup')">Startup</div>
       <div class="modal-tab" id="tab-draft" onclick="switchTab('draft')">Rookie Drafts</div>
       <div class="modal-tab" id="tab-hardware" onclick="switchTab('hardware')">🏆 Hardware</div>
     </div>
@@ -487,13 +488,16 @@ function renderTeamGrid() {
 }
 
 // ── MODAL ─────────────────────────────────────────────────────────────────────
-async function openTeamProfile(username) {
+async // Which leagues have startup drafts
+const STARTUP_LEAGUES = ['BIG12'];
+
+function openTeamProfile(username) {
   activeTeam = username;
   activeTab = 'trades';
   const league = activeLeague;
   const t = getTeam(league, username);
 
-  // Set header — t already has proxied avatarUrl from getTeam()
+  // Set header
   const img = document.getElementById('modal-avatar');
   const ph = document.getElementById('modal-avatar-ph');
   img.crossOrigin = 'anonymous';
@@ -505,8 +509,13 @@ async function openTeamProfile(username) {
   document.getElementById('modal-team-name').textContent = t.displayName.toUpperCase();
   document.getElementById('modal-username').textContent = `@${username} · ${league}`;
 
-  // Set tabs
+  // Show/hide startup tab based on league
+  const startupTab = document.getElementById('tab-startup');
+  if (startupTab) startupTab.style.display = STARTUP_LEAGUES.includes(league) ? 'block' : 'none';
+
+  // Reset tabs
   document.getElementById('tab-trades').classList.add('active');
+  document.getElementById('tab-startup').classList.remove('active');
   document.getElementById('tab-draft').classList.remove('active');
   document.getElementById('tab-hardware').classList.remove('active');
 
@@ -515,7 +524,7 @@ async function openTeamProfile(username) {
   document.body.style.overflow = 'hidden';
 
   // Load trades tab
-  await loadTradesTab(league, username);
+  loadTradesTab(league, username);
 }
 
 function closeModal() {
@@ -530,11 +539,13 @@ function handleOverlayClick(e) {
 async function switchTab(tab) {
   activeTab = tab;
   document.getElementById('tab-trades').classList.toggle('active', tab === 'trades');
+  document.getElementById('tab-startup').classList.toggle('active', tab === 'startup');
   document.getElementById('tab-draft').classList.toggle('active', tab === 'draft');
   document.getElementById('tab-hardware').classList.toggle('active', tab === 'hardware');
-  if (tab === 'trades') await loadTradesTab(activeLeague, activeTeam);
-  else if (tab === 'draft') await loadDraftTab(activeLeague, activeTeam);
-  else loadHardwareTab(activeLeague, activeTeam);
+  if (tab === 'trades') loadTradesTab(activeLeague, activeTeam);
+  else if (tab === 'startup') loadStartupTab(activeLeague, activeTeam);
+  else if (tab === 'draft') loadDraftTab(activeLeague, activeTeam);
+  else if (tab === 'hardware') loadHardwareTab(activeLeague, activeTeam);
 }
 
 // ── 2024 CFL TRADE HISTORY (hardcoded — all completed trades) ─────────────────
@@ -994,6 +1005,95 @@ async function loadDraftTab(league, username) {
     body.innerHTML = '<div class="empty-state">No rookie draft picks found for this team.</div>';
     return;
   }
+  body.innerHTML = html;
+}
+
+// ── STARTUP DRAFT TAB ────────────────────────────────────────────────────────
+const STARTUP_DRAFT_IDS = {
+  BIG12: '1354903444560809984',
+};
+
+async function loadStartupTab(league, username) {
+  const body = document.getElementById('modal-body');
+  body.innerHTML = '<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading startup draft...</div></div>';
+
+  const rosterMap = ROSTER_MAP[league];
+  const rosterId = parseInt(Object.keys(rosterMap).find(k => rosterMap[k] === username));
+  const draftId = STARTUP_DRAFT_IDS[league];
+
+  if (!draftId) {
+    body.innerHTML = '<div class="empty-state">No startup draft found for this league.</div>';
+    return;
+  }
+
+  // Load players if not cached
+  if (Object.keys(playerCache).length === 0) {
+    try {
+      const res = await fetch(API('players/nfl'));
+      if (res.ok) { const data = await res.json(); Object.assign(playerCache, data); }
+    } catch {}
+  }
+
+  // Fetch startup draft picks
+  const cacheKey = 'startup_' + draftId;
+  if (!draftCache[cacheKey]) {
+    try {
+      const res = await fetch(API('draft/' + draftId + '/picks'));
+      draftCache[cacheKey] = res.ok ? await res.json() : [];
+    } catch { draftCache[cacheKey] = []; }
+  }
+
+  const allPicks = draftCache[cacheKey];
+  const myPicks = allPicks.filter(p => parseInt(p.roster_id) === rosterId);
+
+  if (myPicks.length === 0) {
+    body.innerHTML = '<div class="empty-state">No startup draft picks found yet.<br><span style="font-size:12px;color:var(--muted);">Picks will appear here as the draft progresses.</span></div>';
+    return;
+  }
+
+  // Group by round
+  const byRound = {};
+  myPicks.sort((a,b) => a.pick_no - b.pick_no).forEach(pick => {
+    const r = pick.round;
+    if (!byRound[r]) byRound[r] = [];
+    byRound[r].push(pick);
+  });
+
+  let html = '<div class="draft-year-label">2026 Startup Draft</div>';
+
+  Object.entries(byRound).forEach(([round, picks]) => {
+    html += `<div style="font-size:10px;letter-spacing:3px;color:var(--muted);font-family:'Barlow',sans-serif;text-transform:uppercase;margin:14px 0 8px;">Round ${round}</div>`;
+    html += '<div class="trade-cards-row" style="flex-wrap:wrap;">';
+    picks.forEach(pick => {
+      const pid = pick.player_id;
+      const meta = pick.metadata || {};
+      const name = meta.first_name ? meta.first_name + ' ' + meta.last_name : (playerCache[pid] ? playerCache[pid].full_name : pid);
+      const pos = meta.position || (playerCache[pid] ? playerCache[pid].position : '');
+      const nflTeam = meta.team || (playerCache[pid] ? playerCache[pid].team : '');
+      const overall = pick.pick_no;
+      const validPos = ['QB','RB','WR','TE','K','DEF'].includes(pos) ? pos : 'OTHER';
+      const posEmojis = {QB:'🏈',RB:'🏃',WR:'⚡',TE:'💪',K:'🦵',DEF:'🛡️'};
+      const posEmoji = posEmojis[pos] || '🏈';
+      const lastName = (meta.last_name || name.split(' ').pop() || '').toUpperCase();
+      const headshotUrl = '/api/sleeper?player_img=' + encodeURIComponent(pid);
+
+      html += '<div class="player-card">' +
+        '<div class="player-card-stripe ' + validPos + '"></div>' +
+        '<div class="player-card-photo">' +
+          '<img src="' + headshotUrl + '" crossorigin="anonymous" ' +
+            'style="width:100%;height:100%;object-fit:cover;object-position:top center;" ' +
+            'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+          '<div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:20px;">' + posEmoji + '</div>' +
+        '</div>' +
+        '<div class="player-card-body">' +
+          '<div class="player-card-pos ' + validPos + '">' + (pos||'?') + '</div>' +
+          '<div class="player-card-name">' + lastName + '</div>' +
+          '<div class="player-card-team">' + (nflTeam||'') + ' · #' + overall + '</div>' +
+        '</div></div>';
+    });
+    html += '</div>';
+  });
+
   body.innerHTML = html;
 }
 
