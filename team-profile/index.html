@@ -519,7 +519,7 @@ async function loadBIG12Projections() {
   if (!projCache) {
     try {
       if (statusEl) statusEl.textContent = '· loading projections...';
-      const r = await fetch(API('projections/nfl/regular/2025/1'));
+      const r = await fetch(API('projections/nfl/regular/2026/1'));
       projCache = r.ok ? await r.json() : {};
     } catch { projCache = {}; }
   }
@@ -543,10 +543,12 @@ async function loadBIG12Projections() {
     if (byRoster[rid]) byRoster[rid].push(pick.player_id);
   });
 
-  // Scoring settings (PPR)
+  // Use Sleeper's own pts_ppr projection directly — same number shown on their draft board
   function projScore(pid) {
     const p = projCache[pid];
     if (!p) return 0;
+    if (p.pts_ppr) return Math.round(p.pts_ppr * 10) / 10;
+    // Fallback: manual PPR calc
     let s = 0;
     s += (p.pass_yd||0) * 0.04;
     s += (p.pass_td||0) * 4;
@@ -558,8 +560,6 @@ async function loadBIG12Projections() {
     s += (p.rec_td||0) * 6;
     s += (p.fum_lost||0) * -2;
     s += (p.bonus_rec_te||0) * 0.5;
-    // DST/K use pts_ppr if available
-    if (!s && p.pts_ppr) s = p.pts_ppr;
     return Math.round(s * 10) / 10;
   }
 
@@ -655,8 +655,8 @@ async function loadBIG12Projections() {
   </style>
   <div class="proj-board">
     <div class="proj-legend">
-      <span><strong style="color:var(--chrome2);">Score</strong> = projected starter pts</span>
-      <span style="color:var(--muted);">+bench depth shown below</span>
+      <span><strong style="color:var(--chrome2);">Score</strong> = Sleeper projected pts (starters)</span>
+      <span style="color:var(--muted);">+bench depth below</span>
     </div>`;
 
   const maxScore = teams[0]?.starterScore || 1;
