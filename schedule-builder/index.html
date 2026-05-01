@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Season Schedule Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Teko:wght@400;600&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--orange:#E8621A;--orange2:#F08030;--sunset:#F5A623;--teal:#00A89C;--teal2:#00C8BC;--teal-dark:#005f5a;--navy:#0d1a2b;--navy2:#0a1520;--chrome:#d0d8e0;--chrome2:#f0f4f8;--text:#f0ede8;--muted:#7a9ab0;--gold:#F5A623;--border-teal:rgba(0,168,156,0.35);--green:#22c55e;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--navy2);color:var(--text);font-family:'Teko',sans-serif;min-height:100vh;}
+.bg{position:fixed;inset:0;z-index:0;background:linear-gradient(180deg,#060e18,#0a1520);}
+.frame-line{position:fixed;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--orange),var(--teal));z-index:100;}
+.frame-line-top{top:0;}.frame-line-bottom{bottom:0;}
+.container{position:relative;z-index:2;max-width:1000px;margin:0 auto;padding:16px 16px 80px;}
+.pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:500;display:flex;align-items:center;justify-content:center;}
+.pin-box{background:#0d1a2b;border:1px solid var(--border-teal);border-top:3px solid var(--teal);border-radius:8px;padding:32px;text-align:center;width:320px;}
+.pin-title{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:4px;color:var(--chrome2);margin-bottom:6px;}
+.pin-sub{font-family:'Barlow',sans-serif;font-size:13px;color:var(--muted);letter-spacing:1px;margin-bottom:20px;}
+.pin-input{width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border-teal);border-radius:3px;color:var(--chrome2);font-family:'Anton',sans-serif;font-size:24px;letter-spacing:8px;text-align:center;outline:none;margin-bottom:8px;}
+.pin-error{font-size:11px;color:#ff6060;font-family:'Barlow',sans-serif;min-height:14px;margin-bottom:10px;}
+.btn-pin{width:100%;padding:12px;background:var(--teal-dark);border:1px solid var(--teal);border-radius:3px;color:var(--chrome2);font-family:'Anton',sans-serif;font-size:16px;letter-spacing:3px;cursor:pointer;}
+.nav{display:flex;align-items:center;gap:10px;padding:10px 0 20px;}
+.nav-back{color:var(--muted);font-family:'Barlow',sans-serif;font-size:12px;letter-spacing:2px;text-decoration:none;text-transform:uppercase;}
+.nav-back:hover{color:var(--teal2);}
+.header{text-align:center;margin-bottom:24px;}
+.header-eyebrow{font-size:11px;letter-spacing:6px;color:var(--teal2);font-family:'Barlow',sans-serif;margin-bottom:6px;text-transform:uppercase;}
+.header h1{font-family:'Anton',sans-serif;font-size:clamp(36px,8vw,60px);letter-spacing:2px;background:linear-gradient(160deg,#fff,var(--chrome),#a0aab4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.header-rule{width:60px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:12px auto 0;}
+.league-tabs{display:flex;gap:6px;margin-bottom:20px;}
+.league-tab{flex:1;padding:10px;background:rgba(10,21,32,0.8);border:1px solid var(--border-teal);border-radius:3px;font-family:'Anton',sans-serif;font-size:16px;letter-spacing:3px;color:var(--muted);cursor:pointer;text-align:center;transition:all 0.2s;}
+.league-tab.active{border-color:var(--teal);color:var(--teal2);background:rgba(0,168,156,0.08);}
+.controls{display:flex;gap:10px;margin-bottom:16px;align-items:center;flex-wrap:wrap;}
+.btn{padding:9px 18px;border-radius:3px;font-family:'Anton',sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;transition:all 0.2s;border:1px solid;}
+.btn-primary{background:rgba(0,168,156,0.15);border-color:var(--teal);color:var(--teal2);}
+.btn-primary:hover{background:rgba(0,168,156,0.3);}
+.btn-secondary{background:transparent;border-color:var(--border-teal);color:var(--muted);}
+.btn-secondary:hover{border-color:var(--teal);color:var(--teal2);}
+.controls-label{font-family:'Barlow',sans-serif;font-size:11px;color:var(--muted);letter-spacing:1px;margin-left:auto;}
+.view-toggle{display:flex;gap:0;border:1px solid var(--border-teal);border-radius:3px;overflow:hidden;margin-bottom:20px;width:fit-content;}
+.view-btn{padding:8px 20px;font-family:'Anton',sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;text-align:center;background:transparent;border:none;color:var(--muted);transition:all 0.2s;}
+.view-btn.active{background:rgba(0,168,156,0.12);color:var(--teal2);}
+.stats-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+.stat-chip{background:rgba(10,21,32,0.8);border:1px solid var(--border-teal);border-radius:3px;padding:8px 14px;text-align:center;}
+.stat-num{font-family:'Anton',sans-serif;font-size:20px;color:var(--teal2);}
+.stat-label{font-size:9px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;text-transform:uppercase;}
+.div-legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.div-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;border:1px solid;font-family:'Barlow',sans-serif;font-size:10px;letter-spacing:1px;}
+.week-grid{display:flex;flex-direction:column;gap:12px;}
+.week-block{background:rgba(10,21,32,0.8);border:1px solid var(--border-teal);border-radius:5px;overflow:hidden;}
+.week-header{display:flex;align-items:center;gap:10px;padding:10px 16px;background:rgba(0,168,156,0.05);border-bottom:1px solid var(--border-teal);}
+.week-num{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:2px;color:var(--orange2);}
+.week-label{font-family:'Barlow',sans-serif;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+.week-games{display:flex;flex-direction:column;}
+.matchup-row{display:flex;align-items:center;padding:9px 16px;border-bottom:1px solid rgba(255,255,255,0.04);gap:10px;}
+.matchup-row:last-child{border-bottom:none;}
+.matchup-row.div-game{background:rgba(0,168,156,0.04);border-left:3px solid var(--teal);padding-left:13px;}
+.team-badge{display:flex;align-items:center;gap:7px;flex:1;min-width:0;}
+.team-avatar{width:26px;height:26px;border-radius:50%;object-fit:cover;border:1px solid var(--border-teal);flex-shrink:0;}
+.team-avatar-ph{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.07);border:1px solid var(--border-teal);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:10px;color:var(--muted);flex-shrink:0;}
+.team-name{font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;color:var(--chrome2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.team-div-label{font-size:9px;letter-spacing:1px;font-family:'Barlow',sans-serif;white-space:nowrap;}
+.vs-badge{font-family:'Anton',sans-serif;font-size:11px;color:var(--muted);letter-spacing:2px;flex-shrink:0;}
+.div-tag{font-size:9px;letter-spacing:1px;font-family:'Barlow',sans-serif;padding:1px 6px;border-radius:2px;background:rgba(0,168,156,0.15);color:var(--teal2);flex-shrink:0;}
+.team-schedule-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+.team-sched-card{background:rgba(10,21,32,0.8);border:1px solid var(--border-teal);border-radius:5px;overflow:hidden;}
+.team-sched-header{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border-teal);}
+.team-sched-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--teal);flex-shrink:0;}
+.team-sched-avatar-ph{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.07);border:2px solid var(--teal);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:13px;color:var(--muted);flex-shrink:0;}
+.team-sched-name{font-family:'Anton',sans-serif;font-size:14px;letter-spacing:1px;color:var(--chrome2);}
+.team-sched-div{font-size:10px;font-family:'Barlow',sans-serif;letter-spacing:1px;}
+.team-weeks{display:flex;flex-direction:column;}
+.team-week-row{display:flex;align-items:center;gap:8px;padding:5px 14px;border-bottom:1px solid rgba(255,255,255,0.03);font-family:'Barlow',sans-serif;}
+.team-week-row:last-child{border-bottom:none;}
+.team-week-row.div-game{background:rgba(0,168,156,0.04);border-left:2px solid var(--teal);padding-left:12px;}
+.team-week-num{font-family:'Anton',sans-serif;font-size:11px;color:var(--orange2);width:18px;flex-shrink:0;}
+.team-week-opp{font-size:12px;color:var(--chrome);flex:1;}
+.team-week-tag{font-size:9px;color:var(--teal2);letter-spacing:1px;}
+@media print{.frame-line,.nav,.controls,.view-toggle,.league-tabs,.pin-overlay{display:none!important;}body{background:#fff;color:#000;}.week-block{border:1px solid #ddd;break-inside:avoid;margin-bottom:6px;}.week-header{background:#eee!important;}.matchup-row{padding:6px 12px;}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="frame-line frame-line-top"></div>
+<div class="frame-line frame-line-bottom"></div>
+
+<div class="pin-overlay" id="pin-overlay">
+  <div class="pin-box">
+    <div class="pin-title">COMMISSIONER</div>
+    <div class="pin-sub">Schedule Builder · Commissioner Only</div>
+    <input class="pin-input" id="pin-input" type="password" maxlength="8" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+    <div class="pin-error" id="pin-error"></div>
+    <button class="btn-pin" onclick="submitPin()">ENTER</button>
+  </div>
+</div>
+
+<div class="container" id="main" style="display:none;">
+  <div class="nav"><a href="/" class="nav-back">&#8249; Home</a></div>
+  <div class="header">
+    <div class="header-eyebrow">Commissioner Tool</div>
+    <h1>SCHEDULE BUILDER</h1>
+    <div class="header-rule"></div>
+  </div>
+  <div class="league-tabs">
+    <div class="league-tab active" onclick="switchLeague('CFL')" id="tab-CFL">CFL</div>
+    <div class="league-tab" onclick="switchLeague('MinuteMaid')" id="tab-MinuteMaid">MinuteMaid</div>
+    <div class="league-tab" onclick="switchLeague('BIG12')" id="tab-BIG12">BIG12</div>
+  </div>
+  <div class="stats-bar" id="stats-bar"></div>
+  <div class="div-legend" id="div-legend"></div>
+  <div class="controls">
+    <button class="btn btn-primary" onclick="regenerate()">&#x1F500; Regenerate</button>
+    <button class="btn btn-secondary" onclick="window.print()">&#x1F5A8; Print / Save PDF</button>
+    <span class="controls-label" id="controls-label"></span>
+  </div>
+  <div class="view-toggle">
+    <div class="view-btn active" onclick="switchView('week')" id="vbtn-week">BY WEEK</div>
+    <div class="view-btn" onclick="switchView('team')" id="vbtn-team">BY TEAM</div>
+  </div>
+  <div id="schedule-content"></div>
+</div>
+
+<script>
+const PIN = '00136860';
+const SCHEDULES = {"CFL": [[["jwilly301", "SPCTIGERS"], ["BarbieBry", "bleedgreenz"], ["dweeebzz", "Kushwopp"], ["TheAmberErica", "cinccity"], ["BizyBonez", "FrankE324"], ["ifeellikemontez", "RipCamilton03"]], [["Kushwopp", "SPCTIGERS"], ["bleedgreenz", "dweeebzz"], ["ifeellikemontez", "TheAmberErica"], ["BarbieBry", "jwilly301"], ["FrankE324", "RipCamilton03"], ["cinccity", "BizyBonez"]], [["RipCamilton03", "FrankE324"], ["dweeebzz", "TheAmberErica"], ["jwilly301", "BarbieBry"], ["Kushwopp", "SPCTIGERS"], ["cinccity", "ifeellikemontez"], ["bleedgreenz", "BizyBonez"]], [["bleedgreenz", "jwilly301"], ["BarbieBry", "cinccity"], ["TheAmberErica", "ifeellikemontez"], ["BizyBonez", "RipCamilton03"], ["Kushwopp", "dweeebzz"], ["FrankE324", "SPCTIGERS"]], [["Kushwopp", "cinccity"], ["ifeellikemontez", "BarbieBry"], ["bleedgreenz", "jwilly301"], ["FrankE324", "TheAmberErica"], ["BizyBonez", "RipCamilton03"], ["SPCTIGERS", "dweeebzz"]], [["Kushwopp", "TheAmberErica"], ["FrankE324", "ifeellikemontez"], ["BizyBonez", "cinccity"], ["RipCamilton03", "BarbieBry"], ["dweeebzz", "jwilly301"], ["SPCTIGERS", "bleedgreenz"]], [["Kushwopp", "jwilly301"], ["BarbieBry", "bleedgreenz"], ["cinccity", "SPCTIGERS"], ["ifeellikemontez", "dweeebzz"], ["TheAmberErica", "RipCamilton03"], ["FrankE324", "BizyBonez"]], [["Kushwopp", "ifeellikemontez"], ["TheAmberErica", "cinccity"], ["FrankE324", "BarbieBry"], ["BizyBonez", "jwilly301"], ["RipCamilton03", "bleedgreenz"], ["dweeebzz", "SPCTIGERS"]], [["Kushwopp", "RipCamilton03"], ["dweeebzz", "BizyBonez"], ["SPCTIGERS", "FrankE324"], ["bleedgreenz", "TheAmberErica"], ["jwilly301", "ifeellikemontez"], ["BarbieBry", "cinccity"]], [["Kushwopp", "dweeebzz"], ["SPCTIGERS", "RipCamilton03"], ["bleedgreenz", "BizyBonez"], ["jwilly301", "FrankE324"], ["BarbieBry", "TheAmberErica"], ["cinccity", "ifeellikemontez"]], [["Kushwopp", "BarbieBry"], ["cinccity", "jwilly301"], ["ifeellikemontez", "bleedgreenz"], ["TheAmberErica", "SPCTIGERS"], ["FrankE324", "dweeebzz"], ["BizyBonez", "RipCamilton03"]], [["Kushwopp", "cinccity"], ["ifeellikemontez", "BarbieBry"], ["TheAmberErica", "jwilly301"], ["FrankE324", "bleedgreenz"], ["BizyBonez", "SPCTIGERS"], ["RipCamilton03", "dweeebzz"]]], "MinuteMaid": [[["cinccity", "ifeellikemontez"], ["tredagoat082410", "TheAmberErica"], ["dweeebzz", "BarbieBry"], ["jwilly301", "bleedgreenz"], ["xtepps", "meedzs"]], [["cinccity", "dweeebzz"], ["bleedgreenz", "BarbieBry"], ["TheAmberErica", "tredagoat082410"], ["meedzs", "xtepps"], ["jwilly301", "ifeellikemontez"]], [["BarbieBry", "meedzs"], ["TheAmberErica", "xtepps"], ["tredagoat082410", "dweeebzz"], ["cinccity", "ifeellikemontez"], ["bleedgreenz", "jwilly301"]], [["meedzs", "jwilly301"], ["TheAmberErica", "ifeellikemontez"], ["tredagoat082410", "dweeebzz"], ["BarbieBry", "xtepps"], ["bleedgreenz", "cinccity"]], [["BarbieBry", "TheAmberErica"], ["cinccity", "tredagoat082410"], ["bleedgreenz", "meedzs"], ["dweeebzz", "ifeellikemontez"], ["xtepps", "jwilly301"]], [["bleedgreenz", "xtepps"], ["TheAmberErica", "dweeebzz"], ["ifeellikemontez", "tredagoat082410"], ["BarbieBry", "meedzs"], ["jwilly301", "cinccity"]], [["TheAmberErica", "bleedgreenz"], ["ifeellikemontez", "meedzs"], ["tredagoat082410", "xtepps"], ["cinccity", "dweeebzz"], ["BarbieBry", "jwilly301"]], [["cinccity", "TheAmberErica"], ["ifeellikemontez", "BarbieBry"], ["jwilly301", "xtepps"], ["dweeebzz", "tredagoat082410"], ["meedzs", "bleedgreenz"]], [["cinccity", "tredagoat082410"], ["dweeebzz", "ifeellikemontez"], ["jwilly301", "TheAmberErica"], ["xtepps", "BarbieBry"], ["meedzs", "bleedgreenz"]], [["cinccity", "meedzs"], ["bleedgreenz", "xtepps"], ["BarbieBry", "jwilly301"], ["TheAmberErica", "dweeebzz"], ["ifeellikemontez", "tredagoat082410"]], [["ifeellikemontez", "meedzs"], ["TheAmberErica", "cinccity"], ["bleedgreenz", "BarbieBry"], ["jwilly301", "xtepps"], ["dweeebzz", "tredagoat082410"]], [["cinccity", "xtepps"], ["meedzs", "jwilly301"], ["bleedgreenz", "dweeebzz"], ["BarbieBry", "tredagoat082410"], ["TheAmberErica", "ifeellikemontez"]]], "BIG12": [[["dweeebzz", "TheCountB"], ["GMen86900711", "Kushwopp"], ["Hustle4itkennel", "meedzs"], ["Garciaan19", "kingfifi"], ["bleedgreenz", "ifeellikemontez"], ["cinccity", "YoungboyJosh"]], [["dweeebzz", "meedzs"], ["Kushwopp", "ifeellikemontez"], ["kingfifi", "Garciaan19"], ["YoungboyJosh", "bleedgreenz"], ["GMen86900711", "TheCountB"], ["cinccity", "Hustle4itkennel"]], [["ifeellikemontez", "bleedgreenz"], ["Hustle4itkennel", "Garciaan19"], ["Kushwopp", "GMen86900711"], ["dweeebzz", "meedzs"], ["cinccity", "kingfifi"], ["TheCountB", "YoungboyJosh"]], [["ifeellikemontez", "kingfifi"], ["meedzs", "GMen86900711"], ["TheCountB", "Kushwopp"], ["Hustle4itkennel", "dweeebzz"], ["Garciaan19", "cinccity"], ["YoungboyJosh", "bleedgreenz"]], [["dweeebzz", "cinccity"], ["kingfifi", "GMen86900711"], ["Hustle4itkennel", "meedzs"], ["ifeellikemontez", "YoungboyJosh"], ["Kushwopp", "TheCountB"], ["Garciaan19", "bleedgreenz"]], [["dweeebzz", "Garciaan19"], ["bleedgreenz", "kingfifi"], ["YoungboyJosh", "cinccity"], ["ifeellikemontez", "GMen86900711"], ["Hustle4itkennel", "Kushwopp"], ["meedzs", "TheCountB"]], [["dweeebzz", "Kushwopp"], ["GMen86900711", "TheCountB"], ["cinccity", "meedzs"], ["kingfifi", "Hustle4itkennel"], ["Garciaan19", "ifeellikemontez"], ["bleedgreenz", "YoungboyJosh"]], [["dweeebzz", "kingfifi"], ["Garciaan19", "cinccity"], ["bleedgreenz", "GMen86900711"], ["YoungboyJosh", "Kushwopp"], ["ifeellikemontez", "TheCountB"], ["Hustle4itkennel", "meedzs"]], [["dweeebzz", "ifeellikemontez"], ["Hustle4itkennel", "YoungboyJosh"], ["meedzs", "bleedgreenz"], ["TheCountB", "Garciaan19"], ["Kushwopp", "kingfifi"], ["GMen86900711", "cinccity"]], [["dweeebzz", "Hustle4itkennel"], ["meedzs", "ifeellikemontez"], ["TheCountB", "YoungboyJosh"], ["Kushwopp", "bleedgreenz"], ["GMen86900711", "Garciaan19"], ["cinccity", "kingfifi"]], [["dweeebzz", "GMen86900711"], ["cinccity", "Kushwopp"], ["kingfifi", "TheCountB"], ["Garciaan19", "meedzs"], ["bleedgreenz", "Hustle4itkennel"], ["YoungboyJosh", "ifeellikemontez"]], [["dweeebzz", "cinccity"], ["kingfifi", "GMen86900711"], ["Garciaan19", "Kushwopp"], ["bleedgreenz", "TheCountB"], ["YoungboyJosh", "meedzs"], ["ifeellikemontez", "Hustle4itkennel"]]]};
+const LEAGUES_CFG = {"CFL": {"divisions": {"North": ["Kushwopp", "dweeebzz", "SPCTIGERS"], "East": ["bleedgreenz", "jwilly301", "BarbieBry"], "West": ["cinccity", "ifeellikemontez", "TheAmberErica"], "South": ["FrankE324", "BizyBonez", "RipCamilton03"]}, "divColors": {"North": "#4ab0ff", "East": "#4ae0a0", "West": "#e5c440", "South": "#ff8c4a"}}, "MinuteMaid": {"divisions": {"Tropical Punch": ["cinccity", "TheAmberErica", "ifeellikemontez", "tredagoat082410", "dweeebzz"], "Fruit Punch": ["jwilly301", "xtepps", "meedzs", "bleedgreenz", "BarbieBry"]}, "divColors": {"Tropical Punch": "#4ab0ff", "Fruit Punch": "#f87171"}}, "BIG12": {"divisions": {"Division 1": ["dweeebzz", "Hustle4itkennel", "meedzs"], "Division 2": ["TheCountB", "Kushwopp", "GMen86900711"], "Division 3": ["cinccity", "kingfifi", "Garciaan19"], "Division 4": ["bleedgreenz", "YoungboyJosh", "ifeellikemontez"]}, "divColors": {"Division 1": "#4ab0ff", "Division 2": "#4ae0a0", "Division 3": "#e5c440", "Division 4": "#c084fc"}}};
+
+const TEAM_INFO = {
+  'cinccity':       {name:'CINCCITY CINNERS', av:'uploads/499bc6ec6994f5ed8cef6c3a4efa5fbb.jpg'},
+  'bleedgreenz':    {name:'Bleedgreen wes',   av:'avatars/thumbs/b3338675f635c2c1f42b469621d38ec6'},
+  'FrankE324':      {name:'Team FrankE324',   av:'avatars/thumbs/1838a0a4b18ccce61fcb2e1b93618dc1'},
+  'Kushwopp':       {name:'Kushwopp',          av:'avatars/thumbs/b3338675f635c2c1f42b469621d38ec6'},
+  'dweeebzz':       {name:'HOLD EM!',          av:'avatars/thumbs/8eb8f8bf999945d523f2c4033f70473e'},
+  'jwilly301':      {name:'Team jwilly301',    av:'avatars/thumbs/0b50bce78c5f7bfc60b36e9e07d2b0b7'},
+  'BizyBonez':      {name:'Team BizyBonez',   av:'avatars/thumbs/2bd384d96491e4a841ca5e6c5f5eff74'},
+  'ifeellikemontez':{name:'MontezBykeeeee',   av:'avatars/thumbs/0a937d29c073d8893dfd7b4e365e4363'},
+  'RipCamilton03':  {name:'Full Speed CHASE',  av:'avatars/thumbs/b319fdf8b7b5b0359d3c78622ba4d70c'},
+  'SPCTIGERS':      {name:'Team SPCTIGERS',    av:'avatars/thumbs/e7af4deab0289b4f5505646424895246'},
+  'TheAmberErica':  {name:'Team TheAmberErica',av:'avatars/thumbs/0a8202bcaec9acdd00beaec067cc75b4'},
+  'BarbieBry':      {name:'Lamarvelous Flock', av:'avatars/thumbs/c1c03ad4aabca1013a119f17661d23fb'},
+  'tredagoat082410':{name:'Cold plays hot corner',av:'avatars/thumbs/4f4090e5e9c3941414db40a871e3e909'},
+  'xtepps':         {name:'Team xtepps',       av:'avatars/thumbs/725aaca491cef7045d2090c9cfa4c025'},
+  'meedzs':         {name:'Team meedzs',        av:'avatars/thumbs/13eea83d867b32106862ac0b2b3d3c40'},
+  'TheCountB':      {name:'TheCountB',          av:'avatars/thumbs/2b5dadcb8a24a8efb736ed0281687822'},
+  'kingfifi':       {name:'London Capaholics',  av:'avatars/thumbs/e17e9802790aeb3cabc0a6f17656921f'},
+  'Hustle4itkennel':{name:'Hustle4itkennel',    av:'avatars/thumbs/46207162bb09d906e1cfda72b2fc088e'},
+  'Garciaan19':     {name:'Garciaan19',          av:'avatars/thumbs/b3338675f635c2c1f42b469621d38ec6'},
+  'GMen86900711':   {name:'GMen86900711',        av:'avatars/thumbs/15d7cf259bc30eab8f6120f45f652fb6'},
+  'YoungboyJosh':   {name:'YoungboyJosh',        av:'avatars/thumbs/93c1e5c75c9f7b6bc36954310795cfac'},
+  'Hustle4itkennel':{name:'Hustle4itkennel',     av:'avatars/thumbs/46207162bb09d906e1cfda72b2fc088e'},
+};
+
+function avatarUrl(u) {
+  const i = TEAM_INFO[u]; if (!i) return null;
+  if (i.av.startsWith('uploads/')) return '/api/sleeper?avatar=' + encodeURIComponent(i.av);
+  return '/api/sleeper?avatar=' + encodeURIComponent(i.av.split('/').pop());
+}
+function displayName(u) { return (TEAM_INFO[u]||{}).name || u; }
+function getDivision(t, lg) {
+  for (const [div, teams] of Object.entries(LEAGUES_CFG[lg].divisions))
+    if (teams.includes(t)) return div;
+  return '';
+}
+function isDivGame(a, b, lg) { return getDivision(a,lg) === getDivision(b,lg); }
+function getDivColor(div, lg) { return (LEAGUES_CFG[lg].divColors||{})[div] || '#7a9ab0'; }
+
+let activeLeague = 'CFL', activeView = 'week', rngSeed = 0;
+let currentSchedule = null;
+
+function seededShuffle(arr, seed) {
+  const a = [...arr]; let s = seed;
+  for (let i=a.length-1;i>0;i--) {
+    s = (s*1664525+1013904223)&0xffffffff;
+    const j = Math.abs(s)%(i+1);
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function switchLeague(lg) {
+  activeLeague = lg; rngSeed = 0;
+  document.querySelectorAll('.league-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+lg).classList.add('active');
+  currentSchedule = JSON.parse(JSON.stringify(SCHEDULES[lg]));
+  render();
+}
+function switchView(v) {
+  activeView = v;
+  document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('vbtn-'+v).classList.add('active');
+  renderContent();
+}
+function regenerate() {
+  rngSeed++;
+  currentSchedule = seededShuffle(JSON.parse(JSON.stringify(SCHEDULES[activeLeague])), rngSeed);
+  renderContent();
+  document.getElementById('controls-label').textContent = 'Seed: ' + rngSeed + ' · div games 2x guaranteed';
+}
+
+function render() {
+  currentSchedule = JSON.parse(JSON.stringify(SCHEDULES[activeLeague]));
+  renderStats(); renderLegend(); renderContent();
+}
+
+function renderStats() {
+  const cfg = LEAGUES_CFG[activeLeague];
+  const teams = Object.values(cfg.divisions).flat();
+  const totalGames = currentSchedule.reduce((s,w)=>s+w.length,0);
+  const divGames = currentSchedule.reduce((s,w)=>s+w.filter(([a,b])=>isDivGame(a,b,activeLeague)).length,0);
+  document.getElementById('stats-bar').innerHTML = `
+    <div class="stat-chip"><div class="stat-num">${teams.length}</div><div class="stat-label">Teams</div></div>
+    <div class="stat-chip"><div class="stat-num">${Object.keys(cfg.divisions).length}</div><div class="stat-label">Divisions</div></div>
+    <div class="stat-chip"><div class="stat-num">${currentSchedule.length}</div><div class="stat-label">Weeks</div></div>
+    <div class="stat-chip"><div class="stat-num">${totalGames}</div><div class="stat-label">Total Games</div></div>
+    <div class="stat-chip"><div class="stat-num">${divGames}</div><div class="stat-label">Div Games</div></div>`;
+  document.getElementById('controls-label').textContent = 'Seed: ' + rngSeed + ' · div games play 2x guaranteed';
+}
+
+function renderLegend() {
+  const cfg = LEAGUES_CFG[activeLeague];
+  document.getElementById('div-legend').innerHTML = Object.entries(cfg.divisions).map(([div,teams])=>{
+    const col = getDivColor(div, activeLeague);
+    return `<div class="div-pill" style="border-color:${col}30;background:${col}10;color:${col};">
+      <span style="width:7px;height:7px;border-radius:50%;background:${col};display:inline-block;"></span>${div} (${teams.length})
+    </div>`;
+  }).join('');
+}
+
+function teamBadge(u, lg) {
+  const av = avatarUrl(u), name = displayName(u);
+  const div = getDivision(u, lg), col = getDivColor(div, lg);
+  return `<div class="team-badge">
+    ${av ? `<img class="team-avatar" src="${av}" onerror="this.style.display='none'">` : `<div class="team-avatar-ph">${name[0]}</div>`}
+    <div style="min-width:0;">
+      <div class="team-name">${name}</div>
+      <div class="team-div-label" style="color:${col};">${div}</div>
+    </div>
+  </div>`;
+}
+
+function renderContent() {
+  renderStats();
+  const el = document.getElementById('schedule-content');
+  if (activeView === 'week') {
+    el.innerHTML = '<div class="week-grid">' + currentSchedule.map((week,wi) => {
+      const divCount = week.filter(([a,b])=>isDivGame(a,b,activeLeague)).length;
+      return `<div class="week-block">
+        <div class="week-header">
+          <div class="week-num">WK ${wi+1}</div>
+          <div class="week-label">${week.length} games &nbsp;·&nbsp; ${divCount} division</div>
+        </div>
+        <div class="week-games">${week.map(([a,b])=>{
+          const isDiv = isDivGame(a,b,activeLeague);
+          return `<div class="matchup-row ${isDiv?'div-game':''}">
+            ${teamBadge(a,activeLeague)}
+            <div class="vs-badge">VS</div>
+            ${teamBadge(b,activeLeague)}
+            ${isDiv?'<div class="div-tag">DIV</div>':''}
+          </div>`;
+        }).join('')}</div>
+      </div>`;
+    }).join('') + '</div>';
+  } else {
+    const cfg = LEAGUES_CFG[activeLeague];
+    const teams = Object.values(cfg.divisions).flat();
+    el.innerHTML = '<div class="team-schedule-grid">' + teams.map(team => {
+      const av = avatarUrl(team), name = displayName(team);
+      const div = getDivision(team, activeLeague), col = getDivColor(div, activeLeague);
+      const weeks = currentSchedule.map((week,wi) => {
+        const game = week.find(([a,b])=>a===team||b===team);
+        if (!game) return '';
+        const opp = game[0]===team?game[1]:game[0];
+        const isDiv = isDivGame(team,opp,activeLeague);
+        return `<div class="team-week-row ${isDiv?'div-game':''}">
+          <div class="team-week-num">${wi+1}</div>
+          <div class="team-week-opp">vs ${displayName(opp)}</div>
+          ${isDiv?'<div class="team-week-tag">DIV</div>':''}
+        </div>`;
+      }).join('');
+      return `<div class="team-sched-card">
+        <div class="team-sched-header">
+          ${av?`<img class="team-sched-avatar" src="${av}" onerror="this.style.display='none'">`:
+               `<div class="team-sched-avatar-ph">${name[0]}</div>`}
+          <div>
+            <div class="team-sched-name">${name}</div>
+            <div class="team-sched-div" style="color:${col};">${div}</div>
+          </div>
+        </div>
+        <div class="team-weeks">${weeks}</div>
+      </div>`;
+    }).join('') + '</div>';
+  }
+}
+
+function submitPin() {
+  const val = document.getElementById('pin-input').value;
+  if (val === PIN) {
+    document.getElementById('pin-overlay').style.display = 'none';
+    document.getElementById('main').style.display = 'block';
+    switchLeague('CFL');
+  } else {
+    document.getElementById('pin-error').textContent = 'Incorrect PIN';
+    document.getElementById('pin-input').value = '';
+  }
+}
+document.addEventListener('keydown', e => { if(e.key==='Enter') submitPin(); });
+</script>
+</body>
+</html>
