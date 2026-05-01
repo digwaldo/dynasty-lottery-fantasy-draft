@@ -4,5 +4,39 @@
       "memory": 512,
       "maxDuration": 10
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/live-draft",
+      "destination": "/live-draft/index.html"
+    },
+    {
+      "source": "/live-draft-test",
+      "destination": "/live-draft-test/index.html"
+    },
+    {
+      "source": "/team-profile",
+      "destination": "/team-profile/index.html"
+    },
+    {
+      "source": "/league-history",
+      "destination": "/league-history/index.html"
+    },
+    {
+      "source": "/best-ball",
+      "destination": "/best-ball/index.html"
+    },
+    {
+      "source": "/best-ball/pick",
+      "destination": "/best-ball/pick/index.html"
+    },
+    {
+      "source": "/best-ball/lineup",
+      "destination": "/best-ball/lineup/index.html"
+    },
+    {
+      "source": "/schedule-builder",
+      "destination": "/schedule-builder/index.html"
+    }
+  ]
 }
