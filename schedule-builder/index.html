@@ -2,308 +2,1009 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Season Schedule Builder</title>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Teko:wght@400;600&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commissioner cinccity · Lottery Draft</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Teko:wght@300;400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root{--orange:#E8621A;--orange2:#F08030;--sunset:#F5A623;--teal:#00A89C;--teal2:#00C8BC;--teal-dark:#005f5a;--navy:#0d1a2b;--navy2:#0a1520;--chrome:#d0d8e0;--chrome2:#f0f4f8;--text:#f0ede8;--muted:#7a9ab0;--gold:#F5A623;--border-teal:rgba(0,168,156,0.35);--green:#22c55e;}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--navy2);color:var(--text);font-family:'Teko',sans-serif;min-height:100vh;}
-.bg{position:fixed;inset:0;z-index:0;background:linear-gradient(180deg,#060e18,#0a1520);}
-.frame-line{position:fixed;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--orange),var(--teal));z-index:100;}
-.frame-line-top{top:0;}.frame-line-bottom{bottom:0;}
-.container{position:relative;z-index:2;max-width:1000px;margin:0 auto;padding:16px 16px 80px;}
-.pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:500;display:flex;align-items:center;justify-content:center;}
-.pin-box{background:#0d1a2b;border:1px solid var(--border-teal);border-top:3px solid var(--teal);border-radius:8px;padding:32px;text-align:center;width:320px;}
-.pin-title{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:4px;color:var(--chrome2);margin-bottom:6px;}
-.pin-sub{font-family:'Barlow',sans-serif;font-size:13px;color:var(--muted);letter-spacing:1px;margin-bottom:20px;}
-.pin-input{width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border-teal);border-radius:3px;color:var(--chrome2);font-family:'Anton',sans-serif;font-size:24px;letter-spacing:8px;text-align:center;outline:none;margin-bottom:8px;}
-.pin-error{font-size:11px;color:#ff6060;font-family:'Barlow',sans-serif;min-height:14px;margin-bottom:10px;}
-.btn-pin{width:100%;padding:12px;background:var(--teal-dark);border:1px solid var(--teal);border-radius:3px;color:var(--chrome2);font-family:'Anton',sans-serif;font-size:16px;letter-spacing:3px;cursor:pointer;}
-.nav{display:flex;align-items:center;gap:10px;padding:10px 0 20px;}
-.nav-back{color:var(--muted);font-family:'Barlow',sans-serif;font-size:12px;letter-spacing:2px;text-decoration:none;text-transform:uppercase;}
-.nav-back:hover{color:var(--teal2);}
-.header{text-align:center;margin-bottom:24px;}
-.header-eyebrow{font-size:11px;letter-spacing:6px;color:var(--teal2);font-family:'Barlow',sans-serif;margin-bottom:6px;text-transform:uppercase;}
-.header h1{font-family:'Anton',sans-serif;font-size:clamp(36px,8vw,60px);letter-spacing:2px;background:linear-gradient(160deg,#fff,var(--chrome),#a0aab4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.header-rule{width:60px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:12px auto 0;}
-.league-tabs{display:flex;gap:6px;margin-bottom:20px;}
-.league-tab{flex:1;padding:10px;background:rgba(10,21,32,0.8);border:1px solid var(--border-teal);border-radius:3px;font-family:'Anton',sans-serif;font-size:16px;letter-spacing:3px;color:var(--muted);cursor:pointer;text-align:center;transition:all 0.2s;}
-.league-tab.active{border-color:var(--teal);color:var(--teal2);background:rgba(0,168,156,0.08);}
-.controls{display:flex;gap:10px;margin-bottom:16px;align-items:center;flex-wrap:wrap;}
-.btn{padding:9px 18px;border-radius:3px;font-family:'Anton',sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;transition:all 0.2s;border:1px solid;}
-.btn-primary{background:rgba(0,168,156,0.15);border-color:var(--teal);color:var(--teal2);}
-.btn-primary:hover{background:rgba(0,168,156,0.3);}
-.btn-secondary{background:transparent;border-color:var(--border-teal);color:var(--muted);}
-.btn-secondary:hover{border-color:var(--teal);color:var(--teal2);}
-.controls-label{font-family:'Barlow',sans-serif;font-size:11px;color:var(--muted);letter-spacing:1px;margin-left:auto;}
-.view-toggle{display:flex;gap:0;border:1px solid var(--border-teal);border-radius:3px;overflow:hidden;margin-bottom:20px;width:fit-content;}
-.view-btn{padding:8px 20px;font-family:'Anton',sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;text-align:center;background:transparent;border:none;color:var(--muted);transition:all 0.2s;}
-.view-btn.active{background:rgba(0,168,156,0.12);color:var(--teal2);}
-.stats-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
-.stat-chip{background:rgba(10,21,32,0.8);border:1px solid var(--border-teal);border-radius:3px;padding:8px 14px;text-align:center;}
-.stat-num{font-family:'Anton',sans-serif;font-size:20px;color:var(--teal2);}
-.stat-label{font-size:9px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:1px;text-transform:uppercase;}
-.div-legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
-.div-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;border:1px solid;font-family:'Barlow',sans-serif;font-size:10px;letter-spacing:1px;}
-.week-grid{display:flex;flex-direction:column;gap:12px;}
-.week-block{background:rgba(10,21,32,0.8);border:1px solid var(--border-teal);border-radius:5px;overflow:hidden;}
-.week-header{display:flex;align-items:center;gap:10px;padding:10px 16px;background:rgba(0,168,156,0.05);border-bottom:1px solid var(--border-teal);}
-.week-num{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:2px;color:var(--orange2);}
-.week-label{font-family:'Barlow',sans-serif;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
-.week-games{display:flex;flex-direction:column;}
-.matchup-row{display:flex;align-items:center;padding:9px 16px;border-bottom:1px solid rgba(255,255,255,0.04);gap:10px;}
-.matchup-row:last-child{border-bottom:none;}
-.matchup-row.div-game{background:rgba(0,168,156,0.04);border-left:3px solid var(--teal);padding-left:13px;}
-.team-badge{display:flex;align-items:center;gap:7px;flex:1;min-width:0;}
-.team-avatar{width:26px;height:26px;border-radius:50%;object-fit:cover;border:1px solid var(--border-teal);flex-shrink:0;}
-.team-avatar-ph{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.07);border:1px solid var(--border-teal);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:10px;color:var(--muted);flex-shrink:0;}
-.team-name{font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;color:var(--chrome2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.team-div-label{font-size:9px;letter-spacing:1px;font-family:'Barlow',sans-serif;white-space:nowrap;}
-.vs-badge{font-family:'Anton',sans-serif;font-size:11px;color:var(--muted);letter-spacing:2px;flex-shrink:0;}
-.div-tag{font-size:9px;letter-spacing:1px;font-family:'Barlow',sans-serif;padding:1px 6px;border-radius:2px;background:rgba(0,168,156,0.15);color:var(--teal2);flex-shrink:0;}
-.team-schedule-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
-.team-sched-card{background:rgba(10,21,32,0.8);border:1px solid var(--border-teal);border-radius:5px;overflow:hidden;}
-.team-sched-header{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border-teal);}
-.team-sched-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--teal);flex-shrink:0;}
-.team-sched-avatar-ph{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.07);border:2px solid var(--teal);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:13px;color:var(--muted);flex-shrink:0;}
-.team-sched-name{font-family:'Anton',sans-serif;font-size:14px;letter-spacing:1px;color:var(--chrome2);}
-.team-sched-div{font-size:10px;font-family:'Barlow',sans-serif;letter-spacing:1px;}
-.team-weeks{display:flex;flex-direction:column;}
-.team-week-row{display:flex;align-items:center;gap:8px;padding:5px 14px;border-bottom:1px solid rgba(255,255,255,0.03);font-family:'Barlow',sans-serif;}
-.team-week-row:last-child{border-bottom:none;}
-.team-week-row.div-game{background:rgba(0,168,156,0.04);border-left:2px solid var(--teal);padding-left:12px;}
-.team-week-num{font-family:'Anton',sans-serif;font-size:11px;color:var(--orange2);width:18px;flex-shrink:0;}
-.team-week-opp{font-size:12px;color:var(--chrome);flex:1;}
-.team-week-tag{font-size:9px;color:var(--teal2);letter-spacing:1px;}
-@media print{.frame-line,.nav,.controls,.view-toggle,.league-tabs,.pin-overlay{display:none!important;}body{background:#fff;color:#000;}.week-block{border:1px solid #ddd;break-inside:avoid;margin-bottom:6px;}.week-header{background:#eee!important;}.matchup-row{padding:6px 12px;}}
+  :root {
+    --orange:#E8621A;--orange2:#F08030;--sunset:#F5A623;
+    --red:#C0181A;--teal:#00A89C;--teal2:#00C8BC;--teal-dark:#005f5a;
+    --navy:#0d1a2b;--navy2:#0a1520;--chrome:#d0d8e0;--chrome2:#f0f4f8;
+    --text:#f0ede8;--muted:#7a9ab0;
+    --border-teal:rgba(0,168,156,0.35);--border-orange:rgba(232,98,26,0.5);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--navy2);color:var(--text);font-family:'Teko',sans-serif;min-height:100vh;overflow-x:hidden;}
+  .bg-layer{position:fixed;inset:0;z-index:0;overflow:hidden;}
+  .bg-sunset{position:absolute;inset:0;background:linear-gradient(180deg,#0d1a2b 0%,#0d2040 20%,#1a3a5c 45%,#2a4a2a 60%,#3a2a0a 75%,#1a0a08 100%);}
+  .wave-layer{position:absolute;bottom:0;left:0;width:200%;height:45%;}
+  .wave1{animation:waveMove1 8s linear infinite;opacity:0.6;}
+  .wave2{animation:waveMove2 12s linear infinite;opacity:0.4;bottom:2%;}
+  .wave3{animation:waveMove3 6s linear infinite;opacity:0.3;bottom:-2%;}
+  @keyframes waveMove1{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @keyframes waveMove2{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+  @keyframes waveMove3{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
+  .glow-orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;}
+  .orb-orange{width:500px;height:300px;background:rgba(232,98,26,0.12);top:30%;left:50%;transform:translateX(-50%);}
+  .orb-teal{width:400px;height:400px;background:rgba(0,168,156,0.08);bottom:-100px;left:-100px;}
+  .orb-teal2{width:300px;height:300px;background:rgba(0,168,156,0.06);bottom:-50px;right:-50px;}
+  .frame-line-top,.frame-line-bottom{position:fixed;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--red),var(--orange),var(--sunset),var(--orange),var(--red));z-index:100;}
+  .frame-line-top{top:0;}.frame-line-bottom{bottom:0;}
+  .container{position:relative;z-index:2;max-width:860px;margin:0 auto;padding:20px 16px 70px;}
+
+  /* HEADER */
+  header{text-align:center;padding:28px 0 22px;margin-bottom:24px;position:relative;}
+  .header-border{position:absolute;bottom:0;left:10%;right:10%;height:2px;background:linear-gradient(90deg,transparent,var(--red),var(--orange),var(--teal),var(--red),transparent);}
+  .commissioner-line{font-size:12px;letter-spacing:5px;color:var(--teal2);text-transform:uppercase;font-weight:400;margin-bottom:4px;}
+  header h1{font-family:'Anton',sans-serif;font-size:clamp(42px,12vw,88px);letter-spacing:2px;line-height:0.88;background:linear-gradient(160deg,var(--chrome2) 0%,var(--chrome) 30%,#a0aab4 50%,var(--chrome) 70%,var(--chrome2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.5));}
+  .header-sub{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px;}
+  .header-sub-line{flex:1;max-width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--orange));}
+  .header-sub-line.right{background:linear-gradient(90deg,var(--orange),transparent);}
+  .header-sub span{font-size:13px;letter-spacing:4px;color:var(--orange2);text-transform:uppercase;font-weight:600;}
+
+  /* LEAGUE SELECT */
+  #league-select{animation:fadeIn 0.5s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .league-select-title{text-align:center;font-family:'Anton',sans-serif;font-size:18px;letter-spacing:5px;color:var(--muted);margin-bottom:20px;text-transform:uppercase;}
+  .league-cards{display:flex;flex-direction:column;gap:14px;}
+  .league-card{background:rgba(10,21,32,0.85);border:1px solid var(--border-orange);border-left:4px solid var(--orange);border-radius:4px;padding:20px;cursor:pointer;transition:all 0.25s;backdrop-filter:blur(10px);position:relative;overflow:hidden;}
+  .league-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(232,98,26,0.06),transparent);opacity:0;transition:opacity 0.25s;}
+  .league-card:hover{border-color:var(--orange2);transform:translateX(4px);}
+  .league-card:hover::before{opacity:1;}
+  .league-card.has-progress{border-left-color:var(--teal);}
+  .league-card.has-progress::before{background:linear-gradient(135deg,rgba(0,168,156,0.06),transparent);}
+  .league-card.has-progress:hover{border-color:var(--teal2);}
+  .league-card-name{font-family:'Anton',sans-serif;font-size:30px;letter-spacing:3px;color:var(--chrome2);line-height:1;}
+  .league-card-sub{font-size:13px;color:var(--muted);letter-spacing:2px;margin-top:4px;font-family:'Barlow',sans-serif;font-weight:300;}
+  .league-card-status{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border-radius:2px;}
+  .status-new{background:rgba(232,98,26,0.15);color:var(--orange2);border:1px solid rgba(232,98,26,0.3);}
+  .status-progress{background:rgba(0,168,156,0.15);color:var(--teal2);border:1px solid rgba(0,168,156,0.3);}
+  .status-done{background:rgba(100,100,100,0.15);color:#888;border:1px solid rgba(100,100,100,0.3);}
+  .status-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+  .league-card-arrow{position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:22px;color:var(--orange2);opacity:0.5;transition:opacity 0.2s,transform 0.2s;}
+  .league-card:hover .league-card-arrow{opacity:1;transform:translateY(-50%) translateX(4px);}
+
+  /* ACTIVE LEAGUE BAR */
+  .active-league-bar{display:none;align-items:center;justify-content:space-between;background:rgba(10,21,32,0.8);border:1px solid var(--border-teal);border-radius:3px;padding:10px 14px;margin-bottom:18px;backdrop-filter:blur(8px);}
+  .alb-left{display:flex;align-items:center;gap:10px;}
+  .alb-league-name{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:2px;color:var(--teal2);}
+  .alb-label{font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
+  .btn-switch-league{font-family:'Teko',sans-serif;font-size:13px;letter-spacing:2px;color:var(--orange2);background:transparent;border:1px solid var(--border-orange);border-radius:2px;padding:5px 12px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;}
+  .btn-switch-league:hover{background:rgba(232,98,26,0.1);border-color:var(--orange);}
+
+  /* LOADING */
+  #loading-panel{display:none;text-align:center;padding:40px 20px;}
+  .loading-spinner{width:40px;height:40px;border:3px solid var(--border-teal);border-top-color:var(--teal2);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{font-size:13px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
+
+  /* TEAM ROSTER PREVIEW */
+  #roster-panel{display:none;background:rgba(10,21,32,0.85);border:1px solid var(--border-orange);border-top:3px solid var(--red);border-radius:3px;padding:20px;backdrop-filter:blur(10px);margin-bottom:0;}
+  #roster-panel h2{font-family:'Anton',sans-serif;font-size:22px;letter-spacing:3px;color:var(--sunset);margin-bottom:4px;}
+  #roster-panel p{font-size:13px;color:var(--muted);margin-bottom:16px;font-family:'Barlow',sans-serif;font-weight:300;line-height:1.5;}
+  .roster-list{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;}
+  .roster-row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:3px;padding:8px 12px;}
+  .roster-seed{width:24px;height:24px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;font-family:'Barlow',sans-serif;}
+  .roster-seed.lottery{background:linear-gradient(135deg,var(--teal),var(--teal-dark));}
+  .roster-seed.auto{background:linear-gradient(135deg,var(--red),#8a1010);}
+  .roster-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;background:rgba(255,255,255,0.1);flex-shrink:0;border:1px solid rgba(255,255,255,0.1);}
+  .roster-avatar-placeholder{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);flex-shrink:0;font-family:'Barlow',sans-serif;border:1px solid rgba(255,255,255,0.1);}
+  .roster-info{flex:1;min-width:0;}
+  .roster-name{font-family:'Anton',sans-serif;font-size:16px;letter-spacing:1px;color:var(--chrome);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .roster-username{font-size:11px;color:var(--muted);font-family:'Barlow',sans-serif;letter-spacing:0.5px;}
+  .roster-traded{font-size:10px;color:var(--orange2);font-family:'Barlow',sans-serif;letter-spacing:0.5px;margin-top:1px;}
+  .division-label{font-family:'Anton',sans-serif;font-size:12px;letter-spacing:4px;color:var(--teal);padding:10px 0 4px;text-transform:uppercase;}
+
+  /* LOTTERY PANEL */
+  #lottery-panel{display:none;}
+  .pick-header{text-align:center;padding:16px 0 20px;}
+  .pick-label-top{font-size:11px;letter-spacing:6px;color:var(--teal2);text-transform:uppercase;margin-bottom:2px;}
+  .pick-number-big{font-family:'Anton',sans-serif;font-size:clamp(72px,20vw,130px);line-height:0.85;background:linear-gradient(160deg,var(--chrome2),var(--chrome),#8a9aaa,var(--chrome));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 4px 16px rgba(0,0,0,0.6));}
+  .pick-suffix{font-family:'Anton',sans-serif;font-size:clamp(22px,5vw,36px);color:var(--orange2);letter-spacing:3px;}
+
+  .reveal-zone{background:rgba(8,18,28,0.9);border:2px solid var(--border-teal);border-top:3px solid var(--teal);border-radius:3px;padding:30px 20px;text-align:center;min-height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;margin-bottom:18px;backdrop-filter:blur(10px);}
+  .reveal-zone::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--teal-dark),var(--teal2),var(--teal-dark));}
+  .waiting-state{display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .trophy-icon{font-size:48px;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 0 12px rgba(0,168,156,0.4));}
+  @keyframes float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+  .waiting-text{font-size:13px;letter-spacing:4px;color:var(--muted);text-transform:uppercase;}
+  .spinning-name{font-family:'Anton',sans-serif;font-size:36px;letter-spacing:3px;color:var(--teal2);animation:spinPulse 0.12s infinite;}
+  @keyframes spinPulse{0%,100%{opacity:0.4}50%{opacity:1}}
+
+  .revealed-state{display:none;flex-direction:column;align-items:center;gap:6px;animation:revealIn 0.7s cubic-bezier(0.16,1,0.3,1) forwards;}
+  @keyframes revealIn{from{opacity:0;transform:scale(0.85) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .reveal-avatar-wrap{position:relative;margin-bottom:4px;}
+  .reveal-avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid var(--teal);filter:drop-shadow(0 0 16px rgba(0,168,156,0.5));}
+  .reveal-avatar-placeholder{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:3px solid var(--teal);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--muted);font-family:'Anton',sans-serif;}
+  .reveal-seed-label{font-size:12px;letter-spacing:4px;color:var(--teal2);text-transform:uppercase;}
+  .reveal-team-name{font-family:'Anton',sans-serif;font-size:clamp(28px,8vw,56px);letter-spacing:2px;line-height:1;background:linear-gradient(135deg,var(--chrome2),var(--chrome),#a0aab4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;}
+  .reveal-traded{font-size:12px;color:var(--orange2);letter-spacing:1px;font-family:'Barlow',sans-serif;margin-top:2px;}
+  .reveal-traded strong{color:#fff;}
+  .reveal-odds{font-size:15px;color:var(--orange2);letter-spacing:2px;margin-top:4px;}
+
+  .confetti-burst{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+  .cp{position:absolute;width:7px;height:7px;border-radius:1px;animation:cfFall 1.3s ease-out forwards;}
+  @keyframes cfFall{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(var(--tx),140px) rotate(420deg);opacity:0}}
+
+  .btn-pick{width:100%;padding:18px;background:transparent;border:2px solid var(--orange);border-radius:3px;color:var(--orange2);font-family:'Anton',sans-serif;font-size:22px;letter-spacing:5px;cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden;margin-bottom:22px;}
+  .btn-pick::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--red),var(--orange));transform:translateX(-101%);transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);z-index:0;}
+  .btn-pick:hover::before{transform:translateX(0);}
+  .btn-pick:hover{color:#fff;}
+  .btn-pick span{position:relative;z-index:1;}
+  .btn-pick:disabled{border-color:#333;color:#444;cursor:not-allowed;}
+  .btn-pick:disabled::before{display:none;}
+
+  /* RESULTS */
+  .results-section h3{font-family:'Anton',sans-serif;font-size:16px;letter-spacing:5px;color:var(--teal);margin-bottom:12px;border-bottom:1px solid var(--border-teal);padding-bottom:8px;}
+  .results-list{display:flex;flex-direction:column;gap:6px;}
+  .result-row{display:flex;align-items:center;gap:10px;background:rgba(8,18,28,0.8);border:1px solid var(--border-teal);border-left:3px solid var(--teal);border-radius:3px;padding:10px 12px;backdrop-filter:blur(6px);}
+  .result-row.animate{animation:slideIn 0.4s ease forwards;}
+  @keyframes slideIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+  .result-pick-num{font-family:'Anton',sans-serif;font-size:26px;background:linear-gradient(135deg,var(--orange2),var(--sunset));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;width:28px;flex-shrink:0;text-align:center;}
+  .result-divider{width:1px;height:36px;background:var(--border-teal);flex-shrink:0;}
+  .result-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,0.1);flex-shrink:0;}
+  .result-avatar-placeholder{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);flex-shrink:0;font-family:'Barlow',sans-serif;}
+  .result-info{flex:1;min-width:0;}
+  .result-team{font-family:'Anton',sans-serif;font-size:17px;letter-spacing:1px;color:var(--chrome);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .result-traded-line{font-size:10px;color:var(--orange2);font-family:'Barlow',sans-serif;letter-spacing:0.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .result-meta{font-family:'Barlow',sans-serif;font-size:11px;color:var(--muted);text-align:right;line-height:1.5;flex-shrink:0;}
+  .result-meta .odds-highlight{color:var(--teal2);}
+
+  .complete-banner{text-align:center;padding:28px;background:rgba(8,18,28,0.9);border:2px solid var(--orange);border-top:4px solid var(--red);border-radius:3px;margin-bottom:20px;backdrop-filter:blur(10px);}
+  .complete-banner h2{font-family:'Anton',sans-serif;font-size:42px;letter-spacing:4px;background:linear-gradient(135deg,var(--orange2),var(--sunset));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .complete-banner p{font-size:13px;color:var(--muted);letter-spacing:1px;margin-top:6px;font-family:'Barlow',sans-serif;}
+
+  .odds-toggle{display:block;font-size:12px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;cursor:pointer;text-align:center;margin-top:20px;padding:10px;border:1px solid rgba(255,255,255,0.08);border-radius:3px;transition:color 0.2s,border-color 0.2s;font-family:'Teko',sans-serif;}
+  .odds-toggle:hover{color:var(--teal2);border-color:var(--border-teal);}
+  .odds-table-wrap{display:none;margin-top:10px;overflow-x:auto;background:rgba(8,18,28,0.85);border:1px solid var(--border-teal);border-radius:3px;padding:14px;}
+  .odds-table-wrap table{width:100%;border-collapse:collapse;font-size:12px;}
+  .odds-table-wrap th{color:var(--teal2);padding:6px 8px;text-align:center;border-bottom:1px solid var(--border-teal);letter-spacing:1px;font-size:11px;}
+  .odds-table-wrap td{padding:5px 8px;text-align:center;color:var(--text);border-bottom:1px solid rgba(255,255,255,0.03);}
+  .odds-table-wrap tr:hover td{background:rgba(0,168,156,0.05);}
+  .odds-table-wrap td:first-child{color:var(--orange2);font-weight:700;}
+
+  .btn-start{width:100%;padding:16px;background:linear-gradient(135deg,var(--red),var(--orange),var(--orange2));border:none;border-radius:3px;color:#fff;font-family:'Anton',sans-serif;font-size:22px;letter-spacing:5px;cursor:pointer;transition:filter 0.2s,transform 0.1s;position:relative;overflow:hidden;}
+  .btn-start::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,0.15) 50%,transparent 60%);transform:translateX(-100%);transition:transform 0.5s;}
+  .btn-start:hover::after{transform:translateX(100%);}
+  .btn-start:hover{filter:brightness(1.1);}
+  .btn-start:active{transform:scale(0.99);}
+
+  .btn-reset{padding:10px 28px;background:transparent;border:1px solid rgba(255,255,255,0.12);border-radius:3px;color:var(--muted);font-family:'Teko',sans-serif;font-size:14px;letter-spacing:3px;cursor:pointer;margin-top:14px;transition:border-color 0.2s,color 0.2s;text-transform:uppercase;}
+  .btn-reset:hover{border-color:var(--teal);color:var(--teal2);}
+  .btn-clear-league{padding:8px 20px;background:transparent;border:1px solid rgba(192,24,26,0.4);border-radius:3px;color:#e06060;font-family:'Teko',sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;margin-top:10px;transition:border-color 0.2s,color 0.2s;text-transform:uppercase;}
+  .btn-clear-league:hover{border-color:var(--red);color:#ff8080;}
 </style>
 </head>
 <body>
-<div class="bg"></div>
-<div class="frame-line frame-line-top"></div>
-<div class="frame-line frame-line-bottom"></div>
-
-<div class="pin-overlay" id="pin-overlay">
-  <div class="pin-box">
-    <div class="pin-title">COMMISSIONER</div>
-    <div class="pin-sub">Schedule Builder · Commissioner Only</div>
-    <input class="pin-input" id="pin-input" type="password" maxlength="8" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
-    <div class="pin-error" id="pin-error"></div>
-    <button class="btn-pin" onclick="submitPin()">ENTER</button>
-  </div>
+<div class="bg-layer">
+  <div class="bg-sunset"></div>
+  <svg class="wave-layer wave1" viewBox="0 0 1440 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,80 C120,20 240,140 360,80 C480,20 600,140 720,80 C840,20 960,140 1080,80 C1200,20 1320,140 1440,80 L1440,200 L0,200 Z" fill="#00A89C" opacity="0.25"/>
+    <path d="M0,100 C180,40 360,160 540,100 C720,40 900,160 1080,100 C1260,40 1440,160 1440,100 L1440,200 L0,200 Z" fill="#005f5a" opacity="0.3"/>
+  </svg>
+  <svg class="wave-layer wave2" viewBox="0 0 1440 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,60 C90,120 180,20 360,70 C540,120 630,10 720,60 C810,110 990,20 1080,70 C1170,120 1350,30 1440,60 L1440,180 L0,180 Z" fill="#007a74" opacity="0.2"/>
+  </svg>
+  <svg class="wave-layer wave3" viewBox="0 0 1440 160" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,40 C200,100 400,0 600,50 C800,100 1000,0 1200,50 C1300,75 1370,30 1440,50 L1440,160 L0,160 Z" fill="#00C8BC" opacity="0.12"/>
+  </svg>
+  <div class="glow-orb orb-orange"></div>
+  <div class="glow-orb orb-teal"></div>
+  <div class="glow-orb orb-teal2"></div>
 </div>
+<div class="frame-line-top"></div>
+<div class="frame-line-bottom"></div>
 
-<div class="container" id="main" style="display:none;">
-  <div class="nav"><a href="/" class="nav-back">&#8249; Home</a></div>
-  <div class="header">
-    <div class="header-eyebrow">Commissioner Tool</div>
-    <h1>SCHEDULE BUILDER</h1>
-    <div class="header-rule"></div>
+<div class="container">
+  <header>
+    <div class="commissioner-line">Commissioner cinccity</div>
+    <h1>LOTTERY DRAFT</h1>
+    <div class="header-sub">
+      <div class="header-sub-line"></div>
+      <span>Fantasy Football</span>
+      <div class="header-sub-line right"></div>
+    </div>
+    <div class="header-border"></div>
+  </header>
+
+  <!-- LEAGUE SELECT -->
+  <div id="league-select">
+
+    <!-- LIVE DRAFT CARD — commissioner only -->
+    <div id="live-draft-card" style="display:none;">
+      <a href="/live-draft" style="display:flex;align-items:center;gap:12px;background:rgba(10,21,32,0.9);border:1px solid rgba(192,24,26,0.4);border-left:4px solid var(--red);border-radius:4px;padding:14px 20px;margin-bottom:10px;text-decoration:none;transition:all 0.25s;backdrop-filter:blur(10px);" onmouseover="this.style.borderColor='var(--red)';this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='rgba(192,24,26,0.4)';this.style.transform='translateX(0)'">
+        <span style="font-size:20px;">🔴</span>
+        <div>
+          <div style="font-family:'Anton',sans-serif;font-size:20px;letter-spacing:3px;color:#ff6060;">LIVE DRAFT</div>
+          <div style="font-size:12px;color:var(--muted);letter-spacing:2px;font-family:'Barlow',sans-serif;font-weight:300;">2026 Rookie Lottery · Commissioner</div>
+        </div>
+        <span style="margin-left:auto;font-size:22px;color:#ff6060;opacity:0.6;">›</span>
+      </a>
+    </div>
+
+<!-- SCHEDULE BUILDER CARD — commissioner only -->
+    <div id="schedule-builder-card" style="display:none;">
+      <a href="/schedule-builder" style="display:flex;align-items:center;gap:12px;background:rgba(10,21,32,0.85);border:1px solid rgba(192,132,252,0.35);border-left:4px solid #c084fc;border-radius:4px;padding:14px 20px;margin-bottom:10px;text-decoration:none;transition:all 0.25s;backdrop-filter:blur(10px);" onmouseover="this.style.borderColor='#c084fc';this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='rgba(192,132,252,0.35)';this.style.transform='translateX(0)'">
+        <span style="font-size:20px;">&#128197;</span>
+        <div>
+          <div style="font-family:'Anton',sans-serif;font-size:20px;letter-spacing:3px;color:#c084fc;">SCHEDULE BUILDER</div>
+          <div style="font-size:12px;color:var(--muted);letter-spacing:2px;font-family:'Barlow',sans-serif;font-weight:300;">Generate season schedules · All leagues</div>
+        </div>
+        <span style="margin-left:auto;font-size:22px;color:#c084fc;opacity:0.6;">&#8250;</span>
+      </a>
+    </div>
+
+    <!-- BEST BALL CARD — commissioner only -->
+    <div id="best-ball-card" style="display:none;">
+      <a href="/best-ball" style="display:flex;align-items:center;gap:12px;background:rgba(10,21,32,0.85);border:1px solid rgba(34,197,94,0.35);border-left:4px solid #22c55e;border-radius:4px;padding:14px 20px;margin-bottom:10px;text-decoration:none;transition:all 0.25s;backdrop-filter:blur(10px);" onmouseover="this.style.borderColor='#22c55e';this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='rgba(34,197,94,0.35)';this.style.transform='translateX(0)'">
+        <span style="font-size:20px;">🏈</span>
+        <div>
+          <div style="font-family:'Anton',sans-serif;font-size:20px;letter-spacing:3px;color:#22c55e;">BEST BALL CHALLENGE</div>
+          <div style="font-size:12px;color:var(--muted);letter-spacing:2px;font-family:'Barlow',sans-serif;font-weight:300;">Free entry · Weekly · Winner take all</div>
+        </div>
+        <span style="margin-left:auto;font-size:22px;color:#22c55e;opacity:0.6;">›</span>
+      </a>
+    </div>
+
+<!-- LEAGUE HISTORY CARD -->
+    <a href="/league-history" style="display:flex;align-items:center;gap:12px;background:rgba(10,21,32,0.85);border:1px solid rgba(245,166,35,0.4);border-left:4px solid var(--sunset);border-radius:4px;padding:14px 20px;margin-bottom:10px;text-decoration:none;transition:all 0.25s;backdrop-filter:blur(10px);" onmouseover="this.style.borderColor='var(--sunset)';this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='rgba(245,166,35,0.4)';this.style.transform='translateX(0)'">
+      <span style="font-size:20px;">🏆</span>
+      <div>
+        <div style="font-family:'Anton',sans-serif;font-size:20px;letter-spacing:3px;color:var(--sunset);">LEAGUE HISTORY</div>
+        <div style="font-size:12px;color:var(--muted);letter-spacing:2px;font-family:'Barlow',sans-serif;font-weight:300;">Champions · Division winners · Banners</div>
+      </div>
+      <span style="margin-left:auto;font-size:22px;color:var(--sunset);opacity:0.6;">›</span>
+    </a>
+
+    <!-- TEAM PROFILES CARD -->
+    <a href="/team-profile" style="display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(10,21,32,0.85);border:1px solid var(--border-teal);border-left:4px solid var(--teal);border-radius:4px;padding:14px 20px;margin-bottom:14px;text-decoration:none;transition:all 0.25s;backdrop-filter:blur(10px);" onmouseover="this.style.borderColor='var(--teal2)';this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='var(--border-teal)';this.style.transform='translateX(0)'">
+      <span style="font-size:20px;">👥</span>
+      <div>
+        <div style="font-family:'Anton',sans-serif;font-size:20px;letter-spacing:3px;color:var(--teal2);">TEAM PROFILES</div>
+        <div style="font-size:12px;color:var(--muted);letter-spacing:2px;font-family:'Barlow',sans-serif;font-weight:300;">Trade history · Rookie drafts</div>
+      </div>
+      <span style="margin-left:auto;font-size:22px;color:var(--teal2);opacity:0.6;">›</span>
+    </a>
+
+    <!-- SIMULATOR SECTION -->
+    <div class="league-select-title">Lottery Simulator</div>
+    <div class="league-cards">
+      <div class="league-card" id="card-CFL" onclick="selectLeague('CFL')">
+        <div class="league-card-name">CFL</div>
+        <div class="league-card-sub">Crosstown Fantasy League · 12 Teams</div>
+        <div class="league-card-status status-new" id="status-CFL"><span class="status-dot"></span><span id="status-text-CFL">New Draft</span></div>
+        <div class="league-card-arrow">›</div>
+      </div>
+      <div class="league-card" id="card-MinuteMaid" onclick="selectLeague('MinuteMaid')">
+        <div class="league-card-name">MinuteMaid</div>
+        <div class="league-card-sub">MinuteMaid Fantasy League · 10 Teams</div>
+        <div class="league-card-status status-new" id="status-MinuteMaid"><span class="status-dot"></span><span id="status-text-MinuteMaid">New Draft</span></div>
+        <div class="league-card-arrow">›</div>
+      </div>
+    </div>
+
+    <!-- TEST MODE CARD — hidden until commissioner PIN entered -->
+    <div class="league-select-title" style="margin-top:16px;" id="dev-section-label" style="display:none;"></div>
+
+    <!-- Locked state -->
+    <div id="test-card-locked" style="display:flex;align-items:center;gap:12px;background:rgba(10,21,32,0.4);border:1px solid rgba(255,255,255,0.06);border-left:4px solid rgba(255,255,255,0.08);border-radius:4px;padding:14px 20px;cursor:pointer;transition:all 0.25s;backdrop-filter:blur(10px);opacity:0.35;" onclick="showTestPinPrompt()">
+      <span style="font-size:20px;">🔒</span>
+      <div>
+        <div style="font-family:'Anton',sans-serif;font-size:16px;letter-spacing:3px;color:var(--muted);">COMMISSIONER ONLY</div>
+        <div style="font-size:11px;color:var(--muted);letter-spacing:2px;font-family:'Barlow',sans-serif;">Enter PIN to access test tools</div>
+      </div>
+    </div>
+
+    <!-- PIN prompt (hidden by default) -->
+    <div id="test-pin-prompt" style="display:none;background:rgba(10,21,32,0.9);border:1px solid rgba(245,166,35,0.4);border-radius:4px;padding:16px 20px;backdrop-filter:blur(10px);">
+      <div style="font-size:11px;letter-spacing:3px;color:var(--sunset);font-family:'Barlow',sans-serif;text-transform:uppercase;margin-bottom:10px;">Commissioner PIN</div>
+      <div style="display:flex;gap:8px;">
+        <input id="home-pin-input" type="password" maxlength="8" placeholder="••••••••"
+          style="flex:1;padding:10px;background:rgba(255,255,255,0.05);border:1px solid var(--border-teal);border-radius:3px;color:var(--chrome2);font-family:'Anton',sans-serif;font-size:20px;letter-spacing:6px;text-align:center;outline:none;">
+        <button onclick="submitHomePIN()" style="padding:10px 18px;background:rgba(0,168,156,0.15);border:1px solid var(--teal);border-radius:3px;color:var(--teal2);font-family:'Anton',sans-serif;font-size:14px;letter-spacing:2px;cursor:pointer;">GO</button>
+      </div>
+      <div id="home-pin-error" style="font-size:11px;color:#ff6060;font-family:'Barlow',sans-serif;letter-spacing:1px;margin-top:6px;min-height:14px;"></div>
+    </div>
+
+    <!-- Unlocked test card (hidden until PIN correct) -->
+    <a id="test-card-unlocked" href="/live-draft-test" style="display:none;align-items:center;gap:12px;background:rgba(10,21,32,0.7);border:1px solid rgba(245,166,35,0.5);border-left:4px solid var(--sunset);border-radius:4px;padding:14px 20px;text-decoration:none;transition:all 0.25s;backdrop-filter:blur(10px);" onmouseover="this.style.borderColor='var(--sunset)';this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='rgba(245,166,35,0.5)';this.style.transform='translateX(0)'">
+      <span style="font-size:20px;">🧪</span>
+      <div>
+        <div style="font-family:'Anton',sans-serif;font-size:18px;letter-spacing:3px;color:var(--sunset);">LIVE DRAFT TEST</div>
+        <div style="font-size:12px;color:var(--muted);letter-spacing:2px;font-family:'Barlow',sans-serif;font-weight:300;">Test the live draw · Not official</div>
+      </div>
+      <span style="margin-left:auto;font-size:22px;color:var(--sunset);opacity:0.6;">›</span>
+    </a>
+
+    <script>
+    const HOME_PIN = '00136860';
+
+    // Check sessionStorage on load
+    if (sessionStorage.getItem('comm_auth') === 'true') unlockTestCard();
+
+    function showTestPinPrompt() {
+      document.getElementById('test-card-locked').style.display = 'none';
+      document.getElementById('test-pin-prompt').style.display = 'block';
+      setTimeout(() => document.getElementById('home-pin-input').focus(), 50);
+    }
+
+    function submitHomePIN() {
+      const val = document.getElementById('home-pin-input').value;
+      if (val === HOME_PIN) {
+        sessionStorage.setItem('comm_auth', 'true');
+        unlockTestCard();
+      } else {
+        document.getElementById('home-pin-error').textContent = 'Incorrect PIN';
+        document.getElementById('home-pin-input').value = '';
+      }
+    }
+
+    function unlockTestCard() {
+      document.getElementById('test-card-locked').style.display = 'none';
+      document.getElementById('test-pin-prompt').style.display = 'none';
+      const card = document.getElementById('test-card-unlocked');
+      card.style.display = 'flex';
+      document.getElementById('dev-section-label').style.display = 'block';
+      document.getElementById('dev-section-label').textContent = 'Developer';
+      document.getElementById('dev-section-label').className = 'league-select-title';
+      // Also reveal live draft and best ball cards
+      const liveDraft = document.getElementById('live-draft-card');
+      const bestBall = document.getElementById('best-ball-card');
+      if (liveDraft) liveDraft.style.display = 'block';
+      if (bestBall) bestBall.style.display = 'block';
+      const schedBuilder = document.getElementById('schedule-builder-card');
+      if (schedBuilder) schedBuilder.style.display = 'block';
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && document.getElementById('test-pin-prompt').style.display !== 'none') {
+        submitHomePIN();
+      }
+    });
+    </script>
+
   </div>
-  <div class="league-tabs">
-    <div class="league-tab active" onclick="switchLeague('CFL')" id="tab-CFL">CFL</div>
-    <div class="league-tab" onclick="switchLeague('MinuteMaid')" id="tab-MinuteMaid">MinuteMaid</div>
-    <div class="league-tab" onclick="switchLeague('BIG12')" id="tab-BIG12">BIG12</div>
+
+  <!-- ACTIVE LEAGUE BAR -->
+  <div class="active-league-bar" id="active-league-bar">
+    <div class="alb-left">
+      <div>
+        <div class="alb-label">Active League</div>
+        <div class="alb-league-name" id="alb-name"></div>
+      </div>
+    </div>
+    <button class="btn-switch-league" onclick="switchLeague()">⇄ Switch</button>
   </div>
-  <div class="stats-bar" id="stats-bar"></div>
-  <div class="div-legend" id="div-legend"></div>
-  <div class="controls">
-    <button class="btn btn-primary" onclick="regenerate()">&#x1F500; Regenerate</button>
-    <button class="btn btn-secondary" onclick="window.print()">&#x1F5A8; Print / Save PDF</button>
-    <span class="controls-label" id="controls-label"></span>
+
+  <!-- LOADING -->
+  <div id="loading-panel">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading teams from Sleeper...</div>
   </div>
-  <div class="view-toggle">
-    <div class="view-btn active" onclick="switchView('week')" id="vbtn-week">BY WEEK</div>
-    <div class="view-btn" onclick="switchView('team')" id="vbtn-team">BY TEAM</div>
+
+  <!-- ROSTER PREVIEW -->
+  <div id="roster-panel">
+    <h2 id="roster-title">LOTTERY TEAMS</h2>
+    <p>Review the seedings below then start the lottery. Traded picks are noted.</p>
+    <div class="roster-list" id="roster-list"></div>
+    <button class="btn-start" onclick="startLottery()">RUN THE LOTTERY</button>
   </div>
-  <div id="schedule-content"></div>
+
+  <!-- LOTTERY -->
+  <div id="lottery-panel">
+    <div class="pick-header">
+      <div class="pick-label-top">Now Drawing</div>
+      <div>
+        <span class="pick-number-big" id="current-pick-num">8</span>
+        <span class="pick-suffix" id="pick-suffix">TH PICK</span>
+      </div>
+    </div>
+    <div class="reveal-zone" id="reveal-zone">
+      <div class="waiting-state" id="waiting-state">
+        <div class="trophy-icon">🏆</div>
+        <div class="waiting-text">Press to draw</div>
+      </div>
+      <div class="revealed-state" id="revealed-state">
+        <div class="reveal-avatar-wrap">
+          <img class="reveal-avatar" crossorigin="anonymous" id="reveal-avatar-img" src="" alt="" onerror="this.style.display='none';document.getElementById('reveal-avatar-ph').style.display='flex';">
+          <div class="reveal-avatar-placeholder" id="reveal-avatar-ph" style="display:none;">?</div>
+        </div>
+        <div class="reveal-seed-label" id="result-seed-label"></div>
+        <div class="reveal-team-name" id="result-team-name"></div>
+        <div class="reveal-traded" id="result-traded" style="display:none;"></div>
+        <div class="reveal-odds" id="result-odds"></div>
+      </div>
+      <div class="confetti-burst" id="confetti-burst"></div>
+    </div>
+    <button class="btn-pick" id="pick-btn" onclick="handlePickClick()">
+      <span id="pick-btn-label">DRAW THE 8TH PICK</span>
+    </button>
+    <div class="results-section">
+      <h3>Lottery Results</h3>
+      <div class="results-list" id="results-list"></div>
+    </div>
+    <button class="odds-toggle" onclick="toggleOdds()">▼ Show Odds Table</button>
+    <div class="odds-table-wrap" id="odds-table-wrap"></div>
+    <div style="text-align:center;margin-top:20px;">
+      <button class="btn-reset" onclick="goToRoster()">← Back to Teams</button>
+      <br>
+      <div id="reset-confirm-zone" style="margin-top:12px;">
+        <button class="btn-clear-league" onclick="showResetConfirm()">✕ Reset This League</button>
+        <div id="reset-confirm-box" style="display:none;margin-top:10px;background:rgba(192,24,26,0.12);border:1px solid rgba(192,24,26,0.4);border-radius:3px;padding:14px;text-align:center;">
+          <div style="font-family:'Barlow',sans-serif;font-size:13px;color:#e06060;margin-bottom:12px;letter-spacing:1px;">This will erase all picks for this league. Are you sure?</div>
+          <div style="display:flex;gap:10px;justify-content:center;">
+            <button onclick="confirmReset()" style="padding:8px 20px;background:var(--red);border:none;border-radius:3px;color:#fff;font-family:'Anton',sans-serif;font-size:15px;letter-spacing:2px;cursor:pointer;">YES, RESET</button>
+            <button onclick="cancelReset()" style="padding:8px 20px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:3px;color:var(--muted);font-family:'Teko',sans-serif;font-size:15px;letter-spacing:2px;cursor:pointer;">CANCEL</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-const PIN = '00136860';
-const SCHEDULES = {"CFL": [[["jwilly301", "SPCTIGERS"], ["BarbieBry", "bleedgreenz"], ["dweeebzz", "Kushwopp"], ["TheAmberErica", "cinccity"], ["BizyBonez", "FrankE324"], ["ifeellikemontez", "RipCamilton03"]], [["Kushwopp", "SPCTIGERS"], ["bleedgreenz", "dweeebzz"], ["ifeellikemontez", "TheAmberErica"], ["BarbieBry", "jwilly301"], ["FrankE324", "RipCamilton03"], ["cinccity", "BizyBonez"]], [["RipCamilton03", "FrankE324"], ["dweeebzz", "TheAmberErica"], ["jwilly301", "BarbieBry"], ["Kushwopp", "SPCTIGERS"], ["cinccity", "ifeellikemontez"], ["bleedgreenz", "BizyBonez"]], [["bleedgreenz", "jwilly301"], ["BarbieBry", "cinccity"], ["TheAmberErica", "ifeellikemontez"], ["BizyBonez", "RipCamilton03"], ["Kushwopp", "dweeebzz"], ["FrankE324", "SPCTIGERS"]], [["Kushwopp", "cinccity"], ["ifeellikemontez", "BarbieBry"], ["bleedgreenz", "jwilly301"], ["FrankE324", "TheAmberErica"], ["BizyBonez", "RipCamilton03"], ["SPCTIGERS", "dweeebzz"]], [["Kushwopp", "TheAmberErica"], ["FrankE324", "ifeellikemontez"], ["BizyBonez", "cinccity"], ["RipCamilton03", "BarbieBry"], ["dweeebzz", "jwilly301"], ["SPCTIGERS", "bleedgreenz"]], [["Kushwopp", "jwilly301"], ["BarbieBry", "bleedgreenz"], ["cinccity", "SPCTIGERS"], ["ifeellikemontez", "dweeebzz"], ["TheAmberErica", "RipCamilton03"], ["FrankE324", "BizyBonez"]], [["Kushwopp", "ifeellikemontez"], ["TheAmberErica", "cinccity"], ["FrankE324", "BarbieBry"], ["BizyBonez", "jwilly301"], ["RipCamilton03", "bleedgreenz"], ["dweeebzz", "SPCTIGERS"]], [["Kushwopp", "RipCamilton03"], ["dweeebzz", "BizyBonez"], ["SPCTIGERS", "FrankE324"], ["bleedgreenz", "TheAmberErica"], ["jwilly301", "ifeellikemontez"], ["BarbieBry", "cinccity"]], [["Kushwopp", "dweeebzz"], ["SPCTIGERS", "RipCamilton03"], ["bleedgreenz", "BizyBonez"], ["jwilly301", "FrankE324"], ["BarbieBry", "TheAmberErica"], ["cinccity", "ifeellikemontez"]], [["Kushwopp", "BarbieBry"], ["cinccity", "jwilly301"], ["ifeellikemontez", "bleedgreenz"], ["TheAmberErica", "SPCTIGERS"], ["FrankE324", "dweeebzz"], ["BizyBonez", "RipCamilton03"]], [["Kushwopp", "cinccity"], ["ifeellikemontez", "BarbieBry"], ["TheAmberErica", "jwilly301"], ["FrankE324", "bleedgreenz"], ["BizyBonez", "SPCTIGERS"], ["RipCamilton03", "dweeebzz"]]], "MinuteMaid": [[["cinccity", "ifeellikemontez"], ["tredagoat082410", "TheAmberErica"], ["dweeebzz", "BarbieBry"], ["jwilly301", "bleedgreenz"], ["xtepps", "meedzs"]], [["cinccity", "dweeebzz"], ["bleedgreenz", "BarbieBry"], ["TheAmberErica", "tredagoat082410"], ["meedzs", "xtepps"], ["jwilly301", "ifeellikemontez"]], [["BarbieBry", "meedzs"], ["TheAmberErica", "xtepps"], ["tredagoat082410", "dweeebzz"], ["cinccity", "ifeellikemontez"], ["bleedgreenz", "jwilly301"]], [["meedzs", "jwilly301"], ["TheAmberErica", "ifeellikemontez"], ["tredagoat082410", "dweeebzz"], ["BarbieBry", "xtepps"], ["bleedgreenz", "cinccity"]], [["BarbieBry", "TheAmberErica"], ["cinccity", "tredagoat082410"], ["bleedgreenz", "meedzs"], ["dweeebzz", "ifeellikemontez"], ["xtepps", "jwilly301"]], [["bleedgreenz", "xtepps"], ["TheAmberErica", "dweeebzz"], ["ifeellikemontez", "tredagoat082410"], ["BarbieBry", "meedzs"], ["jwilly301", "cinccity"]], [["TheAmberErica", "bleedgreenz"], ["ifeellikemontez", "meedzs"], ["tredagoat082410", "xtepps"], ["cinccity", "dweeebzz"], ["BarbieBry", "jwilly301"]], [["cinccity", "TheAmberErica"], ["ifeellikemontez", "BarbieBry"], ["jwilly301", "xtepps"], ["dweeebzz", "tredagoat082410"], ["meedzs", "bleedgreenz"]], [["cinccity", "tredagoat082410"], ["dweeebzz", "ifeellikemontez"], ["jwilly301", "TheAmberErica"], ["xtepps", "BarbieBry"], ["meedzs", "bleedgreenz"]], [["cinccity", "meedzs"], ["bleedgreenz", "xtepps"], ["BarbieBry", "jwilly301"], ["TheAmberErica", "dweeebzz"], ["ifeellikemontez", "tredagoat082410"]], [["ifeellikemontez", "meedzs"], ["TheAmberErica", "cinccity"], ["bleedgreenz", "BarbieBry"], ["jwilly301", "xtepps"], ["dweeebzz", "tredagoat082410"]], [["cinccity", "xtepps"], ["meedzs", "jwilly301"], ["bleedgreenz", "dweeebzz"], ["BarbieBry", "tredagoat082410"], ["TheAmberErica", "ifeellikemontez"]]], "BIG12": [[["dweeebzz", "TheCountB"], ["GMen86900711", "Kushwopp"], ["Hustle4itkennel", "meedzs"], ["Garciaan19", "kingfifi"], ["bleedgreenz", "ifeellikemontez"], ["cinccity", "YoungboyJosh"]], [["dweeebzz", "meedzs"], ["Kushwopp", "ifeellikemontez"], ["kingfifi", "Garciaan19"], ["YoungboyJosh", "bleedgreenz"], ["GMen86900711", "TheCountB"], ["cinccity", "Hustle4itkennel"]], [["ifeellikemontez", "bleedgreenz"], ["Hustle4itkennel", "Garciaan19"], ["Kushwopp", "GMen86900711"], ["dweeebzz", "meedzs"], ["cinccity", "kingfifi"], ["TheCountB", "YoungboyJosh"]], [["ifeellikemontez", "kingfifi"], ["meedzs", "GMen86900711"], ["TheCountB", "Kushwopp"], ["Hustle4itkennel", "dweeebzz"], ["Garciaan19", "cinccity"], ["YoungboyJosh", "bleedgreenz"]], [["dweeebzz", "cinccity"], ["kingfifi", "GMen86900711"], ["Hustle4itkennel", "meedzs"], ["ifeellikemontez", "YoungboyJosh"], ["Kushwopp", "TheCountB"], ["Garciaan19", "bleedgreenz"]], [["dweeebzz", "Garciaan19"], ["bleedgreenz", "kingfifi"], ["YoungboyJosh", "cinccity"], ["ifeellikemontez", "GMen86900711"], ["Hustle4itkennel", "Kushwopp"], ["meedzs", "TheCountB"]], [["dweeebzz", "Kushwopp"], ["GMen86900711", "TheCountB"], ["cinccity", "meedzs"], ["kingfifi", "Hustle4itkennel"], ["Garciaan19", "ifeellikemontez"], ["bleedgreenz", "YoungboyJosh"]], [["dweeebzz", "kingfifi"], ["Garciaan19", "cinccity"], ["bleedgreenz", "GMen86900711"], ["YoungboyJosh", "Kushwopp"], ["ifeellikemontez", "TheCountB"], ["Hustle4itkennel", "meedzs"]], [["dweeebzz", "ifeellikemontez"], ["Hustle4itkennel", "YoungboyJosh"], ["meedzs", "bleedgreenz"], ["TheCountB", "Garciaan19"], ["Kushwopp", "kingfifi"], ["GMen86900711", "cinccity"]], [["dweeebzz", "Hustle4itkennel"], ["meedzs", "ifeellikemontez"], ["TheCountB", "YoungboyJosh"], ["Kushwopp", "bleedgreenz"], ["GMen86900711", "Garciaan19"], ["cinccity", "kingfifi"]], [["dweeebzz", "GMen86900711"], ["cinccity", "Kushwopp"], ["kingfifi", "TheCountB"], ["Garciaan19", "meedzs"], ["bleedgreenz", "Hustle4itkennel"], ["YoungboyJosh", "ifeellikemontez"]], [["dweeebzz", "cinccity"], ["kingfifi", "GMen86900711"], ["Garciaan19", "Kushwopp"], ["bleedgreenz", "TheCountB"], ["YoungboyJosh", "meedzs"], ["ifeellikemontez", "Hustle4itkennel"]]]};
-const LEAGUES_CFG = {"CFL": {"divisions": {"North": ["Kushwopp", "dweeebzz", "SPCTIGERS"], "East": ["bleedgreenz", "jwilly301", "BarbieBry"], "West": ["cinccity", "ifeellikemontez", "TheAmberErica"], "South": ["FrankE324", "BizyBonez", "RipCamilton03"]}, "divColors": {"North": "#4ab0ff", "East": "#4ae0a0", "West": "#e5c440", "South": "#ff8c4a"}}, "MinuteMaid": {"divisions": {"Tropical Punch": ["cinccity", "TheAmberErica", "ifeellikemontez", "tredagoat082410", "dweeebzz"], "Fruit Punch": ["jwilly301", "xtepps", "meedzs", "bleedgreenz", "BarbieBry"]}, "divColors": {"Tropical Punch": "#4ab0ff", "Fruit Punch": "#f87171"}}, "BIG12": {"divisions": {"Division 1": ["dweeebzz", "Hustle4itkennel", "meedzs"], "Division 2": ["TheCountB", "Kushwopp", "GMen86900711"], "Division 3": ["cinccity", "kingfifi", "Garciaan19"], "Division 4": ["bleedgreenz", "YoungboyJosh", "ifeellikemontez"]}, "divColors": {"Division 1": "#4ab0ff", "Division 2": "#4ae0a0", "Division 3": "#e5c440", "Division 4": "#c084fc"}}};
-
-const TEAM_INFO = {
-  'cinccity':       {name:'CINCCITY CINNERS', av:'uploads/499bc6ec6994f5ed8cef6c3a4efa5fbb.jpg'},
-  'bleedgreenz':    {name:'Bleedgreen wes',   av:'avatars/thumbs/b3338675f635c2c1f42b469621d38ec6'},
-  'FrankE324':      {name:'Team FrankE324',   av:'avatars/thumbs/1838a0a4b18ccce61fcb2e1b93618dc1'},
-  'Kushwopp':       {name:'Kushwopp',          av:'avatars/thumbs/b3338675f635c2c1f42b469621d38ec6'},
-  'dweeebzz':       {name:'HOLD EM!',          av:'avatars/thumbs/8eb8f8bf999945d523f2c4033f70473e'},
-  'jwilly301':      {name:'Team jwilly301',    av:'avatars/thumbs/0b50bce78c5f7bfc60b36e9e07d2b0b7'},
-  'BizyBonez':      {name:'Team BizyBonez',   av:'avatars/thumbs/2bd384d96491e4a841ca5e6c5f5eff74'},
-  'ifeellikemontez':{name:'MontezBykeeeee',   av:'avatars/thumbs/0a937d29c073d8893dfd7b4e365e4363'},
-  'RipCamilton03':  {name:'Full Speed CHASE',  av:'avatars/thumbs/b319fdf8b7b5b0359d3c78622ba4d70c'},
-  'SPCTIGERS':      {name:'Team SPCTIGERS',    av:'avatars/thumbs/e7af4deab0289b4f5505646424895246'},
-  'TheAmberErica':  {name:'Team TheAmberErica',av:'avatars/thumbs/0a8202bcaec9acdd00beaec067cc75b4'},
-  'BarbieBry':      {name:'Lamarvelous Flock', av:'avatars/thumbs/c1c03ad4aabca1013a119f17661d23fb'},
-  'tredagoat082410':{name:'Cold plays hot corner',av:'avatars/thumbs/4f4090e5e9c3941414db40a871e3e909'},
-  'xtepps':         {name:'Team xtepps',       av:'avatars/thumbs/725aaca491cef7045d2090c9cfa4c025'},
-  'meedzs':         {name:'Team meedzs',        av:'avatars/thumbs/13eea83d867b32106862ac0b2b3d3c40'},
-  'TheCountB':      {name:'TheCountB',          av:'avatars/thumbs/2b5dadcb8a24a8efb736ed0281687822'},
-  'kingfifi':       {name:'London Capaholics',  av:'avatars/thumbs/e17e9802790aeb3cabc0a6f17656921f'},
-  'Hustle4itkennel':{name:'Hustle4itkennel',    av:'avatars/thumbs/46207162bb09d906e1cfda72b2fc088e'},
-  'Garciaan19':     {name:'Garciaan19',          av:'avatars/thumbs/b3338675f635c2c1f42b469621d38ec6'},
-  'GMen86900711':   {name:'GMen86900711',        av:'avatars/thumbs/15d7cf259bc30eab8f6120f45f652fb6'},
-  'YoungboyJosh':   {name:'YoungboyJosh',        av:'avatars/thumbs/93c1e5c75c9f7b6bc36954310795cfac'},
-  'Hustle4itkennel':{name:'Hustle4itkennel',     av:'avatars/thumbs/46207162bb09d906e1cfda72b2fc088e'},
+// ── LEAGUE CONFIG ─────────────────────────────────────────────────────────────
+const LEAGUE_CONFIG = {
+  CFL: {
+    sleeperLeagueId: '1325949536840974336',
+    // seed order 1=worst to 12=best, username matches Sleeper
+    seeds: [
+      { seed:1,  username:'FrankE324',        tradedTo: null },
+      { seed:2,  username:'BizyBonez',         tradedTo: null },
+      { seed:3,  username:'RipCamilton03',     tradedTo: 'ifeellikemontez' }, // Full Speed CHASE
+      { seed:4,  username:'cinccity',          tradedTo: null },
+      { seed:5,  username:'bleedgreenz',       tradedTo: 'BizyBonez' },
+      { seed:6,  username:'BarbieBry',         tradedTo: null },
+      { seed:7,  username:'ifeellikemontez',   tradedTo: null },
+      { seed:8,  username:'SPCTIGERS',         tradedTo: null },
+      { seed:9,  username:'TheAmberErica',     tradedTo: null },
+      { seed:10, username:'jwilly301',         tradedTo: null },
+      { seed:11, username:'dweeebzz',          tradedTo: null },
+      { seed:12, username:'Kushwopp',          tradedTo: null },
+    ],
+    divisions: [
+      { name:'CFL NORTH (CECIL)',       usernames:['SPCTIGERS','dweeebzz','Kushwopp'] },
+      { name:'CFL EAST (HOWARD)',       usernames:['bleedgreenz','BarbieBry','jwilly301'] },
+      { name:'CFL WEST (BALTIMORE)',    usernames:['cinccity','ifeellikemontez','TheAmberErica'] },
+      { name:'CFL SOUTH (PRINCE GEORGE\'S)', usernames:['FrankE324','BizyBonez','RipCamilton03'] },
+    ]
+  },
+  MinuteMaid: {
+    sleeperLeagueId: '1325971620531015680',
+    seeds: [
+      { seed:1,  username:'tredagoat082410',  tradedTo: 'ifeellikemontez' },
+      { seed:2,  username:'xtepps',           tradedTo: null },
+      { seed:3,  username:'dweeebzz',         tradedTo: null },
+      { seed:4,  username:'meedzs',           tradedTo: 'bleedgreenz' },
+      { seed:5,  username:'bleedgreenz',      tradedTo: 'dweeebzz' },
+      { seed:6,  username:'ifeellikemontez',  tradedTo: null },
+      { seed:7,  username:'BarbieBry',        tradedTo: null },
+      { seed:8,  username:'TheAmberErica',    tradedTo: null },
+      { seed:9,  username:'cinccity',         tradedTo: null },
+      { seed:10, username:'jwilly301',        tradedTo: null },
+    ],
+    divisions: null
+  }
 };
 
-function avatarUrl(u) {
-  const i = TEAM_INFO[u]; if (!i) return null;
-  if (i.av.startsWith('uploads/')) return '/api/sleeper?avatar=' + encodeURIComponent(i.av);
-  return '/api/sleeper?avatar=' + encodeURIComponent(i.av.split('/').pop());
-}
-function displayName(u) { return (TEAM_INFO[u]||{}).name || u; }
-function getDivision(t, lg) {
-  for (const [div, teams] of Object.entries(LEAGUES_CFG[lg].divisions))
-    if (teams.includes(t)) return div;
-  return '';
-}
-function isDivGame(a, b, lg) { return getDivision(a,lg) === getDivision(b,lg); }
-function getDivColor(div, lg) { return (LEAGUES_CFG[lg].divColors||{})[div] || '#7a9ab0'; }
+const ODDS_TABLE = {
+  1:{1:14.0,2:13.4,3:12.7,4:12.0,5:47.9,6:0,7:0,8:0},
+  2:{1:14.0,2:13.4,3:12.7,4:12.0,5:27.8,6:20.0,7:0,8:0},
+  3:{1:14.0,2:13.4,3:12.7,4:12.0,5:14.8,6:26.0,7:7.0,8:0},
+  4:{1:12.5,2:12.2,3:11.9,4:11.5,5:7.2,6:25.7,7:16.7,8:2.2},
+  5:{1:10.5,2:10.5,3:10.6,4:10.5,5:2.2,6:19.6,7:26.7,8:8.7},
+  6:{1:9.0,2:9.2,3:9.4,4:9.6,5:0,6:8.6,7:29.8,8:20.5},
+  7:{1:7.5,2:7.8,3:8.1,4:8.5,5:0,6:0,7:19.7,8:34.1},
+  8:{1:6.0,2:6.3,3:6.7,4:7.2,5:0,6:0,7:0,8:34.5}
+};
 
-let activeLeague = 'CFL', activeView = 'week', rngSeed = 0;
-let currentSchedule = null;
+const LEAGUES = ['CFL','MinuteMaid'];
+let activeLeague = null;
+// sleeperData[league][username] = { displayName, avatarUrl }
+let sleeperData = {};
+let allResults = [];
+let revealIndex = 7;
+let results = [];
+let animating = false;
+let revealed = false;
+let lotteryStarted = false;
 
-function seededShuffle(arr, seed) {
-  const a = [...arr]; let s = seed;
-  for (let i=a.length-1;i>0;i--) {
-    s = (s*1664525+1013904223)&0xffffffff;
-    const j = Math.abs(s)%(i+1);
-    [a[i],a[j]]=[a[j],a[i]];
+// ── AVATAR PROXY ─────────────────────────────────────────────────────────────
+function proxyAvatar(url) {
+  if (!url) return null;
+  // Route through our Vercel proxy to fix iOS Safari CORS issues
+  if (url.includes('sleepercdn.com/uploads/')) {
+    const path = url.split('sleepercdn.com/')[1];
+    return `/api/sleeper?avatar=${encodeURIComponent(path)}`;
   }
-  return a;
+  if (url.includes('sleepercdn.com/avatars/thumbs/')) {
+    const hash = url.split('/thumbs/')[1];
+    return `/api/sleeper?avatar=${encodeURIComponent(hash)}`;
+  }
+  return url;
 }
 
-function switchLeague(lg) {
-  activeLeague = lg; rngSeed = 0;
-  document.querySelectorAll('.league-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('tab-'+lg).classList.add('active');
-  currentSchedule = JSON.parse(JSON.stringify(SCHEDULES[lg]));
-  render();
+// ── HARDCODED TEAM DATA (from Sleeper API) ───────────────────────────────────
+const TEAM_DATA = {
+  CFL: {
+  "FrankE324": {
+    "displayName": "Team FrankE324",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/1838a0a4b18ccce61fcb2e1b93618dc1"
+  },
+  "dweeebzz": {
+    "displayName": "Team dweeebzz",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/8eb8f8bf999945d523f2c4033f70473e"
+  },
+  "cinccity": {
+    "displayName": "CINCCITY CINNERS",
+    "avatarUrl": "https://sleepercdn.com/uploads/499bc6ec6994f5ed8cef6c3a4efa5fbb.jpg"
+  },
+  "Kushwopp": {
+    "displayName": "Team 4",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/b3338675f635c2c1f42b469621d38ec6"
+  },
+  "ifeellikemontez": {
+    "displayName": "MontezBykeeeee",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/0a937d29c073d8893dfd7b4e365e4363"
+  },
+  "SPCTIGERS": {
+    "displayName": "Team SPCTIGERS",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/e7af4deab0289b4f5505646424895246"
+  },
+  "jwilly301": {
+    "displayName": "jwilly",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/8edabc3e52325542fcd4228726b804e0"
+  },
+  "RipCamilton03": {
+    "displayName": "Full Speed CHASE",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/b319fdf8b7b5b0359d3c78622ba4d70c"
+  },
+  "bleedgreenz": {
+    "displayName": "Bleedgreen wes",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/b3338675f635c2c1f42b469621d38ec6"
+  },
+  "BizyBonez": {
+    "displayName": "Team BizyBonez",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/2bd384d96491e4a841ca5e6c5f5eff74"
+  },
+  "BarbieBry": {
+    "displayName": "Lamarvelous Flock",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/c1c03ad4aabca1013a119f17661d23fb"
+  },
+  "TheAmberErica": {
+    "displayName": "Team TheAmberErica",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/0a8202bcaec9acdd00beaec067cc75b4"
+  }
+},
+  MinuteMaid: {
+  "dweeebzz": {
+    "displayName": "HOLD EM!",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/8eb8f8bf999945d523f2c4033f70473e"
+  },
+  "cinccity": {
+    "displayName": "CINCCITY CINNERS",
+    "avatarUrl": "https://sleepercdn.com/uploads/36efd46e6c2d65db7b4a12434fcb4ee2.jpg"
+  },
+  "meedzs": {
+    "displayName": "Team meedzs",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/13eea83d867b32106862ac0b2b3d3c40"
+  },
+  "ifeellikemontez": {
+    "displayName": "Montezuma's Negras",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/0a937d29c073d8893dfd7b4e365e4363"
+  },
+  "jwilly301": {
+    "displayName": "Team jwilly301",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/8edabc3e52325542fcd4228726b804e0"
+  },
+  "tredagoat082410": {
+    "displayName": "Cold plays hot corner",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/4f4090e5e9c3941414db40a871e3e909"
+  },
+  "bleedgreenz": {
+    "displayName": "Team bleedgreenz",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/b3338675f635c2c1f42b469621d38ec6"
+  },
+  "BarbieBry": {
+    "displayName": "DemChickensAshtonImLotion",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/c1c03ad4aabca1013a119f17661d23fb"
+  },
+  "TheAmberErica": {
+    "displayName": "Team TheAmberErica",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/0a8202bcaec9acdd00beaec067cc75b4"
+  },
+  "xtepps": {
+    "displayName": "Team xtepps",
+    "avatarUrl": "https://sleepercdn.com/avatars/thumbs/725aaca491cef7045d2090c9cfa4c025"
+  }
 }
-function switchView(v) {
-  activeView = v;
-  document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('vbtn-'+v).classList.add('active');
-  renderContent();
-}
-function regenerate() {
-  rngSeed++;
-  currentSchedule = seededShuffle(JSON.parse(JSON.stringify(SCHEDULES[activeLeague])), rngSeed);
-  renderContent();
-  document.getElementById('controls-label').textContent = 'Seed: ' + rngSeed + ' · div games 2x guaranteed';
+};
+
+async function fetchSleeperData(league) {
+  // Data is hardcoded — no API call needed
+  sleeperData[league] = TEAM_DATA[league] || {};
 }
 
-function render() {
-  currentSchedule = JSON.parse(JSON.stringify(SCHEDULES[activeLeague]));
-  renderStats(); renderLegend(); renderContent();
+function getTeamData(league, username) {
+  const store = sleeperData[league] || TEAM_DATA[league] || {};
+  let data = store[username];
+  if (!data) {
+    const key = Object.keys(store).find(k => k.toLowerCase() === username.toLowerCase());
+    if (key) data = store[key];
+  }
+  if (!data) return { displayName: username, avatarUrl: null };
+  // Proxy avatar through our server to fix iOS Safari
+  return { ...data, avatarUrl: proxyAvatar(data.avatarUrl) };
 }
 
-function renderStats() {
-  const cfg = LEAGUES_CFG[activeLeague];
-  const teams = Object.values(cfg.divisions).flat();
-  const totalGames = currentSchedule.reduce((s,w)=>s+w.length,0);
-  const divGames = currentSchedule.reduce((s,w)=>s+w.filter(([a,b])=>isDivGame(a,b,activeLeague)).length,0);
-  document.getElementById('stats-bar').innerHTML = `
-    <div class="stat-chip"><div class="stat-num">${teams.length}</div><div class="stat-label">Teams</div></div>
-    <div class="stat-chip"><div class="stat-num">${Object.keys(cfg.divisions).length}</div><div class="stat-label">Divisions</div></div>
-    <div class="stat-chip"><div class="stat-num">${currentSchedule.length}</div><div class="stat-label">Weeks</div></div>
-    <div class="stat-chip"><div class="stat-num">${totalGames}</div><div class="stat-label">Total Games</div></div>
-    <div class="stat-chip"><div class="stat-num">${divGames}</div><div class="stat-label">Div Games</div></div>`;
-  document.getElementById('controls-label').textContent = 'Seed: ' + rngSeed + ' · div games play 2x guaranteed';
+// ── STORAGE ───────────────────────────────────────────────────────────────────
+function storageKey(league){ return `cinccity_lottery_v2_${league}`; }
+
+function saveState() {
+  if (!activeLeague) return;
+  const nextRevealIndex = revealed ? revealIndex - 1 : revealIndex;
+  const state = { allResults, revealIndex: nextRevealIndex, results, lotteryStarted };
+  localStorage.setItem(storageKey(activeLeague), JSON.stringify(state));
+  refreshLeagueCards();
 }
 
-function renderLegend() {
-  const cfg = LEAGUES_CFG[activeLeague];
-  document.getElementById('div-legend').innerHTML = Object.entries(cfg.divisions).map(([div,teams])=>{
-    const col = getDivColor(div, activeLeague);
-    return `<div class="div-pill" style="border-color:${col}30;background:${col}10;color:${col};">
-      <span style="width:7px;height:7px;border-radius:50%;background:${col};display:inline-block;"></span>${div} (${teams.length})
-    </div>`;
-  }).join('');
+function loadState(league) {
+  const raw = localStorage.getItem(storageKey(league));
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch(e) { return null; }
 }
 
-function teamBadge(u, lg) {
-  const av = avatarUrl(u), name = displayName(u);
-  const div = getDivision(u, lg), col = getDivColor(div, lg);
-  return `<div class="team-badge">
-    ${av ? `<img class="team-avatar" src="${av}" onerror="this.style.display='none'">` : `<div class="team-avatar-ph">${name[0]}</div>`}
-    <div style="min-width:0;">
-      <div class="team-name">${name}</div>
-      <div class="team-div-label" style="color:${col};">${div}</div>
+function getLeagueStatus(league) {
+  const s = loadState(league);
+  if (!s || !s.lotteryStarted) return 'new';
+  if (s.revealIndex < 0) return 'done';
+  return 'progress';
+}
+
+function refreshLeagueCards() {
+  LEAGUES.forEach(league => {
+    const status = getLeagueStatus(league);
+    const card = document.getElementById(`card-${league}`);
+    const statusEl = document.getElementById(`status-${league}`);
+    const statusText = document.getElementById(`status-text-${league}`);
+    const s = loadState(league);
+    card.className = 'league-card' + (status !== 'new' ? ' has-progress' : '');
+    statusEl.className = `league-card-status status-${status === 'new' ? 'new' : status === 'done' ? 'done' : 'progress'}`;
+    if (status === 'new') statusText.textContent = 'New Draft';
+    else if (status === 'done') statusText.textContent = 'Lottery Complete';
+    else { const drawn = 7 - (s.revealIndex || 0); statusText.textContent = `In Progress · ${drawn}/8 revealed`; }
+  });
+}
+
+// ── LEAGUE SELECT ─────────────────────────────────────────────────────────────
+async function selectLeague(league) {
+  activeLeague = league;
+  document.getElementById('league-select').style.display = 'none';
+  document.getElementById('active-league-bar').style.display = 'flex';
+  document.getElementById('alb-name').textContent = league;
+
+  // Load Sleeper data
+  document.getElementById('loading-panel').style.display = 'block';
+  await fetchSleeperData(league);
+  document.getElementById('loading-panel').style.display = 'none';
+
+  const saved = loadState(league);
+  if (saved && saved.lotteryStarted) {
+    allResults = saved.allResults || [];
+    revealIndex = saved.revealIndex !== undefined ? saved.revealIndex : 7;
+    results = saved.results || [];
+    lotteryStarted = true;
+    revealed = false;
+    animating = false;
+    const isDone = revealIndex < 0;
+    buildOddsTable();
+    document.getElementById('roster-panel').style.display = 'none';
+    document.getElementById('lottery-panel').style.display = 'block';
+    document.getElementById('pick-btn').style.display = 'block';
+    document.getElementById('results-list').innerHTML = '';
+    const b = document.querySelector('.complete-banner'); if(b) b.remove();
+    renderResultsLog();
+    if (isDone) { showCompleteBanner(); document.getElementById('pick-btn').style.display = 'none'; }
+    else { updatePickUI(); resetRevealZone(); }
+  } else {
+    lotteryStarted = false; allResults = []; results = []; revealIndex = 7; revealed = false; animating = false;
+    buildRosterPreview(league);
+    document.getElementById('roster-panel').style.display = 'block';
+    document.getElementById('lottery-panel').style.display = 'none';
+  }
+}
+
+function switchLeague() {
+  activeLeague = null;
+  document.getElementById('active-league-bar').style.display = 'none';
+  document.getElementById('roster-panel').style.display = 'none';
+  document.getElementById('lottery-panel').style.display = 'none';
+  document.getElementById('loading-panel').style.display = 'none';
+  const b = document.querySelector('.complete-banner'); if(b) b.remove();
+  refreshLeagueCards();
+  document.getElementById('league-select').style.display = 'block';
+}
+
+// ── ROSTER PREVIEW ────────────────────────────────────────────────────────────
+function buildRosterPreview(league) {
+  const config = LEAGUE_CONFIG[league];
+  const list = document.getElementById('roster-list');
+  list.innerHTML = '';
+  document.getElementById('roster-title').textContent = `${league.toUpperCase()} · LOTTERY TEAMS`;
+
+  config.seeds.forEach(s => {
+    const td = getTeamData(league, s.username);
+    // Find traded-to display name if applicable
+    let tradedToDisplay = null;
+    if (s.tradedTo) {
+      const tdTo = getTeamData(league, s.tradedTo);
+      tradedToDisplay = tdTo.displayName || s.tradedTo;
+    }
+
+    const row = document.createElement('div');
+    row.className = 'roster-row';
+
+    const badge = document.createElement('div');
+    badge.className = `roster-seed ${s.seed <= 8 ? 'lottery' : 'auto'}`;
+    badge.textContent = s.seed;
+
+    let avatarEl;
+    if (td.avatarUrl) {
+      avatarEl = document.createElement('img');
+      avatarEl.className = 'roster-avatar';
+      avatarEl.src = td.avatarUrl;
+      avatarEl.alt = td.displayName;
+      avatarEl.crossOrigin = 'anonymous';
+      avatarEl.onerror = function(){ this.style.display='none'; };
+    } else {
+      avatarEl = document.createElement('div');
+      avatarEl.className = 'roster-avatar-placeholder';
+      avatarEl.textContent = (td.displayName||'?')[0].toUpperCase();
+    }
+
+    const info = document.createElement('div');
+    info.className = 'roster-info';
+    info.innerHTML = `<div class="roster-name">${td.displayName}</div>
+      <div class="roster-username">@${s.username}</div>
+      ${tradedToDisplay ? `<div class="roster-traded">⇄ Pick traded to ${tradedToDisplay}</div>` : ''}`;
+
+    row.appendChild(badge);
+    row.appendChild(avatarEl);
+    row.appendChild(info);
+    list.appendChild(row);
+  });
+}
+
+function goToRoster() {
+  document.getElementById('lottery-panel').style.display = 'none';
+  buildRosterPreview(activeLeague);
+  document.getElementById('roster-panel').style.display = 'block';
+}
+
+// ── LOTTERY ───────────────────────────────────────────────────────────────────
+function runFullLottery() {
+  let pool = [1,2,3,4,5,6,7,8];
+  allResults = [];
+  const config = LEAGUE_CONFIG[activeLeague];
+  for (let slot = 1; slot <= 8; slot++) {
+    const w = pool.map(s => ODDS_TABLE[s][slot] || 0);
+    const total = w.reduce((a,b) => a+b, 0);
+    // Only seeds with non-zero odds are eligible for this slot
+    const eligiblePool = pool.filter(s => (ODDS_TABLE[s][slot] || 0) > 0);
+    let winner;
+    if (eligiblePool.length === 0) {
+      // Fallback: all remaining seeds equally (should not happen with correct table)
+      winner = pool[Math.floor(Math.random() * pool.length)];
+    } else if (total <= 0) {
+      winner = eligiblePool[Math.floor(Math.random() * eligiblePool.length)];
+    } else {
+      let r = Math.random() * total;
+      winner = eligiblePool[eligiblePool.length - 1]; // safe fallback within eligible only
+      for (let i=0; i<pool.length; i++) { r -= w[i]; if (r <= 0) { winner = pool[i]; break; } }
+      // Final safety: if winner somehow has 0 odds, pick randomly from eligible
+      if ((ODDS_TABLE[winner][slot] || 0) === 0) {
+        winner = eligiblePool[Math.floor(Math.random() * eligiblePool.length)];
+      }
+    }
+    const odds = ODDS_TABLE[winner][slot] || 0;
+    const seedConfig = config.seeds.find(s => s.seed === winner);
+    const username = seedConfig ? seedConfig.username : '';
+    const tradedTo = seedConfig ? seedConfig.tradedTo : null;
+    const td = getTeamData(activeLeague, username);
+    let tradedToDisplay = null;
+    if (tradedTo) {
+      const tdTo = getTeamData(activeLeague, tradedTo);
+      tradedToDisplay = tdTo.displayName || tradedTo;
+    }
+    allResults.push({ pick: slot, seed: winner, team: td.displayName, username, avatarUrl: td.avatarUrl, odds, tradedTo, tradedToDisplay });
+    pool = pool.filter(s => s !== winner);
+  }
+  revealIndex = 7;
+}
+
+function startLottery() {
+  results = []; revealed = false; lotteryStarted = true;
+  runFullLottery();
+  document.getElementById('roster-panel').style.display = 'none';
+  document.getElementById('lottery-panel').style.display = 'block';
+  document.getElementById('pick-btn').style.display = 'block';
+  document.getElementById('results-list').innerHTML = '';
+  const b = document.querySelector('.complete-banner'); if(b) b.remove();
+  buildOddsTable(); updatePickUI(); resetRevealZone();
+  saveState();
+}
+
+function handlePickClick() {
+  if (animating) return;
+  if (!revealed) { drawPick(); }
+  else { revealIndex--; revealed = false; saveState(); resetRevealZone(); updatePickUI(); }
+}
+
+function drawPick() {
+  animating = true; document.getElementById('pick-btn').disabled = true;
+  const ws = document.getElementById('waiting-state');
+  const spinNames = allResults.filter((r,i) => i <= revealIndex).map(r => r.team);
+  ws.innerHTML = `<div class="spinning-name" id="spin-text">●</div><div class="waiting-text">Drawing...</div>`;
+  let spins = 0; const totalSpins = 20 + Math.floor(Math.random()*12);
+  const iv = setInterval(() => {
+    const idx = Math.floor(Math.random()*spinNames.length);
+    document.getElementById('spin-text').textContent = spinNames[idx].toUpperCase();
+    spins++;
+    if (spins >= totalSpins) { clearInterval(iv); showReveal(); }
+  }, 75);
+}
+
+function showReveal() {
+  const result = allResults[revealIndex];
+  const { pick, seed, team, avatarUrl, odds, tradedTo, tradedToDisplay } = result;
+
+  document.getElementById('waiting-state').style.display = 'none';
+  const rev = document.getElementById('revealed-state');
+  rev.style.display = 'flex';
+
+  // Avatar
+  const img = document.getElementById('reveal-avatar-img');
+  const ph = document.getElementById('reveal-avatar-ph');
+  if (avatarUrl) {
+    img.crossOrigin = 'anonymous';
+    img.src = avatarUrl; img.style.display = 'block'; ph.style.display = 'none';
+    ph.textContent = team[0].toUpperCase();
+  } else {
+    img.style.display = 'none'; ph.style.display = 'flex';
+    ph.textContent = team[0].toUpperCase();
+  }
+
+  document.getElementById('result-seed-label').textContent = `SEED ${seed} · LOTTERY TEAM`;
+  document.getElementById('result-team-name').textContent = team.toUpperCase();
+
+  const tradedEl = document.getElementById('result-traded');
+  if (tradedTo) {
+    tradedEl.style.display = 'block';
+    tradedEl.innerHTML = `Pick rights traded to · <strong>${(tradedToDisplay||tradedTo).toUpperCase()}</strong>`;
+  } else {
+    tradedEl.style.display = 'none';
+  }
+
+  document.getElementById('result-odds').textContent = `${odds.toFixed(1)}% odds to land pick #${pick}`;
+  launchConfetti();
+  results.unshift({ pick, seed, team, avatarUrl, odds, tradedTo, tradedToDisplay });
+  addResultRow({ pick, seed, team, avatarUrl, odds, tradedTo, tradedToDisplay }, true);
+  revealed = true; animating = false;
+  document.getElementById('pick-btn').disabled = false;
+  saveState();
+  if (revealIndex === 0) { setTimeout(() => { finalizeLottery(); saveState(); }, 300); }
+  else { document.getElementById('pick-btn-label').textContent = `▶ NEXT PICK (#${revealIndex})`; }
+}
+
+function finalizeLottery() {
+  document.getElementById('pick-btn').style.display = 'none';
+  showCompleteBanner();
+}
+
+function showCompleteBanner() {
+  if (document.querySelector('.complete-banner')) return;
+  const b = document.createElement('div'); b.className = 'complete-banner';
+  b.innerHTML = `<h2>LOTTERY COMPLETE</h2><p>All draft positions assigned. Good luck this season.</p>`;
+  document.getElementById('lottery-panel').insertBefore(b, document.querySelector('.results-section'));
+}
+
+function renderResultsLog() {
+  const list = document.getElementById('results-list'); list.innerHTML = '';
+  results.forEach(r => addResultRow(r, false));
+}
+
+function addResultRow({ pick, seed, team, avatarUrl, odds, tradedTo, tradedToDisplay }, animate) {
+  const list = document.getElementById('results-list');
+  const row = document.createElement('div');
+  row.className = 'result-row' + (animate ? ' animate' : '');
+
+  let avatarHtml;
+  if (avatarUrl) {
+    avatarHtml = `<img class="result-avatar" crossorigin="anonymous" src="${avatarUrl}" alt="${team}" onerror="this.style.display='none'">`;
+  } else {
+    avatarHtml = `<div class="result-avatar-placeholder">${(team||'?')[0].toUpperCase()}</div>`;
+  }
+
+  const tradedLine = tradedTo
+    ? `<div class="result-traded-line">⇄ Traded to ${(tradedToDisplay||tradedTo)}</div>`
+    : '';
+
+  row.innerHTML = `
+    <div class="result-pick-num">${pick}</div>
+    <div class="result-divider"></div>
+    ${avatarHtml}
+    <div class="result-info">
+      <div class="result-team">${team.toUpperCase()}</div>
+      ${tradedLine}
     </div>
-  </div>`;
+    <div class="result-meta">Seed ${seed}<br><span class="odds-highlight">${odds.toFixed(1)}%</span></div>
+  `;
+  list.insertBefore(row, list.firstChild);
 }
 
-function renderContent() {
-  renderStats();
-  const el = document.getElementById('schedule-content');
-  if (activeView === 'week') {
-    el.innerHTML = '<div class="week-grid">' + currentSchedule.map((week,wi) => {
-      const divCount = week.filter(([a,b])=>isDivGame(a,b,activeLeague)).length;
-      return `<div class="week-block">
-        <div class="week-header">
-          <div class="week-num">WK ${wi+1}</div>
-          <div class="week-label">${week.length} games &nbsp;·&nbsp; ${divCount} division</div>
-        </div>
-        <div class="week-games">${week.map(([a,b])=>{
-          const isDiv = isDivGame(a,b,activeLeague);
-          return `<div class="matchup-row ${isDiv?'div-game':''}">
-            ${teamBadge(a,activeLeague)}
-            <div class="vs-badge">VS</div>
-            ${teamBadge(b,activeLeague)}
-            ${isDiv?'<div class="div-tag">DIV</div>':''}
-          </div>`;
-        }).join('')}</div>
-      </div>`;
-    }).join('') + '</div>';
-  } else {
-    const cfg = LEAGUES_CFG[activeLeague];
-    const teams = Object.values(cfg.divisions).flat();
-    el.innerHTML = '<div class="team-schedule-grid">' + teams.map(team => {
-      const av = avatarUrl(team), name = displayName(team);
-      const div = getDivision(team, activeLeague), col = getDivColor(div, activeLeague);
-      const weeks = currentSchedule.map((week,wi) => {
-        const game = week.find(([a,b])=>a===team||b===team);
-        if (!game) return '';
-        const opp = game[0]===team?game[1]:game[0];
-        const isDiv = isDivGame(team,opp,activeLeague);
-        return `<div class="team-week-row ${isDiv?'div-game':''}">
-          <div class="team-week-num">${wi+1}</div>
-          <div class="team-week-opp">vs ${displayName(opp)}</div>
-          ${isDiv?'<div class="team-week-tag">DIV</div>':''}
-        </div>`;
-      }).join('');
-      return `<div class="team-sched-card">
-        <div class="team-sched-header">
-          ${av?`<img class="team-sched-avatar" src="${av}" onerror="this.style.display='none'">`:
-               `<div class="team-sched-avatar-ph">${name[0]}</div>`}
-          <div>
-            <div class="team-sched-name">${name}</div>
-            <div class="team-sched-div" style="color:${col};">${div}</div>
-          </div>
-        </div>
-        <div class="team-weeks">${weeks}</div>
-      </div>`;
-    }).join('') + '</div>';
+function getSuffix(n){if(n===1)return'ST';if(n===2)return'ND';if(n===3)return'RD';return'TH';}
+
+function updatePickUI() {
+  const pickNum = revealIndex + 1;
+  const s = getSuffix(pickNum);
+  document.getElementById('current-pick-num').textContent = pickNum;
+  document.getElementById('pick-suffix').textContent = s + ' PICK';
+  document.getElementById('pick-btn-label').textContent = `DRAW THE ${pickNum}${s} PICK`;
+}
+
+function resetRevealZone() {
+  const w = document.getElementById('waiting-state'); w.style.display = 'flex';
+  w.innerHTML = `<div class="trophy-icon">🏆</div><div class="waiting-text">Press to draw</div>`;
+  const r = document.getElementById('revealed-state'); r.style.display = 'none';
+  r.style.animation = 'none'; void r.offsetWidth; r.style.animation = '';
+  document.getElementById('confetti-burst').innerHTML = '';
+}
+
+function launchConfetti() {
+  const burst = document.getElementById('confetti-burst'); burst.innerHTML = '';
+  const colors = ['#E8621A','#F5A623','#00A89C','#00C8BC','#ffffff','#F08030'];
+  for (let i=0; i<35; i++) {
+    const p = document.createElement('div'); p.className = 'cp';
+    p.style.left = `${15+Math.random()*70}%`; p.style.top = `${5+Math.random()*50}%`;
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.setProperty('--tx', `${(Math.random()-0.5)*140}px`);
+    p.style.animationDelay = `${Math.random()*0.25}s`;
+    p.style.animationDuration = `${0.9+Math.random()*0.5}s`;
+    burst.appendChild(p);
   }
 }
 
-function submitPin() {
-  const val = document.getElementById('pin-input').value;
-  if (val === PIN) {
-    document.getElementById('pin-overlay').style.display = 'none';
-    document.getElementById('main').style.display = 'block';
-    switchLeague('CFL');
-  } else {
-    document.getElementById('pin-error').textContent = 'Incorrect PIN';
-    document.getElementById('pin-input').value = '';
-  }
+function toggleOdds() {
+  const w = document.getElementById('odds-table-wrap'); const t = document.querySelector('.odds-toggle');
+  if (w.style.display === 'block') { w.style.display = 'none'; t.textContent = '▼ Show Odds Table'; }
+  else { w.style.display = 'block'; t.textContent = '▲ Hide Odds Table'; }
 }
-document.addEventListener('keydown', e => { if(e.key==='Enter') submitPin(); });
+
+function buildOddsTable() {
+  const wrap = document.getElementById('odds-table-wrap');
+  let html = '<table><thead><tr><th>SEED</th>';
+  for (let p=1; p<=8; p++) html += `<th>#${p}</th>`;
+  html += '</tr></thead><tbody>';
+  for (let s=1; s<=8; s++) {
+    html += `<tr><td>${s}</td>`;
+    for (let p=1; p<=8; p++) { const v = ODDS_TABLE[s][p]; html += `<td>${v>0?v.toFixed(1):'—'}</td>`; }
+    html += '</tr>';
+  }
+  html += '</tbody></table>'; wrap.innerHTML = html;
+}
+
+function showResetConfirm() { document.getElementById('reset-confirm-box').style.display = 'block'; }
+function cancelReset() { document.getElementById('reset-confirm-box').style.display = 'none'; }
+function confirmReset() {
+  localStorage.removeItem(storageKey(activeLeague));
+  lotteryStarted = false; allResults = []; results = []; revealIndex = 7; revealed = false;
+  switchLeague();
+}
+
+// Init
+refreshLeagueCards();
 </script>
 </body>
 </html>
