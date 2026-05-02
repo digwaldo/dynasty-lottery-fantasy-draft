@@ -62,6 +62,8 @@ body{background:var(--navy2);color:var(--text);font-family:'Teko',sans-serif;min
 .team-div-label{font-size:9px;letter-spacing:1px;font-family:'Barlow',sans-serif;white-space:nowrap;}
 .vs-badge{font-family:'Anton',sans-serif;font-size:11px;color:var(--muted);letter-spacing:2px;flex-shrink:0;}
 .div-tag{font-size:9px;letter-spacing:1px;font-family:'Barlow',sans-serif;padding:1px 6px;border-radius:2px;background:rgba(0,168,156,0.15);color:var(--teal2);flex-shrink:0;}
+.home-tag{font-size:8px;letter-spacing:1px;font-family:'Barlow',sans-serif;padding:1px 5px;border-radius:2px;background:rgba(245,166,35,0.12);color:var(--gold);flex-shrink:0;font-weight:600;}
+.away-tag{font-size:8px;letter-spacing:1px;font-family:'Barlow',sans-serif;padding:1px 5px;border-radius:2px;background:rgba(255,255,255,0.06);color:var(--muted);flex-shrink:0;}
 .team-schedule-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
 .team-sched-card{background:rgba(10,21,32,0.8);border:1px solid var(--border-teal);border-radius:5px;overflow:hidden;}
 .team-sched-header{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border-teal);}
@@ -252,9 +254,11 @@ function renderContent() {
         <div class="week-games">${week.map(([a,b])=>{
           const isDiv = isDivGame(a,b,activeLeague);
           return `<div class="matchup-row ${isDiv?'div-game':''}">
+            <div class="home-tag">H</div>
             ${teamBadge(a,activeLeague)}
             <div class="vs-badge">VS</div>
             ${teamBadge(b,activeLeague)}
+            <div class="away-tag">A</div>
             ${isDiv?'<div class="div-tag">DIV</div>':''}
           </div>`;
         }).join('')}</div>
@@ -270,10 +274,12 @@ function renderContent() {
         const game = week.find(([a,b])=>a===team||b===team);
         if (!game) return '';
         const opp = game[0]===team?game[1]:game[0];
+        const isHome = game[0]===team;
         const isDiv = isDivGame(team,opp,activeLeague);
         return `<div class="team-week-row ${isDiv?'div-game':''}">
           <div class="team-week-num">${wi+1}</div>
-          <div class="team-week-opp">vs ${displayName(opp)}</div>
+          <div class="team-week-opp">${isHome?'vs':'@'} ${displayName(opp)}</div>
+          <div class="team-week-tag" style="color:${isHome?'var(--gold)':'var(--muted)'};">${isHome?'HOME':'AWAY'}</div>
           ${isDiv?'<div class="team-week-tag">DIV</div>':''}
         </div>`;
       }).join('');
