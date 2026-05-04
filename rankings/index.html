@@ -246,11 +246,11 @@ async function loadData() {
     consensusData.forEach((p, i) => p.overallRank = i + 1);
     const positions = ['QB','RB','WR','TE','K','DEF'];
     positions.forEach(pos => {
-      // Consensus positional rank (sorted by avgRank)
+      // Consensus positional rank (sorted by avgRank) — stored as consensusPosRank
       const posPlayers = consensusData
         .filter(p => p.pos === pos)
         .sort((a,b) => a.avgRank - b.avgRank);
-      posPlayers.forEach((p, i) => p.posRank = i + 1);
+      posPlayers.forEach((p, i) => p.consensusPosRank = i + 1);
 
       // DS baseline positional rank (sorted by dsRank)
       const dsPosPlayers = consensusData
@@ -331,16 +331,16 @@ function renderRankings() {
     const rkClass = rk===1?'r1':rk===2?'r2':rk===3?'r3':'';
     // In position view, show overall rank as secondary
     const subRank = isPos
-      ? `<span style="font-size:9px;color:var(--muted);display:block;">OVR ${p.overallRank||p.avgRank.toFixed(0)}</span>`
-      : `<span style="font-size:9px;color:var(--muted);display:block;">${p.pos}${p.posRank||''}</span>`;
-    // Overall movement vs DS baseline rank
+      ? `<span style="font-size:9px;color:var(--muted);display:block;">OVR ${p.overallRank||Math.round(p.avgRank)}</span>`
+      : `<span style="font-size:9px;color:var(--muted);display:block;">${p.pos}${p.consensusPosRank||''}</span>`;
+    // Overall movement: DS overall rank vs consensus overall rank
     const ovrChange = p.submissions > 0 ? p.dsRank - Math.round(p.avgRank) : 0;
     const ovrStr = ovrChange > 0 ? `▲${ovrChange}` : ovrChange < 0 ? `▼${Math.abs(ovrChange)}` : '—';
     const ovrClass = ovrChange > 0 ? 'change-up' : ovrChange < 0 ? 'change-down' : 'change-same';
 
-    // Positional movement vs DS baseline positional rank
-    const dsPosRank = p.dsPosRank || p.posRank;
-    const posChange = p.submissions > 0 ? dsPosRank - (p.posRank || rk) : 0;
+    // Positional movement: DS positional rank vs consensus positional rank
+    const posChange = p.submissions > 0 && p.dsPosRank && p.consensusPosRank
+      ? p.dsPosRank - p.consensusPosRank : 0;
     const posStr = posChange > 0 ? `▲${posChange}` : posChange < 0 ? `▼${Math.abs(posChange)}` : '—';
     const posClass = posChange > 0 ? 'change-up' : posChange < 0 ? 'change-down' : 'change-same';
 
