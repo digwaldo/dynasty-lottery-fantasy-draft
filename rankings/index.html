@@ -209,66 +209,149 @@ let tradeA = [];
 let tradeB = [];
 let addingTo = 'A';  // alternate sides
 
+const BIG12_DRAFT_ID = '1354903444560809984';
+const API = (ep) => `/api/sleeper?endpoint=${encodeURIComponent(ep)}`;
+
 async function loadData() {
   try {
-    // Fetch all rankings from Supabase
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/league_rankings?select=owner,player_name,player_pos,rank,submitted_at&order=submitted_at.desc`,
-      {headers: {'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`}}
-    );
-    const rows = await res.json();
+    // Fetch owner submissions from Supabase + BIG12 draft picks in parallel
+    const [sbRes, draftRes, playersRes] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/league_rankings?select=owner,player_name,player_pos,rank,submitted_at&order=submitted_at.desc`,
+        {headers: {'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`}}),
+      fetch(API('draft/' + BIG12_DRAFT_ID + '/picks')),
+      fetch(API('players/nfl')),
+    ]);
 
-    // Get unique owners who submitted
-    submittedOwners = new Set(rows.map(r => r.owner));
-    const numSubmissions = submittedOwners.size;
+    const rows = await sbRes.json();
+    const draftPicks = draftRes.ok ? await draftRes.json() : [];
+    const nflPlayers = playersRes.ok ? await playersRes.json() : {};
 
-    // Group by player
-    const byPlayer = {};
-    rows.forEach(r => {
-      if (!byPlayer[r.player_name]) byPlayer[r.player_name] = {ranks: [], owner: r.player_pos};
-      byPlayer[r.player_name].ranks.push(r.rank);
+    // Sort draft picks by pick number — pick order = draft consensus rank
+    draftPicks.sort((a,b) => a.pick_no - b.pick_no);
+
+    // Build draft rank map: player_name -> pick_no (1-based rank)
+    const draftRankMap = {};    // name -> draft pick number
+    const draftPlayerInfo = {}; // name -> {pos, team} for non-baseline players
+    draftPicks.forEach((pick, i) => {
+      const meta = pick.metadata || {};
+      const cached = nflPlayers[pick.player_id] || {};
+      const name = meta.first_name && meta.last_name
+        ? `${meta.first_name} ${meta.last_name}`
+        : cached.full_name || '';
+      const pos = meta.position || cached.position || '';
+      const team = meta.team || cached.team || '';
+      if (!name) return;
+      draftRankMap[name] = pick.pick_no; // overall pick number as rank
+      draftPlayerInfo[name] = {pos, team, pid: pick.player_id};
     });
 
-    // Build consensus
+    // Owner submissions
+    submittedOwners = new Set(rows.map(r => r.owner));
+    const hasDraft = draftPicks.length > 0;
+    const numSubmissions = submittedOwners.size + (hasDraft ? 1 : 0); // +1 for draft
+
+    // Group owner submissions by player
+    const byPlayer = {};
+    rows.forEach(r => {
+      if (!byPlayer[r.player_name]) byPlayer[r.player_name] = [];
+      byPlayer[r.player_name].push(r.rank);
+    });
+
+    // Build name matcher: normalize names for fuzzy matching
+    function normName(n) { return n.toLowerCase().replace(/[^a-z]/g,''); }
+    const draftNormMap = {};
+    Object.keys(draftRankMap).forEach(n => { draftNormMap[normName(n)] = {name:n, rank:draftRankMap[n]}; });
+
+    function getDraftRank(playerName) {
+      // Try exact match first
+      if (draftRankMap[playerName] !== undefined) return draftRankMap[playerName];
+      // Try normalized match
+      const norm = normName(playerName);
+      if (draftNormMap[norm]) return draftNormMap[norm].rank;
+      // Try last name match
+      const last = norm.slice(norm.length > 6 ? norm.length - 6 : 0);
+      const match = Object.keys(draftNormMap).find(k => k.endsWith(last) || k.startsWith(norm.slice(0,4)));
+      if (match) return draftNormMap[match].rank;
+      return null;
+    }
+
+    // Build consensus from BASELINE players
+    const baselineNames = new Set(BASELINE.map(p => p.name));
     consensusData = BASELINE.map((p, idx) => {
-      const data = byPlayer[p.name] || {};
-      const ranks = data.ranks || [];
-      const dsRank = idx + 1;  // BASELINE is sorted by DS value, index = DS rank
-      const avgRank = ranks.length > 0
-        ? Math.round((ranks.reduce((s,r) => s+r, 0) / ranks.length) * 10) / 10
+      const ownerRanks = byPlayer[p.name] || [];
+      const draftRank = hasDraft ? getDraftRank(p.name) : null;
+      const dsRank = idx + 1;
+
+      // Combine owner ranks + draft rank
+      const allRanks = [...ownerRanks];
+      if (draftRank !== null) allRanks.push(draftRank);
+
+      const avgRank = allRanks.length > 0
+        ? Math.round((allRanks.reduce((s,r) => s+r, 0) / allRanks.length) * 10) / 10
         : dsRank;
+
       return {
         name: p.name, pos: p.pos, team: p.team,
         dsVal: p.val, dsRank,
-        avgRank, submissions: ranks.length,
+        avgRank,
+        submissions: allRanks.length,
+        fromDraft: draftRank !== null,
         consensusVal: numSubmissions > 0
           ? Math.max(1, Math.round(101 - (avgRank / 150 * 100)))
           : p.val
       };
     });
 
-    // Sort overall by avgRank
+    // Add drafted players NOT in baseline (pick # <= 200, known pos only)
+    const VALID_POS = new Set(['QB','RB','WR','TE','K','DEF']);
+    let extraRank = 151;
+    draftPicks.forEach(pick => {
+      const meta = pick.metadata || {};
+      const cached = nflPlayers[pick.player_id] || {};
+      const name = meta.first_name && meta.last_name
+        ? `${meta.first_name} ${meta.last_name}` : cached.full_name || '';
+      const pos = meta.position || cached.position || '';
+      const team = meta.team || cached.team || '';
+      if (!name || !VALID_POS.has(pos)) return;
+      if (baselineNames.has(name)) return; // already in baseline
+      // Check if close enough match already in consensusData
+      const norm = normName(name);
+      const alreadyIn = consensusData.find(p => normName(p.name) === norm);
+      if (alreadyIn) return;
+
+      const ownerRanks = byPlayer[name] || [];
+      const draftRank = pick.pick_no;
+      const allRanks = [...ownerRanks, draftRank];
+      const avgRank = Math.round((allRanks.reduce((s,r) => s+r, 0) / allRanks.length) * 10) / 10;
+
+      consensusData.push({
+        name, pos, team,
+        dsVal: 0, dsRank: null, // not in DS rankings
+        avgRank,
+        submissions: allRanks.length,
+        fromDraft: true,
+        notInBaseline: true,
+        consensusVal: Math.max(1, Math.round(101 - (avgRank / 200 * 100)))
+      });
+    });
+
+    // Sort by avgRank
     consensusData.sort((a,b) => a.avgRank - b.avgRank);
 
-    // Assign overall rank and positional rank to each player
+    // Assign ranks
     consensusData.forEach((p, i) => p.overallRank = i + 1);
     const positions = ['QB','RB','WR','TE','K','DEF'];
     positions.forEach(pos => {
-      // Consensus positional rank (sorted by avgRank) — stored as consensusPosRank
-      const posPlayers = consensusData
-        .filter(p => p.pos === pos)
-        .sort((a,b) => a.avgRank - b.avgRank);
+      const posPlayers = consensusData.filter(p => p.pos === pos).sort((a,b) => a.avgRank - b.avgRank);
       posPlayers.forEach((p, i) => p.consensusPosRank = i + 1);
-
-      // DS baseline positional rank (sorted by dsRank)
-      const dsPosPlayers = consensusData
-        .filter(p => p.pos === pos)
-        .sort((a,b) => a.dsRank - b.dsRank);
+      const dsPosPlayers = consensusData.filter(p => p.pos === pos && p.dsRank).sort((a,b) => a.dsRank - b.dsRank);
       dsPosPlayers.forEach((p, i) => p.dsPosRank = i + 1);
     });
 
     // Update stats
-    document.getElementById('stat-submissions').textContent = numSubmissions;
+    document.getElementById('stat-submissions').textContent =
+      `${submittedOwners.size} + draft`;
+    document.getElementById('stat-players').textContent = consensusData.length;
     const lastRow = rows[0];
     if (lastRow) {
       const d = new Date(lastRow.submitted_at);
@@ -342,15 +425,21 @@ function renderRankings() {
       ? `<span style="font-size:9px;color:var(--muted);display:block;">OVR ${p.overallRank||Math.round(p.avgRank)}</span>`
       : `<span style="font-size:9px;color:var(--muted);display:block;">${p.pos}${p.consensusPosRank||''}</span>`;
     // Overall movement: DS overall rank vs consensus overall rank
-    const ovrChange = p.submissions > 0 ? p.dsRank - Math.round(p.avgRank) : 0;
-    const ovrStr = ovrChange > 0 ? `▲${ovrChange}` : ovrChange < 0 ? `▼${Math.abs(ovrChange)}` : '—';
-    const ovrClass = ovrChange > 0 ? 'change-up' : ovrChange < 0 ? 'change-down' : 'change-same';
+    // notInBaseline = drafted player not in DS top 150 — show draft badge instead
+    const ovrChange = (!p.notInBaseline && p.submissions > 0 && p.dsRank)
+      ? p.dsRank - Math.round(p.avgRank) : 0;
+    const ovrStr = p.notInBaseline ? '🏈' :
+      ovrChange > 0 ? `▲${ovrChange}` : ovrChange < 0 ? `▼${Math.abs(ovrChange)}` : '—';
+    const ovrClass = p.notInBaseline ? 'change-same' :
+      ovrChange > 0 ? 'change-up' : ovrChange < 0 ? 'change-down' : 'change-same';
 
     // Positional movement: DS positional rank vs consensus positional rank
-    const posChange = p.submissions > 0 && p.dsPosRank && p.consensusPosRank
+    const posChange = (!p.notInBaseline && p.submissions > 0 && p.dsPosRank && p.consensusPosRank)
       ? p.dsPosRank - p.consensusPosRank : 0;
-    const posStr = posChange > 0 ? `▲${posChange}` : posChange < 0 ? `▼${Math.abs(posChange)}` : '—';
-    const posClass = posChange > 0 ? 'change-up' : posChange < 0 ? 'change-down' : 'change-same';
+    const posStr = p.notInBaseline ? '🏈' :
+      posChange > 0 ? `▲${posChange}` : posChange < 0 ? `▼${Math.abs(posChange)}` : '—';
+    const posClass = p.notInBaseline ? 'change-same' :
+      posChange > 0 ? 'change-up' : posChange < 0 ? 'change-down' : 'change-same';
 
     const pct = Math.round((p.consensusVal / maxVal) * 100);
     const isSelected = tradeA.find(x=>x.name===p.name) || tradeB.find(x=>x.name===p.name);
