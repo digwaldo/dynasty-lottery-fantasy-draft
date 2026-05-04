@@ -223,15 +223,16 @@ async function loadData() {
     });
 
     // Build consensus
-    consensusData = BASELINE.map(p => {
+    consensusData = BASELINE.map((p, idx) => {
       const data = byPlayer[p.name] || {};
       const ranks = data.ranks || [];
+      const dsRank = idx + 1;  // BASELINE is sorted by DS value, index = DS rank
       const avgRank = ranks.length > 0
         ? Math.round((ranks.reduce((s,r) => s+r, 0) / ranks.length) * 10) / 10
-        : p.rank;
+        : dsRank;
       return {
         name: p.name, pos: p.pos, team: p.team,
-        dsVal: p.val, dsRank: p.rank,
+        dsVal: p.val, dsRank,
         avgRank, submissions: ranks.length,
         consensusVal: numSubmissions > 0
           ? Math.max(1, Math.round(101 - (avgRank / 150 * 100)))
