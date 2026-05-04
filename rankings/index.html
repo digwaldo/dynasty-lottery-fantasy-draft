@@ -257,28 +257,37 @@ async function loadData() {
       byPlayer[r.player_name].push(r.rank);
     });
 
-    // Build name matcher: normalize names for fuzzy matching
-    function normName(n) { return n.toLowerCase().replace(/[^a-z]/g,''); }
+    // Strip suffixes and normalize names for matching
+    const SUFFIXES = /\s+(jr\.?|sr\.?|ii|iii|iv|v)$/i;
+    function normName(n) {
+      return n.toLowerCase().replace(SUFFIXES, '').replace(/[^a-z]/g, '').trim();
+    }
     const draftNormMap = {};
-    Object.keys(draftRankMap).forEach(n => { draftNormMap[normName(n)] = {name:n, rank:draftRankMap[n]}; });
+    Object.keys(draftRankMap).forEach(n => {
+      const key = normName(n);
+      // Keep the one with lowest (best) pick number if collision
+      if (!draftNormMap[key] || draftRankMap[n] < draftNormMap[key].rank) {
+        draftNormMap[key] = {name: n, rank: draftRankMap[n]};
+      }
+    });
 
     function getDraftRank(playerName) {
       // Try exact match first
       if (draftRankMap[playerName] !== undefined) return draftRankMap[playerName];
-      // Try normalized match
+      // Try normalized (suffix-stripped) match
       const norm = normName(playerName);
       if (draftNormMap[norm]) return draftNormMap[norm].rank;
-      // Try last name match
-      const last = norm.slice(norm.length > 6 ? norm.length - 6 : 0);
-      const match = Object.keys(draftNormMap).find(k => k.endsWith(last) || k.startsWith(norm.slice(0,4)));
-      if (match) return draftNormMap[match].rank;
       return null;
     }
 
     // Build consensus from BASELINE players
     const baselineNames = new Set(BASELINE.map(p => p.name));
+    const baselineNorms = new Set(BASELINE.map(p => normName(p.name)));
     consensusData = BASELINE.map((p, idx) => {
-      const ownerRanks = byPlayer[p.name] || [];
+      // Match owner submissions by name or suffix-stripped name
+      const norm = normName(p.name);
+      const ownerRanks = byPlayer[p.name] ||
+        Object.entries(byPlayer).find(([k]) => normName(k) === norm)?.[1] || [];
       const draftRank = hasDraft ? getDraftRank(p.name) : null;
       const dsRank = idx + 1;
 
@@ -313,15 +322,17 @@ async function loadData() {
       const pos = meta.position || cached.position || '';
       const team = meta.team || cached.team || '';
       if (!name || !VALID_POS.has(pos)) return;
-      if (baselineNames.has(name)) return; // already in baseline
-      // Check if close enough match already in consensusData
+      if (baselineNames.has(name) || baselineNorms.has(normName(name))) return; // already in baseline (with or without suffix)
+      // Check if suffix-stripped match already in consensusData or baseline
       const norm = normName(name);
       const alreadyIn = consensusData.find(p => normName(p.name) === norm);
       if (alreadyIn) return;
+      // Also check byPlayer for owner submissions using same norm
+      const ownerRanksNorm = byPlayer[name] || 
+        Object.entries(byPlayer).find(([k]) => normName(k) === norm)?.[1] || [];
 
-      const ownerRanks = byPlayer[name] || [];
       const draftRank = pick.pick_no;
-      const allRanks = [...ownerRanks, draftRank];
+      const allRanks = [...ownerRanksNorm, draftRank];
       const avgRank = Math.round((allRanks.reduce((s,r) => s+r, 0) / allRanks.length) * 10) / 10;
 
       consensusData.push({
