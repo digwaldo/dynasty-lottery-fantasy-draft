@@ -42,9 +42,9 @@ body{background:var(--navy2);color:var(--chrome2);font-family:'Barlow',sans-seri
 
 /* RANKINGS TABLE */
 .rankings-table{background:rgba(10,21,32,0.8);border:1px solid var(--border-teal);border-radius:5px;overflow:hidden;}
-.table-header{display:grid;grid-template-columns:44px 32px 60px 1fr 60px 60px 60px 80px;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border-teal);background:rgba(0,168,156,0.04);}
+.table-header{display:grid;grid-template-columns:44px 32px 60px 1fr 50px 72px 72px 72px;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border-teal);background:rgba(0,168,156,0.04);}
 .th{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-family:'Anton',sans-serif;}
-.player-row-r{display:grid;grid-template-columns:44px 32px 60px 1fr 60px 60px 60px 80px;gap:8px;padding:9px 14px;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;cursor:pointer;transition:background 0.15s;}
+.player-row-r{display:grid;grid-template-columns:44px 32px 60px 1fr 50px 72px 72px 72px;gap:8px;padding:9px 14px;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;cursor:pointer;transition:background 0.15s;}
 .player-row-r:last-child{border-bottom:none;}
 .player-row-r:hover{background:rgba(255,255,255,0.02);}
 .player-row-r.selected{background:rgba(245,166,35,0.08);border-left:3px solid var(--gold);padding-left:11px;}
@@ -178,8 +178,8 @@ body{background:var(--navy2);color:var(--chrome2);font-family:'Barlow',sans-seri
       <div class="th"></div>
       <div class="th">PLAYER</div>
       <div class="th" style="text-align:center;">AVG</div>
-      <div class="th" style="text-align:center;">DS</div>
-      <div class="th" style="text-align:center;">±</div>
+      <div class="th" style="text-align:center;">OVR ±</div>
+      <div class="th" style="text-align:center;">POS ±</div>
       <div class="th" style="text-align:center;">VALUE</div>
     </div>
     <div id="rankings-body">
@@ -246,10 +246,17 @@ async function loadData() {
     consensusData.forEach((p, i) => p.overallRank = i + 1);
     const positions = ['QB','RB','WR','TE','K','DEF'];
     positions.forEach(pos => {
+      // Consensus positional rank (sorted by avgRank)
       const posPlayers = consensusData
         .filter(p => p.pos === pos)
         .sort((a,b) => a.avgRank - b.avgRank);
       posPlayers.forEach((p, i) => p.posRank = i + 1);
+
+      // DS baseline positional rank (sorted by dsRank)
+      const dsPosPlayers = consensusData
+        .filter(p => p.pos === pos)
+        .sort((a,b) => a.dsRank - b.dsRank);
+      dsPosPlayers.forEach((p, i) => p.dsPosRank = i + 1);
     });
 
     // Update stats
@@ -326,10 +333,17 @@ function renderRankings() {
     const subRank = isPos
       ? `<span style="font-size:9px;color:var(--muted);display:block;">OVR ${p.overallRank||p.avgRank.toFixed(0)}</span>`
       : `<span style="font-size:9px;color:var(--muted);display:block;">${p.pos}${p.posRank||''}</span>`;
-    const change = p.dsRank - p.avgRank;
-    const changeStr = change > 0 ? `▲${Math.round(change)}` :
-                      change < 0 ? `▼${Math.abs(Math.round(change))}` : '—';
-    const changeClass = change > 0 ? 'change-up' : change < 0 ? 'change-down' : 'change-same';
+    // Overall movement vs DS baseline rank
+    const ovrChange = p.submissions > 0 ? p.dsRank - Math.round(p.avgRank) : 0;
+    const ovrStr = ovrChange > 0 ? `▲${ovrChange}` : ovrChange < 0 ? `▼${Math.abs(ovrChange)}` : '—';
+    const ovrClass = ovrChange > 0 ? 'change-up' : ovrChange < 0 ? 'change-down' : 'change-same';
+
+    // Positional movement vs DS baseline positional rank
+    const dsPosRank = p.dsPosRank || p.posRank;
+    const posChange = p.submissions > 0 ? dsPosRank - (p.posRank || rk) : 0;
+    const posStr = posChange > 0 ? `▲${posChange}` : posChange < 0 ? `▼${Math.abs(posChange)}` : '—';
+    const posClass = posChange > 0 ? 'change-up' : posChange < 0 ? 'change-down' : 'change-same';
+
     const pct = Math.round((p.consensusVal / maxVal) * 100);
     const isSelected = tradeA.find(x=>x.name===p.name) || tradeB.find(x=>x.name===p.name);
     return `<div class="player-row-r ${isSelected?'selected':''}" onclick="addToTrade('${p.name}')">
@@ -341,8 +355,14 @@ function renderRankings() {
         <div class="player-team-col">${p.team}</div>
       </div>
       <div class="td-num">${p.submissions > 0 ? p.avgRank.toFixed(1) : '—'}</div>
-      <div class="td-ds">${p.dsVal}</div>
-      <div class="td-change ${changeClass}">${p.submissions > 0 ? changeStr : '—'}</div>
+      <div style="text-align:center;">
+        <div class="td-change ${ovrClass}" style="font-size:13px;">${p.submissions > 0 ? ovrStr : '—'}</div>
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">OVR</div>
+      </div>
+      <div style="text-align:center;">
+        <div class="td-change ${posClass}" style="font-size:13px;">${p.submissions > 0 ? posStr : '—'}</div>
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">${p.pos}</div>
+      </div>
       <div>
         <div class="td-val">${p.consensusVal}</div>
         <div class="value-bar-wrap"><div class="value-bar" style="width:${pct}%"></div></div>
