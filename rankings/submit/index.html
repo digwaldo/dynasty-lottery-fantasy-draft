@@ -116,7 +116,10 @@ body{background:var(--navy2);color:var(--chrome2);font-family:'Barlow',sans-seri
 
 <!-- SUBMIT BAR -->
 <div class="submit-bar">
-  <div class="submit-info" id="submit-info">Select your team to submit</div>
+  <div style="flex:1;min-width:0;">
+    <div class="submit-info" id="submit-info">Select your team to submit</div>
+    <div id="save-status" style="font-size:10px;color:var(--teal2);letter-spacing:1px;margin-top:2px;opacity:0;transition:opacity 0.3s;"></div>
+  </div>
   <button class="btn-reset" onclick="resetRankings()">↺ RESET</button>
   <button class="btn-submit" id="btn-submit" onclick="submitRankings()" disabled>SUBMIT</button>
 </div>
@@ -163,6 +166,53 @@ function selectOwner(o) {
   document.getElementById('submit-info').innerHTML =
     `Submitting as <strong>${DISPLAY_NAMES[o]||o}</strong> · ${rankings.length} players ranked`;
   renderOwners();
+  // Load saved rankings for this owner from localStorage
+  loadSavedProgress(o);
+}
+
+function getSaveKey(owner) {
+  return `rankings_draft_${owner}`;
+}
+
+function saveProgress() {
+  if (!selectedOwner) return;
+  const key = getSaveKey(selectedOwner);
+  const data = rankings.map(p => ({name: p.name, rank: p.rank}));
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    localStorage.setItem(key + '_ts', new Date().toISOString());
+  } catch(e) { console.warn('Could not save progress:', e); }
+}
+
+function loadSavedProgress(owner) {
+  const key = getSaveKey(owner);
+  try {
+    const saved = localStorage.getItem(key);
+    const ts = localStorage.getItem(key + '_ts');
+    if (!saved) {
+      showSaveStatus('No saved progress — starting from Draft Sharks baseline');
+      return;
+    }
+    const savedRanks = JSON.parse(saved);
+    // Apply saved ranks to current rankings array
+    const rankMap = {};
+    savedRanks.forEach(r => rankMap[r.name] = r.rank);
+    rankings.forEach(p => {
+      if (rankMap[p.name] !== undefined) p.rank = rankMap[p.name];
+    });
+    rankings.sort((a,b) => a.rank - b.rank);
+    rankings.forEach((p,i) => p.rank = i+1);
+    const timeStr = ts ? new Date(ts).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
+    showSaveStatus(`Progress restored · Last saved ${timeStr}`);
+    renderList();
+  } catch(e) {
+    console.warn('Could not load progress:', e);
+  }
+}
+
+function showSaveStatus(msg) {
+  const el = document.getElementById('save-status');
+  if (el) { el.textContent = msg; el.style.opacity='1'; }
 }
 
 function filterPos(pos) {
@@ -243,6 +293,7 @@ function drop(e, targetName) {
   if (!dragSrcName || dragSrcName === targetName) return;
   swapPlayers(dragSrcName, targetName);
   renderList();
+  saveProgress();
 }
 function dragEnd(e) {
   document.querySelectorAll('.dragging,.drag-over').forEach(el => {
@@ -285,6 +336,7 @@ function movePlayer(name, dir) {
   const target = visible[newVisIdx];
   swapPlayers(name, target.name);
   renderList();
+  saveProgress();
 }
 
 function rerank() {
@@ -293,8 +345,13 @@ function rerank() {
 }
 
 function resetRankings() {
+  if (!confirm('Reset all rankings back to Draft Sharks baseline? Your saved progress will be cleared.')) return;
   rankings = BASELINE.map((p, i) => ({...p, rank: i+1}));
+  if (selectedOwner) {
+    try { localStorage.removeItem(getSaveKey(selectedOwner)); localStorage.removeItem(getSaveKey(selectedOwner)+'_ts'); } catch(e) {}
+  }
   renderList();
+  showSaveStatus('Reset to baseline');
   showToast('Rankings reset to Draft Sharks baseline');
 }
 
