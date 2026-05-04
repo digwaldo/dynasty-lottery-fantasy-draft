@@ -37,6 +37,14 @@
     {
       "source": "/schedule-builder",
       "destination": "/schedule-builder/index.html"
+    },
+    {
+      "source": "/rankings",
+      "destination": "/rankings/index.html"
+    },
+    {
+      "source": "/rankings/submit",
+      "destination": "/rankings/submit/index.html"
     }
   ]
 }

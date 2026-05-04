@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Submit Rankings</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#00A89C;--teal2:#00C8BC;--teal-dark:#005f5a;--navy:#0d1a2b;--navy2:#0a1520;--chrome:#d0d8e0;--chrome2:#f0f4f8;--muted:#7a9ab0;--gold:#F5A623;--orange:#E8621A;--orange2:#F08030;--border-teal:rgba(0,168,156,0.35);--green:#22c55e;--red:#C0181A;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--navy2);color:var(--chrome2);font-family:'Barlow',sans-serif;min-height:100vh;}
+.frame-line{position:fixed;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--orange),var(--teal));z-index:100;}
+.frame-line-top{top:0;}.frame-line-bottom{bottom:0;}
+.container{max-width:800px;margin:0 auto;padding:20px 16px 80px;}
+.nav{display:flex;align-items:center;gap:10px;padding:10px 0 16px;}
+.nav-back{color:var(--muted);font-size:12px;letter-spacing:2px;text-decoration:none;text-transform:uppercase;}
+.nav-back:hover{color:var(--teal2);}
+.header{text-align:center;margin-bottom:24px;}
+.header-eyebrow{font-size:11px;letter-spacing:6px;color:var(--teal2);margin-bottom:6px;text-transform:uppercase;}
+.header h1{font-family:'Anton',sans-serif;font-size:clamp(32px,7vw,52px);letter-spacing:2px;background:linear-gradient(160deg,#fff,var(--chrome));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+/* OWNER SELECT */
+.owner-section{background:rgba(10,21,32,0.9);border:1px solid var(--border-teal);border-radius:6px;padding:20px;margin-bottom:20px;}
+.section-title{font-family:'Anton',sans-serif;font-size:16px;letter-spacing:3px;color:var(--teal2);margin-bottom:12px;}
+.owner-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;}
+.owner-btn{padding:10px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border-teal);border-radius:3px;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;text-align:left;}
+.owner-btn:hover{border-color:var(--teal);color:var(--teal2);background:rgba(0,168,156,0.08);}
+.owner-btn.selected{border-color:var(--gold);color:var(--gold);background:rgba(245,166,35,0.08);}
+.owner-btn.submitted{border-color:var(--green);color:var(--green);background:rgba(34,197,94,0.06);}
+.owner-btn.submitted::after{content:' ✓';}
+
+/* FILTERS */
+.filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.filter-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border-teal);background:transparent;color:var(--muted);font-size:12px;letter-spacing:1px;cursor:pointer;font-family:'Anton',sans-serif;transition:all 0.2s;}
+.filter-btn.active{border-color:var(--teal);color:var(--teal2);background:rgba(0,168,156,0.1);}
+.search-input{flex:1;min-width:160px;padding:7px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border-teal);border-radius:3px;color:var(--chrome2);font-size:13px;outline:none;}
+.search-input::placeholder{color:var(--muted);}
+
+/* RANKING LIST */
+.ranking-section{background:rgba(10,21,32,0.9);border:1px solid var(--border-teal);border-radius:6px;overflow:hidden;}
+.ranking-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border-teal);background:rgba(0,168,156,0.04);}
+.ranking-count{font-size:12px;color:var(--muted);letter-spacing:1px;}
+.ranking-list{max-height:65vh;overflow-y:auto;}
+.player-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid rgba(255,255,255,0.04);cursor:grab;transition:background 0.15s;user-select:none;}
+.player-row:last-child{border-bottom:none;}
+.player-row:active{cursor:grabbing;}
+.player-row.dragging{background:rgba(0,168,156,0.12);border:1px solid var(--teal);border-radius:3px;opacity:0.8;}
+.player-row.drag-over{border-top:2px solid var(--gold);}
+.rank-num{font-family:'Anton',sans-serif;font-size:16px;color:var(--orange2);width:32px;flex-shrink:0;text-align:right;}
+.rank-num.top3{color:var(--gold);}
+.drag-handle{color:var(--muted);font-size:14px;flex-shrink:0;cursor:grab;}
+.pos-badge{font-family:'Anton',sans-serif;font-size:11px;padding:2px 6px;border-radius:2px;flex-shrink:0;min-width:28px;text-align:center;}
+.pos-QB{background:rgba(229,196,64,0.15);color:#e5c440;}
+.pos-RB{background:rgba(74,224,160,0.15);color:#4ae0a0;}
+.pos-WR{background:rgba(74,176,255,0.15);color:#4ab0ff;}
+.pos-TE{background:rgba(255,140,74,0.15);color:#ff8c4a;}
+.pos-K{background:rgba(192,132,252,0.15);color:#c084fc;}
+.pos-DEF{background:rgba(248,113,113,0.15);color:#f87171;}
+.player-name{font-weight:600;font-size:14px;color:var(--chrome2);flex:1;}
+.player-team{font-size:11px;color:var(--muted);letter-spacing:1px;}
+.baseline-val{font-size:11px;color:var(--muted);letter-spacing:1px;width:40px;text-align:right;flex-shrink:0;}
+.move-btns{display:flex;flex-direction:column;gap:2px;flex-shrink:0;}
+.move-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:1px 4px;line-height:1;}
+.move-btn:hover{color:var(--teal2);}
+
+/* SUBMIT */
+.submit-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(10,21,32,0.97);border-top:1px solid var(--border-teal);padding:12px 20px;display:flex;align-items:center;gap:12px;z-index:50;backdrop-filter:blur(10px);}
+.submit-info{flex:1;font-size:12px;color:var(--muted);letter-spacing:1px;}
+.submit-info strong{color:var(--chrome2);}
+.btn-submit{padding:12px 28px;background:var(--teal-dark);border:1px solid var(--teal);border-radius:3px;color:var(--chrome2);font-family:'Anton',sans-serif;font-size:15px;letter-spacing:3px;cursor:pointer;transition:all 0.2s;}
+.btn-submit:hover{background:rgba(0,168,156,0.3);}
+.btn-submit:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-reset{padding:12px 16px;background:transparent;border:1px solid var(--border-teal);border-radius:3px;color:var(--muted);font-family:'Anton',sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;}
+
+/* TOAST */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#0d1a2b;border:1px solid var(--teal);border-radius:4px;padding:12px 24px;font-size:13px;color:var(--teal2);letter-spacing:1px;z-index:999;display:none;font-family:'Anton',sans-serif;}
+.toast.error{border-color:#ff6060;color:#ff6060;}
+</style>
+</head>
+<body>
+<div class="frame-line frame-line-top"></div>
+<div class="frame-line frame-line-bottom"></div>
+<div class="toast" id="toast"></div>
+
+<div class="container">
+  <div class="nav"><a href="/rankings" class="nav-back">&#8249; League Rankings</a></div>
+  <div class="header">
+    <div class="header-eyebrow">League Consensus</div>
+    <h1>SUBMIT YOUR RANKINGS</h1>
+  </div>
+
+  <!-- OWNER SELECT -->
+  <div class="owner-section">
+    <div class="section-title">1. SELECT YOUR TEAM</div>
+    <div class="owner-grid" id="owner-grid"></div>
+  </div>
+
+  <!-- PLAYER RANKING -->
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterPos('ALL')" id="f-ALL">ALL</button>
+    <button class="filter-btn" onclick="filterPos('QB')" id="f-QB">QB</button>
+    <button class="filter-btn" onclick="filterPos('RB')" id="f-RB">RB</button>
+    <button class="filter-btn" onclick="filterPos('WR')" id="f-WR">WR</button>
+    <button class="filter-btn" onclick="filterPos('TE')" id="f-TE">TE</button>
+    <input class="search-input" type="text" placeholder="Search player..." id="search-input" oninput="renderList()">
+  </div>
+
+  <div class="ranking-section">
+    <div class="ranking-header">
+      <div class="section-title" style="margin:0;">2. DRAG TO RERANK</div>
+      <div class="ranking-count" id="ranking-count"></div>
+    </div>
+    <div class="ranking-list" id="ranking-list"></div>
+  </div>
+</div>
+
+<!-- SUBMIT BAR -->
+<div class="submit-bar">
+  <div class="submit-info" id="submit-info">Select your team to submit</div>
+  <button class="btn-reset" onclick="resetRankings()">↺ RESET</button>
+  <button class="btn-submit" id="btn-submit" onclick="submitRankings()" disabled>SUBMIT</button>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://vnpsxpofnquntnydcklu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucHN4cG9mbnF1bnRueWRja2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODQ5MzgsImV4cCI6MjA4OTg2MDkzOH0.ergWPNr6dWBAYQP2S03f5_wOtH2QA03TxaBpOSC9Bj8';
+const OWNERS = ["cinccity", "bleedgreenz", "FrankE324", "Kushwopp", "dweeebzz", "jwilly301", "BizyBonez", "ifeellikemontez", "RipCamilton03", "SPCTIGERS", "TheAmberErica", "BarbieBry", "tredagoat082410", "xtepps", "meedzs", "TheCountB", "kingfifi", "Hustle4itkennel", "Garciaan19", "GMen86900711", "YoungboyJosh"];
+const DISPLAY_NAMES = {"cinccity": "CINCCITY CINNERS", "bleedgreenz": "Bleedgreen wes", "FrankE324": "Team FrankE324", "Kushwopp": "Kushwopp", "dweeebzz": "HOLD EM!", "jwilly301": "Team jwilly301", "BizyBonez": "Team BizyBonez", "ifeellikemontez": "Montezuma's Negras", "RipCamilton03": "Full Speed CHASE", "SPCTIGERS": "Team SPCTIGERS", "TheAmberErica": "Team TheAmberErica", "BarbieBry": "Lamarvelous Flock", "tredagoat082410": "Cold plays hot corner", "xtepps": "Team xtepps", "meedzs": "Team meedzs", "TheCountB": "TheCountB", "kingfifi": "London Capaholics", "Hustle4itkennel": "Hustle4itkennel", "Garciaan19": "Garciaan19", "GMen86900711": "GMen86900711", "YoungboyJosh": "YoungboyJosh"};
+const BASELINE = [{"name": "Josh Allen", "proj": 382, "val": 100, "pos": "QB", "team": "BUF"}, {"name": "Puka Nacua", "proj": 364, "val": 96, "pos": "WR", "team": "LAR"}, {"name": "Jahmyr Gibbs", "proj": 359, "val": 93, "pos": "RB", "team": "DET"}, {"name": "Bijan Robinson", "proj": 356, "val": 91, "pos": "RB", "team": "ATL"}, {"name": "Ja'Marr Chase", "proj": 349, "val": 88, "pos": "WR", "team": "CIN"}, {"name": "Christian McCaffrey", "proj": 343, "val": 84, "pos": "RB", "team": "SF"}, {"name": "Jaxon Smith-Njigba", "proj": 336, "val": 81, "pos": "WR", "team": "SEA"}, {"name": "Amon-Ra St. Brown", "proj": 330, "val": 78, "pos": "WR", "team": "DET"}, {"name": "Lamar Jackson", "proj": 360, "val": 76, "pos": "QB", "team": "BAL"}, {"name": "Drake Maye", "proj": 357, "val": 72, "pos": "QB", "team": "NE"}, {"name": "CeeDee Lamb", "proj": 318, "val": 72, "pos": "WR", "team": "DAL"}, {"name": "Rashee Rice", "proj": 317, "val": 71, "pos": "WR", "team": "KC"}, {"name": "Jonathan Taylor", "proj": 317, "val": 71, "pos": "RB", "team": "IND"}, {"name": "Trey McBride", "proj": 328, "val": 70, "pos": "TE", "team": "ARI"}, {"name": "Jalen Hurts", "proj": 354, "val": 69, "pos": "QB", "team": "PHI"}, {"name": "Joe Burrow", "proj": 354, "val": 69, "pos": "QB", "team": "CIN"}, {"name": "Justin Jefferson", "proj": 308, "val": 66, "pos": "WR", "team": "MIN"}, {"name": "Brock Bowers", "proj": 313, "val": 64, "pos": "TE", "team": "LVR"}, {"name": "Jayden Daniels", "proj": 349, "val": 63, "pos": "QB", "team": "WAS"}, {"name": "Trevor Lawrence", "proj": 347, "val": 61, "pos": "QB", "team": "JAC"}, {"name": "James Cook", "proj": 299, "val": 61, "pos": "RB", "team": "BUF"}, {"name": "Ashton Jeanty", "proj": 299, "val": 61, "pos": "RB", "team": "LVR"}, {"name": "Drake London", "proj": 295, "val": 60, "pos": "WR", "team": "ATL"}, {"name": "Nico Collins", "proj": 295, "val": 60, "pos": "WR", "team": "HOU"}, {"name": "Caleb Williams", "proj": 344, "val": 57, "pos": "QB", "team": "CHI"}, {"name": "Saquon Barkley", "proj": 291, "val": 56, "pos": "RB", "team": "PHI"}, {"name": "Brock Purdy", "proj": 343, "val": 56, "pos": "QB", "team": "SF"}, {"name": "De'Von Achane", "proj": 290, "val": 56, "pos": "RB", "team": "MIA"}, {"name": "Justin Herbert", "proj": 342, "val": 55, "pos": "QB", "team": "LAC"}, {"name": "Dak Prescott", "proj": 341, "val": 54, "pos": "QB", "team": "DAL"}, {"name": "George Pickens", "proj": 283, "val": 54, "pos": "WR", "team": "DAL"}, {"name": "Kenneth Walker III", "proj": 285, "val": 53, "pos": "RB", "team": "KC"}, {"name": "Colston Loveland", "proj": 283, "val": 53, "pos": "TE", "team": "CHI"}, {"name": "Jaxson Dart", "proj": 339, "val": 52, "pos": "QB", "team": "NYG"}, {"name": "Josh Jacobs", "proj": 282, "val": 52, "pos": "RB", "team": "GB"}, {"name": "Omarion Hampton", "proj": 279, "val": 50, "pos": "RB", "team": "LAC"}, {"name": "Tyler Warren", "proj": 275, "val": 50, "pos": "TE", "team": "IND"}, {"name": "A.J. Brown", "proj": 276, "val": 50, "pos": "WR", "team": "PHI"}, {"name": "Jeremiyah Love", "proj": 278, "val": 50, "pos": "RB", "team": "ARI"}, {"name": "Bo Nix", "proj": 337, "val": 49, "pos": "QB", "team": "DEN"}, {"name": "Chase Brown", "proj": 276, "val": 48, "pos": "RB", "team": "CIN"}, {"name": "Malik Nabers", "proj": 272, "val": 47, "pos": "WR", "team": "NYG"}, {"name": "Derrick Henry", "proj": 272, "val": 46, "pos": "RB", "team": "BAL"}, {"name": "Zay Flowers", "proj": 265, "val": 44, "pos": "WR", "team": "BAL"}, {"name": "Harold Fannin Jr.", "proj": 258, "val": 43, "pos": "TE", "team": "CLE"}, {"name": "Kyler Murray", "proj": 330, "val": 43, "pos": "QB", "team": "MIN"}, {"name": "Chris Olave", "proj": 263, "val": 43, "pos": "WR", "team": "NO"}, {"name": "Matthew Stafford", "proj": 330, "val": 42, "pos": "QB", "team": "LAR"}, {"name": "Patrick Mahomes", "proj": 329, "val": 41, "pos": "QB", "team": "KC"}, {"name": "Breece Hall", "proj": 262, "val": 41, "pos": "RB", "team": "NYJ"}, {"name": "DeVonta Smith", "proj": 258, "val": 40, "pos": "WR", "team": "PHI"}, {"name": "Jared Goff", "proj": 327, "val": 39, "pos": "QB", "team": "DET"}, {"name": "Tee Higgins", "proj": 257, "val": 39, "pos": "WR", "team": "CIN"}, {"name": "Javonte Williams", "proj": 257, "val": 38, "pos": "RB", "team": "DAL"}, {"name": "Travis Etienne", "proj": 256, "val": 38, "pos": "RB", "team": "NO"}, {"name": "Garrett Wilson", "proj": 254, "val": 38, "pos": "WR", "team": "NYJ"}, {"name": "Sam LaPorta", "proj": 242, "val": 37, "pos": "TE", "team": "DET"}, {"name": "Tucker Kraft", "proj": 241, "val": 37, "pos": "TE", "team": "GB"}, {"name": "Davante Adams", "proj": 252, "val": 37, "pos": "WR", "team": "LAR"}, {"name": "Tyler Shough", "proj": 324, "val": 36, "pos": "QB", "team": "NO"}, {"name": "Jaylen Waddle", "proj": 250, "val": 35, "pos": "WR", "team": "DEN"}, {"name": "Kyle Pitts", "proj": 233, "val": 34, "pos": "TE", "team": "ATL"}, {"name": "Kyren Williams", "proj": 248, "val": 33, "pos": "RB", "team": "LAR"}, {"name": "Luther Burden III", "proj": 245, "val": 33, "pos": "WR", "team": "CHI"}, {"name": "Baker Mayfield", "proj": 320, "val": 33, "pos": "QB", "team": "TB"}, {"name": "Tetairoa McMillan", "proj": 244, "val": 33, "pos": "WR", "team": "CAR"}, {"name": "Jordan Love", "proj": 318, "val": 32, "pos": "QB", "team": "GB"}, {"name": "Ladd McConkey", "proj": 241, "val": 32, "pos": "WR", "team": "LAC"}, {"name": "Emeka Egbuka", "proj": 239, "val": 31, "pos": "WR", "team": "TB"}, {"name": "C.J. Stroud", "proj": 312, "val": 31, "pos": "QB", "team": "HOU"}, {"name": "D'Andre Swift", "proj": 238, "val": 30, "pos": "RB", "team": "CHI"}, {"name": "Travis Kelce", "proj": 226, "val": 30, "pos": "TE", "team": "KC"}, {"name": "Daniel Jones", "proj": 308, "val": 30, "pos": "QB", "team": "IND"}, {"name": "Terry McLaurin", "proj": 236, "val": 30, "pos": "WR", "team": "WAS"}, {"name": "Jameson Williams", "proj": 235, "val": 30, "pos": "WR", "team": "DET"}, {"name": "Malik Willis", "proj": 306, "val": 29, "pos": "QB", "team": "MIA"}, {"name": "Christian Watson", "proj": 234, "val": 29, "pos": "WR", "team": "GB"}, {"name": "Bucky Irving", "proj": 234, "val": 29, "pos": "RB", "team": "TB"}, {"name": "D.K. Metcalf", "proj": 233, "val": 29, "pos": "WR", "team": "PIT"}, {"name": "Cameron Ward", "proj": 301, "val": 28, "pos": "QB", "team": "TEN"}, {"name": "TreVeyon Henderson", "proj": 229, "val": 27, "pos": "RB", "team": "NE"}, {"name": "Quinshon Judkins", "proj": 225, "val": 27, "pos": "RB", "team": "CLE"}, {"name": "Sam Darnold", "proj": 298, "val": 27, "pos": "QB", "team": "SEA"}, {"name": "Mike Evans", "proj": 228, "val": 27, "pos": "WR", "team": "SF"}, {"name": "Rome Odunze", "proj": 227, "val": 26, "pos": "WR", "team": "CHI"}, {"name": "George Kittle", "proj": 219, "val": 26, "pos": "TE", "team": "SF"}, {"name": "Jaylen Warren", "proj": 224, "val": 26, "pos": "RB", "team": "PIT"}, {"name": "Courtland Sutton", "proj": 225, "val": 26, "pos": "WR", "team": "DEN"}, {"name": "Jakobi Meyers", "proj": 224, "val": 25, "pos": "WR", "team": "JAC"}, {"name": "Michael Pittman Jr.", "proj": 223, "val": 25, "pos": "WR", "team": "IND"}, {"name": "Cameron Skattebo", "proj": 222, "val": 25, "pos": "RB", "team": "NYG"}, {"name": "Carnell Tate", "proj": 221, "val": 25, "pos": "WR", "team": "TEN"}, {"name": "Ricky Pearsall", "proj": 220, "val": 24, "pos": "WR", "team": "SF"}, {"name": "Marvin Harrison Jr.", "proj": 220, "val": 24, "pos": "WR", "team": "ARI"}, {"name": "Alec Pierce", "proj": 220, "val": 24, "pos": "WR", "team": "IND"}, {"name": "Parker Washington", "proj": 219, "val": 24, "pos": "WR", "team": "JAC"}, {"name": "Bryce Young", "proj": 284, "val": 23, "pos": "QB", "team": "CAR"}, {"name": "Jordyn Tyson", "proj": 316, "val": 23, "pos": "WR", "team": "NO"}, {"name": "D.J. Moore", "proj": 316, "val": 23, "pos": "WR", "team": "BUF"}, {"name": "Fernando Mendoza", "proj": 260, "val": 23, "pos": "QB", "team": "IND"}, {"name": "Brian Thomas Jr.", "proj": 217, "val": 23, "pos": "WR", "team": "JAC"}, {"name": "Jordan Addison", "proj": 317, "val": 22, "pos": "WR", "team": "MIN"}, {"name": "Dalton Kincaid", "proj": 214, "val": 22, "pos": "TE", "team": "BUF"}, {"name": "Quentin Johnston", "proj": 212, "val": 21, "pos": "WR", "team": "LAC"}, {"name": "Aaron Rodgers", "proj": 155, "val": 21, "pos": "QB", "team": "PIT"}, {"name": "Romeo Doubs", "proj": 211, "val": 21, "pos": "WR", "team": "NE"}, {"name": "Jake Ferguson", "proj": 211, "val": 21, "pos": "TE", "team": "DAL"}, {"name": "Chris Godwin", "proj": 210, "val": 20, "pos": "WR", "team": "TB"}, {"name": "Geno Smith", "proj": 272, "val": 20, "pos": "QB", "team": "NYG"}, {"name": "Stefon Diggs", "proj": 209, "val": 20, "pos": "WR", "team": "JAC"}, {"name": "Jayden Reed", "proj": 209, "val": 20, "pos": "WR", "team": "GB"}, {"name": "Rhamondre Stevenson", "proj": 206, "val": 20, "pos": "RB", "team": "NE"}, {"name": "Tony Pollard", "proj": 204, "val": 19, "pos": "RB", "team": "TEN"}, {"name": "Brandon Aubrey", "proj": 202, "val": 19, "pos": "K", "team": "DAL"}, {"name": "Bhayshul Tuten", "proj": 202, "val": 19, "pos": "RB", "team": "JAC"}, {"name": "Kirk Cousins", "proj": 203, "val": 19, "pos": "QB", "team": "ATL"}, {"name": "Deshaun Watson", "proj": 68, "val": 19, "pos": "QB", "team": "CLE"}, {"name": "Xavier Worthy", "proj": 203, "val": 17, "pos": "WR", "team": "KC"}, {"name": "Michael Wilson", "proj": 203, "val": 17, "pos": "WR", "team": "ARI"}, {"name": "Carson Beck", "proj": 93, "val": 17, "pos": "QB", "team": "CHI"}, {"name": "David Montgomery", "proj": 198, "val": 17, "pos": "RB", "team": "DET"}, {"name": "Mac Jones", "proj": 77, "val": 17, "pos": "QB", "team": "SF"}, {"name": "Brandon Aiyuk", "proj": 201, "val": 17, "pos": "WR", "team": "PIT"}, {"name": "Michael Penix Jr.", "proj": 259, "val": 17, "pos": "QB", "team": "ATL"}, {"name": "KC Concepcion", "proj": 201, "val": 17, "pos": "WR", "team": "CLE"}, {"name": "Shedeur Sanders", "proj": 67, "val": 16, "pos": "QB", "team": "CLE"}, {"name": "Makai Lamb", "proj": 200, "val": 16, "pos": "WR", "team": "ARI"}, {"name": "Jayden Higgins", "proj": 199, "val": 16, "pos": "WR", "team": "ARI"}, {"name": "Russell Wilson", "proj": 77, "val": 16, "pos": "QB", "team": "DAL"}, {"name": "Jacoby Brissett", "proj": 145, "val": 16, "pos": "QB", "team": "NE"}, {"name": "Hunter Henry", "proj": 203, "val": 16, "pos": "TE", "team": "NE"}, {"name": "Brenton Strange", "proj": 203, "val": 16, "pos": "TE", "team": "JAC"}, {"name": "Dallas Goedert", "proj": 197, "val": 16, "pos": "TE", "team": "PHI"}, {"name": "Khalil Shakir", "proj": 197, "val": 15, "pos": "WR", "team": "BUF"}, {"name": "WanDale Robinson", "proj": 197, "val": 15, "pos": "WR", "team": "TEN"}, {"name": "Josh Downs", "proj": 197, "val": 15, "pos": "WR", "team": "IND"}, {"name": "Jodarian Price", "proj": 192, "val": 15, "pos": "RB", "team": "GB"}, {"name": "RJ Harvey", "proj": 192, "val": 15, "pos": "RB", "team": "CIN"}, {"name": "Tua Tagovailoa", "proj": 121, "val": 15, "pos": "QB", "team": "ARI"}, {"name": "J.K. Dobbins", "proj": 192, "val": 15, "pos": "RB", "team": "BAL"}, {"name": "Chuba Hubbard", "proj": 192, "val": 15, "pos": "RB", "team": "CAR"}, {"name": "Deebo Samuel", "proj": 194, "val": 14, "pos": "WR", "team": "LAC"}, {"name": "Rico Dowdle", "proj": 190, "val": 14, "pos": "RB", "team": "DAL"}, {"name": "Oronde Gadsden II", "proj": 200, "val": 13, "pos": "TE", "team": "LAC"}, {"name": "Matthew Golden", "proj": 190, "val": 13, "pos": "WR", "team": "GB"}, {"name": "Calvin Ridley", "proj": 190, "val": 12, "pos": "WR", "team": "NE"}, {"name": "Juwan Johnson", "proj": 188, "val": 12, "pos": "TE", "team": "NO"}, {"name": "Cameron Dicker", "proj": 159, "val": 11, "pos": "K", "team": "LAC"}, {"name": "Cam Little", "proj": 128, "val": 11, "pos": "K", "team": "LAC"}, {"name": "Jaeuan Jennings", "proj": 186, "val": 11, "pos": "WR", "team": "MIA"}];
+
+let selectedOwner = null;
+let rankings = BASELINE.map((p, i) => ({...p, rank: i+1}));
+let activeFilter = 'ALL';
+let dragSrcIdx = null;
+let submittedOwners = new Set();
+
+// Load submitted owners from Supabase
+async function loadSubmitted() {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/league_rankings?select=owner&order=submitted_at.desc`, {
+      headers: {'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`}
+    });
+    const data = await res.json();
+    submittedOwners = new Set(data.map(r => r.owner));
+    renderOwners();
+  } catch(e) { console.error(e); }
+}
+
+function renderOwners() {
+  const grid = document.getElementById('owner-grid');
+  grid.innerHTML = OWNERS.map(o => {
+    const name = DISPLAY_NAMES[o] || o;
+    const done = submittedOwners.has(o);
+    const sel = selectedOwner === o;
+    return `<button class="owner-btn ${sel?'selected':''} ${done?'submitted':''}"
+      onclick="selectOwner('${o}')">${name}</button>`;
+  }).join('');
+}
+
+function selectOwner(o) {
+  selectedOwner = o;
+  document.getElementById('btn-submit').disabled = false;
+  document.getElementById('submit-info').innerHTML = `Submitting as <strong>${DISPLAY_NAMES[o]||o}</strong> · ${rankings.length} players ranked`;
+  renderOwners();
+}
+
+function filterPos(pos) {
+  activeFilter = pos;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('f-'+pos).classList.add('active');
+  renderList();
+}
+
+function getVisible() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  return rankings.filter(p => {
+    const posOk = activeFilter === 'ALL' || p.pos === activeFilter;
+    const searchOk = !q || p.name.toLowerCase().includes(q) || p.team.toLowerCase().includes(q);
+    return posOk && searchOk;
+  });
+}
+
+function renderList() {
+  const visible = getVisible();
+  const list = document.getElementById('ranking-list');
+  document.getElementById('ranking-count').textContent = `${visible.length} players`;
+
+  list.innerHTML = visible.map((p, vi) => {
+    const globalRank = p.rank;
+    const topClass = globalRank <= 3 ? 'top3' : '';
+    return `<div class="player-row" draggable="true"
+        data-name="${p.name}"
+        ondragstart="dragStart(event,'${p.name}')"
+        ondragover="dragOver(event)"
+        ondrop="drop(event,'${p.name}')"
+        ondragend="dragEnd(event)"
+        id="row-${p.name.replace(/[^a-z0-9]/gi,'_')}">
+      <div class="rank-num ${topClass}">${globalRank}</div>
+      <div class="drag-handle">&#8597;</div>
+      <div class="pos-badge pos-${p.pos}">${p.pos}</div>
+      <div class="player-name">${p.name}</div>
+      <div class="player-team">${p.team}</div>
+      <div class="baseline-val" title="Draft Sharks value">${p.val}</div>
+      <div class="move-btns">
+        <button class="move-btn" onclick="movePlayer('${p.name}',-1)" title="Move up">▲</button>
+        <button class="move-btn" onclick="movePlayer('${p.name}',1)" title="Move down">▼</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Drag and drop
+function dragStart(e, name) {
+  dragSrcIdx = rankings.findIndex(p => p.name === name);
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => e.target.classList.add('dragging'), 0);
+}
+function dragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  e.currentTarget.classList.add('drag-over');
+}
+function drop(e, name) {
+  e.preventDefault();
+  const targetIdx = rankings.findIndex(p => p.name === name);
+  if (dragSrcIdx === null || dragSrcIdx === targetIdx) return;
+  const [moved] = rankings.splice(dragSrcIdx, 1);
+  rankings.splice(targetIdx, 0, moved);
+  rerank();
+  renderList();
+}
+function dragEnd(e) {
+  document.querySelectorAll('.dragging,.drag-over').forEach(el => {
+    el.classList.remove('dragging','drag-over');
+  });
+  dragSrcIdx = null;
+}
+
+// Move by button
+function movePlayer(name, dir) {
+  const idx = rankings.findIndex(p => p.name === name);
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= rankings.length) return;
+  [rankings[idx], rankings[newIdx]] = [rankings[newIdx], rankings[idx]];
+  rerank();
+  renderList();
+}
+
+function rerank() {
+  rankings.forEach((p, i) => p.rank = i + 1);
+}
+
+function resetRankings() {
+  rankings = BASELINE.map((p, i) => ({...p, rank: i+1}));
+  renderList();
+  showToast('Rankings reset to Draft Sharks baseline');
+}
+
+async function submitRankings() {
+  if (!selectedOwner) return;
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true; btn.textContent = 'SAVING...';
+
+  try {
+    // Delete existing rankings for this owner
+    await fetch(`${SUPABASE_URL}/rest/v1/league_rankings?owner=eq.${encodeURIComponent(selectedOwner)}`, {
+      method: 'DELETE',
+      headers: {'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json'}
+    });
+
+    // Insert new rankings
+    const rows = rankings.map(p => ({
+      owner: selectedOwner,
+      player_name: p.name,
+      player_pos: p.pos,
+      rank: p.rank
+    }));
+
+    // Batch insert in chunks of 50
+    for (let i = 0; i < rows.length; i += 50) {
+      const chunk = rows.slice(i, i+50);
+      await fetch(`${SUPABASE_URL}/rest/v1/league_rankings`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(chunk)
+      });
+    }
+
+    submittedOwners.add(selectedOwner);
+    renderOwners();
+    showToast('Rankings submitted! ✓', false);
+    btn.textContent = 'SUBMITTED ✓';
+    setTimeout(() => { btn.textContent = 'SUBMIT'; btn.disabled = false; }, 3000);
+  } catch(e) {
+    console.error(e);
+    showToast('Error saving — try again', true);
+    btn.textContent = 'SUBMIT'; btn.disabled = false;
+  }
+}
+
+function showToast(msg, isError=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError?' error':'');
+  t.style.display = 'block';
+  setTimeout(() => t.style.display='none', 3000);
+}
+
+// Init
+loadSubmitted();
+renderList();
+</script>
+</body>
+</html>
