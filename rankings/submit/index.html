@@ -131,7 +131,7 @@ const BASELINE = [{"name": "Josh Allen", "proj": 382, "val": 100, "pos": "QB", "
 let selectedOwner = null;
 let rankings = BASELINE.map((p, i) => ({...p, rank: i+1}));
 let activeFilter = 'ALL';
-let dragSrcIdx = null;
+let dragSrcName = null;
 let submittedOwners = new Set();
 
 // Load submitted owners from Supabase
@@ -160,7 +160,8 @@ function renderOwners() {
 function selectOwner(o) {
   selectedOwner = o;
   document.getElementById('btn-submit').disabled = false;
-  document.getElementById('submit-info').innerHTML = `Submitting as <strong>${DISPLAY_NAMES[o]||o}</strong> · ${rankings.length} players ranked`;
+  document.getElementById('submit-info').innerHTML =
+    `Submitting as <strong>${DISPLAY_NAMES[o]||o}</strong> · ${rankings.length} players ranked`;
   renderOwners();
 }
 
@@ -171,13 +172,22 @@ function filterPos(pos) {
   renderList();
 }
 
+// Get positional rank of a player (how many of same pos ranked above them)
+function getPosRank(player) {
+  return rankings.filter(p => p.pos === player.pos && p.rank < player.rank).length + 1;
+}
+
 function getVisible() {
   const q = document.getElementById('search-input').value.toLowerCase();
-  return rankings.filter(p => {
-    const posOk = activeFilter === 'ALL' || p.pos === activeFilter;
-    const searchOk = !q || p.name.toLowerCase().includes(q) || p.team.toLowerCase().includes(q);
-    return posOk && searchOk;
-  });
+  // Get players matching current filter, sorted by overall rank
+  let visible = rankings
+    .filter(p => {
+      const posOk = activeFilter === 'ALL' || p.pos === activeFilter;
+      const searchOk = !q || p.name.toLowerCase().includes(q) || p.team.toLowerCase().includes(q);
+      return posOk && searchOk;
+    })
+    .sort((a,b) => a.rank - b.rank);
+  return visible;
 }
 
 function renderList() {
@@ -186,8 +196,12 @@ function renderList() {
   document.getElementById('ranking-count').textContent = `${visible.length} players`;
 
   list.innerHTML = visible.map((p, vi) => {
-    const globalRank = p.rank;
-    const topClass = globalRank <= 3 ? 'top3' : '';
+    const posRank = getPosRank(p);
+    const displayRank = activeFilter === 'ALL' ? p.rank : posRank;
+    const posRankStr = activeFilter === 'ALL'
+      ? `<span style="font-size:9px;color:var(--muted);display:block;">${p.pos}${posRank}</span>`
+      : `<span style="font-size:9px;color:var(--muted);display:block;">OVR ${p.rank}</span>`;
+    const topClass = displayRank <= 3 ? 'top3' : '';
     return `<div class="player-row" draggable="true"
         data-name="${p.name}"
         ondragstart="dragStart(event,'${p.name}')"
@@ -195,7 +209,10 @@ function renderList() {
         ondrop="drop(event,'${p.name}')"
         ondragend="dragEnd(event)"
         id="row-${p.name.replace(/[^a-z0-9]/gi,'_')}">
-      <div class="rank-num ${topClass}">${globalRank}</div>
+      <div class="rank-num ${topClass}" style="line-height:1.1;">
+        ${displayRank}
+        ${posRankStr}
+      </div>
       <div class="drag-handle">&#8597;</div>
       <div class="pos-badge pos-${p.pos}">${p.pos}</div>
       <div class="player-name">${p.name}</div>
@@ -209,9 +226,9 @@ function renderList() {
   }).join('');
 }
 
-// Drag and drop
+// Drag and drop — operates within the visible list
 function dragStart(e, name) {
-  dragSrcIdx = rankings.findIndex(p => p.name === name);
+  dragSrcName = name;
   e.dataTransfer.effectAllowed = 'move';
   setTimeout(() => e.target.classList.add('dragging'), 0);
 }
@@ -221,34 +238,58 @@ function dragOver(e) {
   document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
   e.currentTarget.classList.add('drag-over');
 }
-function drop(e, name) {
+function drop(e, targetName) {
   e.preventDefault();
-  const targetIdx = rankings.findIndex(p => p.name === name);
-  if (dragSrcIdx === null || dragSrcIdx === targetIdx) return;
-  const [moved] = rankings.splice(dragSrcIdx, 1);
-  rankings.splice(targetIdx, 0, moved);
-  rerank();
+  if (!dragSrcName || dragSrcName === targetName) return;
+  swapPlayers(dragSrcName, targetName);
   renderList();
 }
 function dragEnd(e) {
   document.querySelectorAll('.dragging,.drag-over').forEach(el => {
     el.classList.remove('dragging','drag-over');
   });
-  dragSrcIdx = null;
+  dragSrcName = null;
 }
 
-// Move by button
+function swapPlayers(srcName, targetName) {
+  const srcIdx = rankings.findIndex(p => p.name === srcName);
+  const tgtIdx = rankings.findIndex(p => p.name === targetName);
+  if (srcIdx === -1 || tgtIdx === -1) return;
+
+  const srcRank = rankings[srcIdx].rank;
+  const tgtRank = rankings[tgtIdx].rank;
+
+  // Move src to target position in overall ranking
+  // Shift everything between them
+  if (srcRank < tgtRank) {
+    // Moving down: shift players between up by 1
+    rankings.forEach(p => {
+      if (p.rank > srcRank && p.rank <= tgtRank) p.rank--;
+    });
+  } else {
+    // Moving up: shift players between down by 1
+    rankings.forEach(p => {
+      if (p.rank < srcRank && p.rank >= tgtRank) p.rank++;
+    });
+  }
+  rankings[srcIdx].rank = tgtRank;
+}
+
+// Move by button — in position view, only moves within same position
 function movePlayer(name, dir) {
-  const idx = rankings.findIndex(p => p.name === name);
-  const newIdx = idx + dir;
-  if (newIdx < 0 || newIdx >= rankings.length) return;
-  [rankings[idx], rankings[newIdx]] = [rankings[newIdx], rankings[idx]];
-  rerank();
+  const visible = getVisible();
+  const visIdx = visible.findIndex(p => p.name === name);
+  const newVisIdx = visIdx + dir;
+  if (newVisIdx < 0 || newVisIdx >= visible.length) return;
+
+  const target = visible[newVisIdx];
+  swapPlayers(name, target.name);
   renderList();
 }
 
 function rerank() {
-  rankings.forEach((p, i) => p.rank = i + 1);
+  rankings.sort((a,b) => a.rank - b.rank);
+  rankings.forEach((p,i) => p.rank = i+1);
 }
 
 function resetRankings() {
@@ -263,30 +304,26 @@ async function submitRankings() {
   btn.disabled = true; btn.textContent = 'SAVING...';
 
   try {
-    // Delete existing rankings for this owner
     await fetch(`${SUPABASE_URL}/rest/v1/league_rankings?owner=eq.${encodeURIComponent(selectedOwner)}`, {
       method: 'DELETE',
       headers: {'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json'}
     });
 
-    // Insert new rankings
-    const rows = rankings.map(p => ({
+    const sorted = [...rankings].sort((a,b) => a.rank - b.rank);
+    const rows = sorted.map(p => ({
       owner: selectedOwner,
       player_name: p.name,
       player_pos: p.pos,
       rank: p.rank
     }));
 
-    // Batch insert in chunks of 50
     for (let i = 0; i < rows.length; i += 50) {
       const chunk = rows.slice(i, i+50);
       await fetch(`${SUPABASE_URL}/rest/v1/league_rankings`, {
         method: 'POST',
         headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
+          'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json', 'Prefer': 'return=minimal'
         },
         body: JSON.stringify(chunk)
       });
@@ -315,6 +352,7 @@ function showToast(msg, isError=false) {
 // Init
 loadSubmitted();
 renderList();
+
 </script>
 </body>
 </html>

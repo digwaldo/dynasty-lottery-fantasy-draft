@@ -223,9 +223,6 @@ async function loadData() {
     });
 
     // Build consensus
-    const baseMap = {};
-    BASELINE.forEach(p => baseMap[p.name] = p);
-
     consensusData = BASELINE.map(p => {
       const data = byPlayer[p.name] || {};
       const ranks = data.ranks || [];
@@ -236,15 +233,24 @@ async function loadData() {
         name: p.name, pos: p.pos, team: p.team,
         dsVal: p.val, dsRank: p.rank,
         avgRank, submissions: ranks.length,
-        // Value: normalize avgRank to 0-100 scale (rank 1 = 100, rank 150 = 1)
         consensusVal: numSubmissions > 0
           ? Math.max(1, Math.round(101 - (avgRank / 150 * 100)))
           : p.val
       };
     });
 
-    // Sort by avgRank (or dsRank if no submissions)
+    // Sort overall by avgRank
     consensusData.sort((a,b) => a.avgRank - b.avgRank);
+
+    // Assign overall rank and positional rank to each player
+    consensusData.forEach((p, i) => p.overallRank = i + 1);
+    const positions = ['QB','RB','WR','TE','K','DEF'];
+    positions.forEach(pos => {
+      const posPlayers = consensusData
+        .filter(p => p.pos === pos)
+        .sort((a,b) => a.avgRank - b.avgRank);
+      posPlayers.forEach((p, i) => p.posRank = i + 1);
+    });
 
     // Update stats
     document.getElementById('stat-submissions').textContent = numSubmissions;
@@ -285,6 +291,8 @@ function switchTab(tab) {
 
 function renderRankings() {
   const q = document.getElementById('search-box').value.toLowerCase();
+
+  // Filter by position tab
   let data = activeTab === 'overall'
     ? [...consensusData]
     : consensusData.filter(p => p.pos === activeTab);
@@ -292,9 +300,15 @@ function renderRankings() {
   if (q) data = data.filter(p =>
     p.name.toLowerCase().includes(q) || p.team.toLowerCase().includes(q));
 
-  // Positional rank
+  // Sort by avgRank within the current view
+  data.sort((a,b) => a.avgRank - b.avgRank);
+
+  // Assign display rank within this view (1,2,3... for position tab)
   data.forEach((p, i) => p.displayRank = i + 1);
-  const maxVal = Math.max(...data.map(p => p.consensusVal), 1);
+
+  // For position tabs, also compute positional avg rank separately
+  // (average of only that position's submissions)
+  const maxVal = data.length > 0 ? Math.max(...data.map(p => p.consensusVal), 1) : 1;
 
   const body = document.getElementById('rankings-body');
   if (data.length === 0) {
@@ -302,9 +316,16 @@ function renderRankings() {
     return;
   }
 
+  // Column header update
+  const isPos = activeTab !== 'overall';
+
   body.innerHTML = data.map(p => {
     const rk = p.displayRank;
     const rkClass = rk===1?'r1':rk===2?'r2':rk===3?'r3':'';
+    // In position view, show overall rank as secondary
+    const subRank = isPos
+      ? `<span style="font-size:9px;color:var(--muted);display:block;">OVR ${p.overallRank||p.avgRank.toFixed(0)}</span>`
+      : `<span style="font-size:9px;color:var(--muted);display:block;">${p.pos}${p.posRank||''}</span>`;
     const change = p.dsRank - p.avgRank;
     const changeStr = change > 0 ? `▲${Math.round(change)}` :
                       change < 0 ? `▼${Math.abs(Math.round(change))}` : '—';
@@ -312,7 +333,7 @@ function renderRankings() {
     const pct = Math.round((p.consensusVal / maxVal) * 100);
     const isSelected = tradeA.find(x=>x.name===p.name) || tradeB.find(x=>x.name===p.name);
     return `<div class="player-row-r ${isSelected?'selected':''}" onclick="addToTrade('${p.name}')">
-      <div class="rank-num ${rkClass}">${rk}</div>
+      <div class="rank-num ${rkClass}" style="line-height:1.1;">${rk}${subRank}</div>
       <div class="pos-badge pos-${p.pos}">${p.pos}</div>
       <div></div>
       <div>
@@ -329,6 +350,7 @@ function renderRankings() {
     </div>`;
   }).join('');
 }
+
 
 function addToTrade(name) {
   const player = consensusData.find(p => p.name === name);
