@@ -45,6 +45,10 @@
     {
       "source": "/rankings/submit",
       "destination": "/rankings/submit/index.html"
+    },
+    {
+      "source": "/scoring",
+      "destination": "/scoring/index.html"
     }
   ]
 }

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>League Scoring System</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --orange:#E8621A;--orange2:#F08030;--gold:#F5A623;
+  --teal:#00A89C;--teal2:#00C8BC;--teal-dark:#005f5a;
+  --navy:#0d1a2b;--navy2:#0a1520;--navy3:#060e18;
+  --chrome:#d0d8e0;--chrome2:#f0f4f8;--muted:#7a9ab0;
+  --border-teal:rgba(0,168,156,0.35);
+  --green:#22c55e;--red:#ef4444;--purple:#c084fc;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--navy2);color:var(--chrome2);font-family:'Barlow',sans-serif;min-height:100vh;line-height:1.6;}
+.frame-line{position:fixed;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--orange),var(--teal));z-index:100;}
+.frame-line-top{top:0;}.frame-line-bottom{bottom:0;}
+.container{max-width:960px;margin:0 auto;padding:20px 16px 80px;}
+.nav{display:flex;align-items:center;gap:10px;padding:10px 0 20px;}
+.nav-back{color:var(--muted);font-size:12px;letter-spacing:2px;text-decoration:none;text-transform:uppercase;}
+.nav-back:hover{color:var(--teal2);}
+
+/* HERO */
+.hero{text-align:center;padding:20px 0 36px;border-bottom:1px solid var(--border-teal);margin-bottom:40px;}
+.hero-eyebrow{font-size:11px;letter-spacing:6px;color:var(--teal2);font-family:'Barlow',sans-serif;text-transform:uppercase;margin-bottom:8px;}
+.hero h1{font-family:'Anton',sans-serif;font-size:clamp(42px,10vw,80px);letter-spacing:2px;background:linear-gradient(160deg,#fff 0%,var(--chrome) 50%,var(--teal2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;}
+.hero-sub{font-size:16px;color:var(--muted);max-width:600px;margin:14px auto 0;letter-spacing:0.5px;line-height:1.7;}
+.hero-rule{width:80px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:20px auto 0;}
+
+/* PHILOSOPHY SECTION */
+.philosophy{background:linear-gradient(135deg,rgba(0,168,156,0.06),rgba(232,98,26,0.04));border:1px solid var(--border-teal);border-left:4px solid var(--teal);border-radius:6px;padding:28px 28px 24px;margin-bottom:40px;}
+.philosophy-title{font-family:'Anton',sans-serif;font-size:22px;letter-spacing:4px;color:var(--teal2);margin-bottom:16px;}
+.philosophy p{color:var(--chrome);font-size:15px;line-height:1.75;margin-bottom:12px;}
+.philosophy p:last-child{margin-bottom:0;}
+.philosophy strong{color:var(--gold);}
+
+/* SECTION */
+.section{margin-bottom:40px;}
+.section-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border-teal);}
+.section-icon{font-size:28px;flex-shrink:0;}
+.section-title{font-family:'Anton',sans-serif;font-size:28px;letter-spacing:3px;color:var(--chrome2);}
+.section-sub{font-size:13px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+.section-why{background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.2);border-left:3px solid var(--gold);border-radius:4px;padding:14px 18px;margin-bottom:18px;font-size:14px;color:var(--chrome);line-height:1.7;}
+.section-why strong{color:var(--gold);}
+
+/* SCORING GRID */
+.score-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:4px;}
+.score-card{background:rgba(10,21,32,0.8);border:1px solid var(--border-teal);border-radius:4px;padding:12px 16px;display:flex;align-items:center;gap:12px;transition:border-color 0.2s;}
+.score-card:hover{border-color:var(--teal);}
+.score-card.highlight{border-color:rgba(245,166,35,0.4);background:rgba(245,166,35,0.04);}
+.score-card.negative{border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.03);}
+.score-label{flex:1;font-size:13px;color:var(--chrome);font-weight:500;}
+.score-label small{display:block;font-size:10px;color:var(--muted);font-weight:400;letter-spacing:1px;margin-top:1px;}
+.score-val{font-family:'Anton',sans-serif;font-size:20px;flex-shrink:0;min-width:44px;text-align:right;}
+.score-val.pos{color:var(--teal2);}
+.score-val.neg{color:var(--red);}
+.score-val.gold{color:var(--gold);}
+.score-val.zero{color:var(--muted);}
+
+/* DIVIDER */
+.subsection{margin-bottom:16px;}
+.subsection-title{font-family:'Anton',sans-serif;font-size:13px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+
+/* INSIGHT BOXES */
+.insight-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:16px;}
+.insight-card{background:rgba(10,21,32,0.7);border:1px solid var(--border-teal);border-radius:5px;padding:14px 16px;}
+.insight-num{font-family:'Anton',sans-serif;font-size:32px;color:var(--teal2);line-height:1;}
+.insight-label{font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-top:2px;}
+.insight-desc{font-size:13px;color:var(--chrome);margin-top:8px;line-height:1.6;}
+
+/* COMPARISON TABLE */
+.compare-table{background:rgba(10,21,32,0.8);border:1px solid var(--border-teal);border-radius:5px;overflow:hidden;margin-bottom:12px;}
+.compare-header{display:grid;grid-template-columns:1fr 80px 80px 80px;gap:0;background:rgba(0,168,156,0.06);border-bottom:1px solid var(--border-teal);}
+.compare-row{display:grid;grid-template-columns:1fr 80px 80px 80px;gap:0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.compare-row:last-child{border-bottom:none;}
+.compare-cell{padding:10px 14px;font-size:13px;}
+.compare-cell.head{font-family:'Anton',sans-serif;font-size:11px;letter-spacing:2px;color:var(--muted);}
+.compare-cell.name{color:var(--chrome);}
+.compare-cell.val{text-align:center;font-family:'Anton',sans-serif;font-size:14px;}
+.compare-cell.our{color:var(--teal2);}
+.compare-cell.std{color:var(--muted);}
+.compare-cell.diff-up{color:var(--green);}
+.compare-cell.diff-dn{color:var(--red);}
+</style>
+</head>
+<body>
+<div class="frame-line frame-line-top"></div>
+<div class="frame-line frame-line-bottom"></div>
+
+<div class="container">
+  <div class="nav"><a href="/" class="nav-back">&#8249; Home</a></div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">BIG12 · CFL · MinuteMaid</div>
+    <h1>SCORING SYSTEM</h1>
+    <p class="hero-sub">A detailed breakdown of every scoring category, why each rule exists, and how they work together to reward elite dynasty play.</p>
+    <div class="hero-rule"></div>
+  </div>
+
+  <!-- PHILOSOPHY -->
+  <div class="philosophy">
+    <div class="philosophy-title">THE PHILOSOPHY</div>
+    <p>This scoring system is built around one idea: <strong>reward players who do more things well</strong>. Standard PPR leagues make WRs and TEs too dominant because every catch scores the same regardless of impact. This system adds layers — yard bonuses, completion penalties, positional premiums — that force you to evaluate players the way NFL teams do.</p>
+    <p>The result is a <strong>Superflex TE Premium</strong> format where every position matters, QBs are premium assets, TEs that actually produce are worth investing in, and raw volume alone doesn't win championships. You need to build rosters like a GM, not just stack pass catchers.</p>
+    <p>Every scoring quirk here has a reason. <strong>Incomplete pass penalties keep QBs accountable.</strong> <strong>Rush attempt bonuses reward workhorse RBs.</strong> <strong>Yard-band reception bonuses separate route runners from possession receivers.</strong> Read on to understand why.</p>
+  </div>
+
+  <!-- PASSING -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🏈</div>
+      <div>
+        <div class="section-title">PASSING</div>
+        <div class="section-sub">Quarterback scoring · The premium position</div>
+      </div>
+    </div>
+    <div class="section-why">
+      <strong>Why QBs score so much here:</strong> In a Superflex league, you start 2 QBs. That means elite QBs are the most valuable asset on the board. The passing system rewards big-play ability (40+ yard completions, long TDs) while brutally penalizing turnover-prone QBs through pick-6 penalties and incompletion deductions. A gun-slinger who pads stats but loses games will actually score worse here than a careful, efficient QB.
+    </div>
+    <div class="subsection">
+      <div class="subsection-title">Core Stats</div>
+      <div class="score-grid">
+        <div class="score-card highlight"><div class="score-label">Passing Yards<small>1 pt per 20 yards (+0.05/yd)</small></div><div class="score-val gold">0.05</div></div>
+        <div class="score-card highlight"><div class="score-label">Passing TD<small>Per touchdown thrown</small></div><div class="score-val gold">6</div></div>
+        <div class="score-card"><div class="score-label">Passing 1st Down<small>Per first down conversion</small></div><div class="score-val pos">0.25</div></div>
+        <div class="score-card"><div class="score-label">Pass Completed<small>Per completion</small></div><div class="score-val pos">0.25</div></div>
+        <div class="score-card negative"><div class="score-label">Incomplete Pass<small>Per incomplete throw</small></div><div class="score-val neg">-0.25</div></div>
+        <div class="score-card negative"><div class="score-label">Pass Intercepted<small>Per interception thrown</small></div><div class="score-val neg">-2</div></div>
+        <div class="score-card negative"><div class="score-label">Pick 6 Thrown<small>INT returned for TD</small></div><div class="score-val neg">-4</div></div>
+        <div class="score-card negative"><div class="score-label">QB Sacked<small>Per sack taken</small></div><div class="score-val neg">-1</div></div>
+        <div class="score-card"><div class="score-label">2-Pt Conversion<small>Pass conversion</small></div><div class="score-val pos">2</div></div>
+      </div>
+    </div>
+    <div class="subsection">
+      <div class="subsection-title">Big Play Bonuses</div>
+      <div class="score-grid">
+        <div class="score-card highlight"><div class="score-label">40+ Yard Completion<small>Bonus per long completion</small></div><div class="score-val gold">1</div></div>
+        <div class="score-card highlight"><div class="score-label">40+ Yard Pass TD<small>Bonus on top of TD pts</small></div><div class="score-val gold">2</div></div>
+        <div class="score-card highlight"><div class="score-label">50+ Yard Pass TD<small>Extra bonus for 50+ TD</small></div><div class="score-val gold">2</div></div>
+      </div>
+    </div>
+    <div class="subsection">
+      <div class="subsection-title">Game Volume Bonuses</div>
+      <div class="score-grid">
+        <div class="score-card"><div class="score-label">25+ Pass Completions<small>High completion volume game</small></div><div class="score-val pos">2.5</div></div>
+        <div class="score-card"><div class="score-label">300-399 Yard Passing Game</div><div class="score-val pos">2</div></div>
+        <div class="score-card"><div class="score-label">400+ Yard Passing Game</div><div class="score-val gold">4</div></div>
+      </div>
+    </div>
+
+    <div class="insight-grid">
+      <div class="insight-card">
+        <div class="insight-num">±0.5</div>
+        <div class="insight-label">Net per attempt</div>
+        <div class="insight-desc">A completion nets +0.5 pts (0.25 comp - nothing). An incompletion nets -0.25. This spread keeps accuracy meaningful.</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-num">-6</div>
+        <div class="insight-label">Pick 6 total penalty</div>
+        <div class="insight-desc">-2 INT + -4 Pick 6 = -6 total. One pick-6 wipes out a full TD. QBs that gift TDs to defenses pay a steep price.</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-num">+5</div>
+        <div class="insight-label">50+ yd TD bonus stack</div>
+        <div class="insight-desc">A 50-yard TD scores 6 + 2 (40+ bonus) + 2 (50+ bonus) = +10 extra on top of base. Deep shots are heavily rewarded.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RUSHING -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🏃</div>
+      <div>
+        <div class="section-title">RUSHING</div>
+        <div class="section-sub">Running back scoring · Workhorses win</div>
+      </div>
+    </div>
+    <div class="section-why">
+      <strong>Why rush attempts score points here:</strong> Standard leagues only reward yards and TDs, which means committee backs are nearly worthless. Adding <strong>0.25 per rush attempt</strong> means a back who gets 20 carries regardless of yards is worth owning. Combined with 1st down bonuses and game-volume bonuses, true workhorse RBs become elite assets again — which is how it should be in dynasty.
+    </div>
+    <div class="subsection">
+      <div class="subsection-title">Core Stats</div>
+      <div class="score-grid">
+        <div class="score-card highlight"><div class="score-label">Rushing Yards<small>1 pt per 10 yards (+0.10/yd)</small></div><div class="score-val gold">0.10</div></div>
+        <div class="score-card highlight"><div class="score-label">Rushing TD<small>Per touchdown scored</small></div><div class="score-val gold">6</div></div>
+        <div class="score-card highlight"><div class="score-label">Rush Attempts<small>Per carry — workhorses rewarded</small></div><div class="score-val gold">0.25</div></div>
+        <div class="score-card"><div class="score-label">Rushing 1st Down<small>Per first down gained</small></div><div class="score-val pos">0.5</div></div>
+        <div class="score-card"><div class="score-label">2-Pt Conversion (Rush)</div><div class="score-val pos">2</div></div>
+      </div>
+    </div>
+    <div class="subsection">
+      <div class="subsection-title">Big Play Bonuses</div>
+      <div class="score-grid">
+        <div class="score-card"><div class="score-label">40+ Yard Rush<small>Bonus per long run</small></div><div class="score-val pos">0.25</div></div>
+        <div class="score-card"><div class="score-label">40+ Yard Rush TD<small>Bonus on long TD run</small></div><div class="score-val pos">0.25</div></div>
+        <div class="score-card"><div class="score-label">50+ Yard Rush TD<small>Bonus on 50+ TD run</small></div><div class="score-val pos">0.5</div></div>
+      </div>
+    </div>
+    <div class="subsection">
+      <div class="subsection-title">Game Volume Bonuses</div>
+      <div class="score-grid">
+        <div class="score-card"><div class="score-label">100-199 Yard Rushing Game</div><div class="score-val pos">3</div></div>
+        <div class="score-card"><div class="score-label">200+ Yard Rushing Game</div><div class="score-val gold">4</div></div>
+        <div class="score-card"><div class="score-label">20+ Carries Game</div><div class="score-val pos">2</div></div>
+        <div class="score-card"><div class="score-label">100-199 Combined Rush+Rec Game</div><div class="score-val pos">1</div></div>
+        <div class="score-card"><div class="score-label">200+ Combined Rush+Rec Game</div><div class="score-val pos">2</div></div>
+      </div>
+    </div>
+    <div class="insight-grid">
+      <div class="insight-card">
+        <div class="insight-num">5</div>
+        <div class="insight-label">pts from 20 carries</div>
+        <div class="insight-desc">20 carries × 0.25 = 5 pts from attempts alone, plus the 2pt 20-carry bonus = 7 bonus pts just for being the starter.</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-num">12+</div>
+        <div class="insight-label">pts for 100yd game</div>
+        <div class="insight-desc">100 rush yds = 10 pts + 3 bonus + ~4 from carries + 1st down bonuses. A true workhorse 100-yd game can top 20 pts.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECEIVING -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">⚡</div>
+      <div>
+        <div class="section-title">RECEIVING</div>
+        <div class="section-sub">WR/TE/RB receiving · Yardage tiers separate the elite</div>
+      </div>
+    </div>
+    <div class="section-why">
+      <strong>Why the reception yard-band bonuses exist:</strong> PPR leagues reward volume catchers equally — a 3-yard dump-off scores the same as a 25-yard dig route. These yardage tier bonuses mean that YAC monsters, deep threats, and contested catch specialists score significantly more than screen-game dependent receivers. <strong>The TE premium (0.5 extra per reception)</strong> makes legitimate pass-catching TEs worth a premium pick, rewarding teams that invest there.
+    </div>
+    <div class="subsection">
+      <div class="subsection-title">Core Stats</div>
+      <div class="score-grid">
+        <div class="score-card highlight"><div class="score-label">Reception<small>PPR — per catch</small></div><div class="score-val gold">1</div></div>
+        <div class="score-card highlight"><div class="score-label">Receiving Yards<small>1 pt per 10 yards</small></div><div class="score-val gold">0.10</div></div>
+        <div class="score-card highlight"><div class="score-label">Receiving TD</div><div class="score-val gold">6</div></div>
+        <div class="score-card highlight"><div class="score-label">Reception Bonus – TE<small>Extra per catch for TEs only</small></div><div class="score-val gold">+0.5</div></div>
+        <div class="score-card"><div class="score-label">Receiving 1st Down<small>Per first down reception</small></div><div class="score-val pos">0.25</div></div>
+        <div class="score-card"><div class="score-label">2-Pt Conversion (Rec)</div><div class="score-val pos">2</div></div>
+      </div>
+    </div>
+    <div class="subsection">
+      <div class="subsection-title">Yardage Band Bonuses — per reception</div>
+      <div class="score-grid">
+        <div class="score-card"><div class="score-label">0-4 Yard Reception<small>Short dump-offs</small></div><div class="score-val zero">—</div></div>
+        <div class="score-card"><div class="score-label">5-9 Yard Reception<small>Quick hitters</small></div><div class="score-val zero">—</div></div>
+        <div class="score-card"><div class="score-label">10-19 Yard Reception<small>First down territory</small></div><div class="score-val pos">0.1</div></div>
+        <div class="score-card"><div class="score-label">20-29 Yard Reception<small>Big chunk play</small></div><div class="score-val pos">0.15</div></div>
+        <div class="score-card"><div class="score-label">30-39 Yard Reception<small>Near-explosive</small></div><div class="score-val pos">0.20</div></div>
+        <div class="score-card highlight"><div class="score-label">40+ Yard Reception<small>Explosive play</small></div><div class="score-val gold">0.25</div></div>
+        <div class="score-card highlight"><div class="score-label">40+ Yard Reception TD<small>Bonus on explosive TD</small></div><div class="score-val gold">0.5</div></div>
+        <div class="score-card highlight"><div class="score-label">50+ Yard Reception TD<small>Elite deep ball TD</small></div><div class="score-val gold">1</div></div>
+      </div>
+    </div>
+    <div class="subsection">
+      <div class="subsection-title">Game Volume Bonuses</div>
+      <div class="score-grid">
+        <div class="score-card"><div class="score-label">100-199 Yard Receiving Game</div><div class="score-val pos">2</div></div>
+        <div class="score-card"><div class="score-label">200+ Yard Receiving Game</div><div class="score-val gold">4</div></div>
+      </div>
+    </div>
+
+    <div class="section-why" style="margin-top:16px;">
+      <strong>TE Premium explained:</strong> TEs score 1.5 pts per reception vs 1.0 for WRs/RBs. This closes the gap between elite pass-catching TEs (Brock Bowers, Trey McBride) and WRs who outscore them in volume. In this league, a TE with 70 catches is worth approximately the same as a WR with 95 catches in a standard format — making early TE investment genuinely strategic.
+    </div>
+
+    <!-- Comparison table -->
+    <div class="compare-table">
+      <div class="compare-header">
+        <div class="compare-cell head">Scenario</div>
+        <div class="compare-cell head" style="text-align:center;">THIS</div>
+        <div class="compare-cell head" style="text-align:center;">STD PPR</div>
+        <div class="compare-cell head" style="text-align:center;">DIFF</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-cell name">8 catches, 120 yds, 1 TD</div>
+        <div class="compare-cell val our">38.0</div>
+        <div class="compare-cell val std">30.0</div>
+        <div class="compare-cell val diff-up">+8</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-cell name">12 catches, 85 yds (all short)</div>
+        <div class="compare-cell val our">20.5</div>
+        <div class="compare-cell val std">20.5</div>
+        <div class="compare-cell val std">0</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-cell name">TE: 6 catches, 70 yds, 1 TD</div>
+        <div class="compare-cell val our">28.0</div>
+        <div class="compare-cell val std">22.0</div>
+        <div class="compare-cell val diff-up">+6</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-cell name">1 catch, 58-yd TD</div>
+        <div class="compare-cell val our">15.8</div>
+        <div class="compare-cell val std">12.8</div>
+        <div class="compare-cell val diff-up">+3</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KICKING -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🦵</div>
+      <div>
+        <div class="section-title">KICKING</div>
+        <div class="section-sub">Distance-based scoring · Range matters</div>
+      </div>
+    </div>
+    <div class="section-why">
+      <strong>Why kickers score this way:</strong> Rather than a flat score per FG, this system rewards range and penalizes missed makeable kicks. A kicker who drills a 55-yarder earns more than one who only converts chip shots. The miss penalties scale inversely — missing a 15-yarder is inexcusable (-5) while missing a 55-yarder loses you less (-1). This makes kicker selection a real decision, not an afterthought.
+    </div>
+    <div class="subsection">
+      <div class="subsection-title">Field Goals Made</div>
+      <div class="score-grid">
+        <div class="score-card"><div class="score-label">0-19 yards</div><div class="score-val pos">3</div></div>
+        <div class="score-card"><div class="score-label">20-29 yards</div><div class="score-val pos">3</div></div>
+        <div class="score-card"><div class="score-label">30-39 yards</div><div class="score-val pos">3</div></div>
+        <div class="score-card"><div class="score-label">40-49 yards</div><div class="score-val pos">4</div></div>
+        <div class="score-card"><div class="score-label">50-59 yards</div><div class="score-val gold">5</div></div>
+        <div class="score-card highlight"><div class="score-label">60+ yards</div><div class="score-val gold">6</div></div>
+        <div class="score-card"><div class="score-label">PAT Made</div><div class="score-val pos">1</div></div>
+      </div>
+    </div>
+    <div class="subsection">
+      <div class="subsection-title">Field Goals Missed (penalties)</div>
+      <div class="score-grid">
+        <div class="score-card negative"><div class="score-label">0-19 yards missed<small>Inexcusable</small></div><div class="score-val neg">-5</div></div>
+        <div class="score-card negative"><div class="score-label">20-29 yards missed</div><div class="score-val neg">-4</div></div>
+        <div class="score-card negative"><div class="score-label">30-39 yards missed</div><div class="score-val neg">-3</div></div>
+        <div class="score-card negative"><div class="score-label">40-49 yards missed</div><div class="score-val neg">-2</div></div>
+        <div class="score-card negative"><div class="score-label">50+ yards missed<small>Forgiven more</small></div><div class="score-val neg">-1</div></div>
+        <div class="score-card negative"><div class="score-label">PAT Missed</div><div class="score-val neg">-2</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEFENSE -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🛡️</div>
+      <div>
+        <div class="section-title">TEAM DEFENSE</div>
+        <div class="section-sub">DST scoring · Dominant defenses get rewarded</div>
+      </div>
+    </div>
+    <div class="section-why">
+      <strong>Why DST scoring is this detailed:</strong> Most leagues just use points allowed. This system layers in yardage allowed, individual defensive plays, and special situation bonuses so that a defense that dominates the game — shutting down drives, forcing turnovers, stopping short yardage — scores dramatically more than one that just gets lucky with a pick-6. You're incentivized to find defenses that are consistently dominant, not just boom/bust.
+    </div>
+    <div class="subsection">
+      <div class="subsection-title">Points Allowed</div>
+      <div class="score-grid">
+        <div class="score-card highlight"><div class="score-label">Shutout (0 pts allowed)</div><div class="score-val gold">5</div></div>
+        <div class="score-card"><div class="score-label">1-6 pts allowed</div><div class="score-val pos">4</div></div>
+        <div class="score-card"><div class="score-label">7-13 pts allowed</div><div class="score-val pos">3</div></div>
+        <div class="score-card"><div class="score-label">14-20 pts allowed</div><div class="score-val pos">1</div></div>
+        <div class="score-card"><div class="score-label">21-27 pts allowed</div><div class="score-val zero">0</div></div>
+        <div class="score-card negative"><div class="score-label">28-34 pts allowed</div><div class="score-val neg">-3</div></div>
+        <div class="score-card negative"><div class="score-label">35+ pts allowed</div><div class="score-val neg">-5</div></div>
+      </div>
+    </div>
+    <div class="subsection">
+      <div class="subsection-title">Yards Allowed</div>
+      <div class="score-grid">
+        <div class="score-card highlight"><div class="score-label">Under 100 total yards</div><div class="score-val gold">10</div></div>
+        <div class="score-card"><div class="score-label">100-199 yards</div><div class="score-val gold">7</div></div>
+        <div class="score-card"><div class="score-label">200-299 yards</div><div class="score-val pos">4</div></div>
+        <div class="score-card"><div class="score-label">300-349 yards</div><div class="score-val pos">1</div></div>
+        <div class="score-card"><div class="score-label">350-399 yards</div><div class="score-val zero">0</div></div>
+        <div class="score-card negative"><div class="score-label">400-449 yards</div><div class="score-val neg">-3</div></div>
+        <div class="score-card negative"><div class="score-label">450-499 yards</div><div class="score-val neg">-5</div></div>
+        <div class="score-card negative"><div class="score-label">500-549 yards</div><div class="score-val neg">-7</div></div>
+        <div class="score-card negative"><div class="score-label">550+ yards</div><div class="score-val neg">-10</div></div>
+      </div>
+    </div>
+    <div class="subsection">
+      <div class="subsection-title">Defensive Plays</div>
+      <div class="score-grid">
+        <div class="score-card highlight"><div class="score-label">Defensive TD</div><div class="score-val gold">6</div></div>
+        <div class="score-card"><div class="score-label">Sacks</div><div class="score-val pos">2</div></div>
+        <div class="score-card"><div class="score-label">Interceptions</div><div class="score-val pos">2</div></div>
+        <div class="score-card"><div class="score-label">Fumble Recovery</div><div class="score-val pos">2</div></div>
+        <div class="score-card"><div class="score-label">Forced Fumble</div><div class="score-val pos">2</div></div>
+        <div class="score-card"><div class="score-label">Safety</div><div class="score-val pos">2</div></div>
+        <div class="score-card"><div class="score-label">Blocked Kick</div><div class="score-val pos">3</div></div>
+        <div class="score-card"><div class="score-label">3 and Out</div><div class="score-val pos">1</div></div>
+        <div class="score-card"><div class="score-label">4th Down Stop</div><div class="score-val pos">2</div></div>
+        <div class="score-card"><div class="score-label">Forced Punt</div><div class="score-val pos">0.25</div></div>
+        <div class="score-card"><div class="score-label">2-Pt Conversion Return</div><div class="score-val pos">2</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MISC -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">⚙️</div>
+      <div>
+        <div class="section-title">MISCELLANEOUS</div>
+        <div class="section-sub">Fumbles · Ball security matters</div>
+      </div>
+    </div>
+    <div class="section-why">
+      <strong>Why fumbles are penalized this heavily:</strong> Losing the ball is the worst thing a player can do. The dual penalty — -1 for fumbling and -2 for losing it — means a fumble lost costs 3 total points. This makes ball-secure RBs and QBs significantly more valuable than their fumble-prone counterparts with similar stat lines.
+    </div>
+    <div class="score-grid">
+      <div class="score-card negative"><div class="score-label">Fumble<small>Any fumble regardless of possession</small></div><div class="score-val neg">-1</div></div>
+      <div class="score-card negative"><div class="score-label">Fumble Lost<small>Additional penalty for losing possession</small></div><div class="score-val neg">-2</div></div>
+      <div class="score-card highlight"><div class="score-label">Fumble Recovery TD<small>Offensive recovery + score</small></div><div class="score-val gold">6</div></div>
+    </div>
+    <div class="insight-grid" style="margin-top:16px;">
+      <div class="insight-card">
+        <div class="insight-num">-3</div>
+        <div class="insight-label">fumble lost total</div>
+        <div class="insight-desc">-1 fumble + -2 lost = -3 pts total. That's half a touchdown erased. Ball security is a real differentiator.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="frame-line frame-line-bottom"></div>
+</body>
+</html>
